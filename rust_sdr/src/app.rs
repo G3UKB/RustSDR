@@ -124,7 +124,7 @@ impl Appdata {
 
         // Start the DSP thread
         let mut opt_dsp_join_handle: option::Option<thread::JoinHandle<()>> = None;
-        opt_dsp_join_handle = Some(dsp::dsp_interface::dsp_start(dsp_r.clone()));
+        opt_dsp_join_handle = Some(dsp::dsp_interface::dsp_start(dsp_r.clone(), rb_iq.clone()));
 
         // Initialise the application data
         Appdata { 
