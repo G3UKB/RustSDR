@@ -1,0 +1,13 @@
+[package]
+name = "rust_sdr"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+crossbeam-channel = "0.5"
+get_if_addrs = "0.5.3"
+socket2 = "0.4.7"
+bytebuffer-rs = "0.4.0"
+lazy_static = "1.4.0"
