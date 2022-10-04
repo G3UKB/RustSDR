@@ -38,28 +38,54 @@ use std::option;
 use socket2;
 use crossbeam_channel::unbounded;
 
+//=========================================================================================
+// Object store for the entire system level 1
+// Objects down the tree instantiate local objects as required
 pub struct Appdata{
+    //=================================================
+    // UDP module related
+    // UDP socket
     pub i_sock : udp::udp_socket::Sockdata,
     pub p_sock : Arc<socket2::Socket>,
     //pub p_addr: option::Option<Arc<socket2::SockAddr>>,
+
+    // UDP Reader and Writer
     pub opt_udp_writer :  option::Option<udp::udp_writer::UDPWData>,
+    // Reader thread join handle
     pub opt_reader_join_handle: option::Option<thread::JoinHandle<()>>,
-    pub i_hw_control : udp::hw_control::HWData,
+    // Channel
     pub r_sender : crossbeam_channel::Sender<common::messages::ReaderMsg>,
     pub r_receiver : crossbeam_channel::Receiver<common::messages::ReaderMsg>,
+
+    // Hardware controller
+    pub i_hw_control : udp::hw_control::HWData,
+    // Channel
     pub hw_sender : crossbeam_channel::Sender<common::messages::HWMsg>,
     pub hw_receiver : crossbeam_channel::Receiver<common::messages::HWMsg>,
+
+    //=================================================
+    // DSP module related
+    // Channel
     pub dsp_sender : crossbeam_channel::Sender<common::messages::DSPMsg>,
     pub dsp_receiver : crossbeam_channel::Receiver<common::messages::DSPMsg>,
+    // DSP thread join handle
     pub opt_dsp_join_handle: option::Option<thread::JoinHandle<()>>,
+    // Ring buffer Reader thread <-> DSP thread
+    pub rb_iq : Arc<common::ringb::SyncByteRingBuf>,
 }
 
+//=========================================================================================
+// Instantiate the application modules
 impl Appdata {
     pub fn new() -> Appdata {
         // Create the message q's for reader, hardware and DSP
         let (r_s, r_r) = unbounded();
         let (hw_s, hw_r) = unbounded();
         let (dsp_s, dsp_r) = unbounded();
+
+        // Create ring buffers 
+        // Buffer for read IQ data to DSP
+        let rb_iq = Arc::new(common::ringb::SyncByteRingBuf::with_capacity(1024)); // Size to be adjusted
 
         // Create the shared socket
         let mut i_sock = udp::udp_socket::Sockdata::new();
@@ -107,17 +133,20 @@ impl Appdata {
             //p_addr : p_addr,
             opt_udp_writer : opt_udp_writer,
             opt_reader_join_handle : opt_reader_join_handle,
-            i_hw_control : i_hw_control,
             r_sender : r_s,
             r_receiver : r_r,
+            i_hw_control : i_hw_control,
             hw_sender : hw_s,
             hw_receiver : hw_r,
             dsp_sender : dsp_s,
             dsp_receiver : dsp_r,
             opt_dsp_join_handle : opt_dsp_join_handle,
+            rb_iq : rb_iq,
         }
     }
 
+    //=========================================================================================
+    // Initialise to a running state
     pub fn app_init(&mut self) {
         println!("Initialising hardware...");
         //self.i_hw_control.do_start(false);
@@ -136,7 +165,8 @@ impl Appdata {
         thread::sleep(Duration::from_millis(1000));
     }
 
-    // Terminate the reader thread
+    //=========================================================================================
+    // Tidy close everything
     pub fn app_close(&mut self) { 
         
         // Stop the UDP reader

@@ -26,22 +26,26 @@ bob@bobcowdery.plus.com
 
 use std::thread;
 use std::time::Duration;
+use std::sync::Arc;
 
 use crate::app::common::messages;
+use crate::app::common::ringb;
 
 //==================================================================================
 // Runtime object for thread
 pub struct DSPData{
     receiver : crossbeam_channel::Receiver<messages::DSPMsg>,
+    rb_iq : &ringb::SyncByteRingBuf,
 }
 
 // Implementation methods on UDPRData
 impl DSPData {
 	// Create a new instance and initialise the default arrays
-    pub fn new(receiver : crossbeam_channel::Receiver<messages::DSPMsg>) -> DSPData {
+    pub fn new(receiver : crossbeam_channel::Receiver<messages::DSPMsg>, rb_iq : &ringb::SyncByteRingBuf) -> DSPData {
 
 		DSPData {
             receiver: receiver,
+            rb_iq: rb_iq,
 		}
 	}
 
@@ -66,18 +70,18 @@ impl DSPData {
 
 //==================================================================================
 // Thread startup
-pub fn dsp_start(receiver : crossbeam_channel::Receiver<messages::DSPMsg>) -> thread::JoinHandle<()>{
+pub fn dsp_start(receiver : crossbeam_channel::Receiver<messages::DSPMsg>, rb_iq : Arc<ringb::SyncByteRingBuf>) -> thread::JoinHandle<()>{
     let join_handle = thread::spawn(  move || {
-        reader_run(receiver);
+        reader_run(receiver, &rb_iq);
     });
     return join_handle;
 }
 
-fn reader_run(receiver : crossbeam_channel::Receiver<messages::DSPMsg>) {
+fn reader_run(receiver : crossbeam_channel::Receiver<messages::DSPMsg>, rb_iq : &ringb::SyncByteRingBuf) {
     println!("DSP Interface running");
 
     // Instantiate the runtime object
-    let mut i_interface = DSPData::new(receiver);
+    let mut i_interface = DSPData::new(receiver, rb_iq);
 
     // Exits when the reader loop exits
     i_interface.dsp_run();

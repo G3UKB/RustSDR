@@ -27,3 +27,4 @@ bob@bobcowdery.plus.com
 pub mod common_defs;
 pub mod messages;
 pub mod cc_out_defs;
+pub mod ringb;
