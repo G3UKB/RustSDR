@@ -30,6 +30,41 @@ use std::time::Duration;
 use crate::app::common::messages;
 
 //==================================================================================
+// Runtime object for thread
+pub struct DSPData{
+    receiver : crossbeam_channel::Receiver<messages::DSPMsg>,
+}
+
+// Implementation methods on UDPRData
+impl DSPData {
+	// Create a new instance and initialise the default arrays
+    pub fn new(receiver : crossbeam_channel::Receiver<messages::DSPMsg>) -> DSPData {
+
+		DSPData {
+            receiver: receiver,
+		}
+	}
+
+    // Run loop for DSP
+    pub fn dsp_run(&mut self) {
+        loop {
+            // Check for messages
+            let r = self.receiver.try_recv();
+            match r {
+                Ok(msg) => {
+                    match msg {
+                        messages::DSPMsg::Terminate => break,
+                    };
+                },
+                // Do nothing if there are no message matches
+                _ => (),
+            };
+            thread::sleep(Duration::from_millis(100));
+        }
+    }
+}
+
+//==================================================================================
 // Thread startup
 pub fn dsp_start(receiver : crossbeam_channel::Receiver<messages::DSPMsg>) -> thread::JoinHandle<()>{
     let join_handle = thread::spawn(  move || {
@@ -42,10 +77,10 @@ fn reader_run(receiver : crossbeam_channel::Receiver<messages::DSPMsg>) {
     println!("DSP Interface running");
 
     // Instantiate the runtime object
-    //let mut i_interface = DSPData::new(receiver);
+    let mut i_interface = DSPData::new(receiver);
 
     // Exits when the reader loop exits
-    //i_interface.dsp_run();
+    i_interface.dsp_run();
 
     println!("DSP Interface exiting");
     thread::sleep(Duration::from_millis(1000));

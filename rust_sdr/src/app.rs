@@ -51,6 +51,7 @@ pub struct Appdata{
     pub hw_receiver : crossbeam_channel::Receiver<common::messages::HWMsg>,
     pub dsp_sender : crossbeam_channel::Sender<common::messages::DSPMsg>,
     pub dsp_receiver : crossbeam_channel::Receiver<common::messages::DSPMsg>,
+    pub opt_dsp_join_handle: option::Option<thread::JoinHandle<()>>,
 }
 
 impl Appdata {
@@ -95,6 +96,11 @@ impl Appdata {
             }
         }
 
+        // Start the DSP thread
+        let mut opt_dsp_join_handle: option::Option<thread::JoinHandle<()>> = None;
+        opt_dsp_join_handle = Some(dsp::dsp_interface::dsp_start(dsp_r.clone()));
+
+        // Initialise the application data
         Appdata { 
             i_sock : i_sock,
             p_sock : p_sock,
@@ -108,6 +114,7 @@ impl Appdata {
             hw_receiver : hw_r,
             dsp_sender : dsp_s,
             dsp_receiver : dsp_r,
+            opt_dsp_join_handle : opt_dsp_join_handle,
         }
     }
 
@@ -132,6 +139,7 @@ impl Appdata {
     // Terminate the reader thread
     pub fn app_close(&mut self) { 
         
+        // Stop the UDP reader
         if let Some(h) = self.opt_reader_join_handle.take(){
             self.r_sender.send(common::messages::ReaderMsg::StopListening).unwrap();
             thread::sleep(Duration::from_millis(1000));
@@ -141,6 +149,15 @@ impl Appdata {
             println!("Reader terminated");
         }
 
+        // Stop the DSP
+        self.dsp_sender.send(common::messages::DSPMsg::Terminate).unwrap();
+        thread::sleep(Duration::from_millis(1000));
+        if let Some(h) = self.opt_dsp_join_handle.take(){
+            println!("Waiting for DSP to terminate...");
+            h.join();
+            println!("DSP terminated");
+        }
+        
         // Stop the hardware
         self.i_hw_control.do_stop();
         thread::sleep(Duration::from_millis(10000));

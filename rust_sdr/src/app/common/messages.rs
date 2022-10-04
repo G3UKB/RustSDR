@@ -38,5 +38,5 @@ pub enum HWMsg {
 }
 
 pub enum DSPMsg {
-    
+    Terminate,
 }
