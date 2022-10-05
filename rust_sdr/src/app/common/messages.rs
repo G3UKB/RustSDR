@@ -40,7 +40,3 @@ pub enum HWMsg {
 pub enum PipelineMsg {
     Terminate,
 }
-
-//pub enum DSPMsg {
-//    Terminate,
-//}
