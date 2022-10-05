@@ -28,6 +28,7 @@ bob@bobcowdery.plus.com
 pub mod common;
 pub mod udp;
 pub mod protocol;
+pub mod pipeline;
 pub mod dsp;
 
 use std::thread;
@@ -64,13 +65,13 @@ pub struct Appdata{
     pub hw_receiver : crossbeam_channel::Receiver<common::messages::HWMsg>,
 
     //=================================================
-    // DSP module related
+    // Pipeline module related
     // Channel
-    pub dsp_sender : crossbeam_channel::Sender<common::messages::DSPMsg>,
-    pub dsp_receiver : crossbeam_channel::Receiver<common::messages::DSPMsg>,
+    pub pipeline_sender : crossbeam_channel::Sender<common::messages::PipelineMsg>,
+    pub pipeline_receiver : crossbeam_channel::Receiver<common::messages::PipelineMsg>,
     // DSP thread join handle
-    pub opt_dsp_join_handle: option::Option<thread::JoinHandle<()>>,
-    // Ring buffer Reader thread <-> DSP thread
+    pub opt_pipeline_join_handle: option::Option<thread::JoinHandle<()>>,
+    // Ring buffer Reader thread <-> pipeline thread
     pub rb_iq : Arc<common::ringb::SyncByteRingBuf>,
 }
 
@@ -78,10 +79,10 @@ pub struct Appdata{
 // Instantiate the application modules
 impl Appdata {
     pub fn new() -> Appdata {
-        // Create the message q's for reader, hardware and DSP
+        // Create the message q's for reader, hardware and Pipeline
         let (r_s, r_r) = unbounded();
         let (hw_s, hw_r) = unbounded();
-        let (dsp_s, dsp_r) = unbounded();
+        let (pipeline_s, pipeline_r) = unbounded();
 
         // Create ring buffers 
         // Buffer for read IQ data to DSP
@@ -122,9 +123,9 @@ impl Appdata {
             }
         }
 
-        // Start the DSP thread
-        let mut opt_dsp_join_handle: option::Option<thread::JoinHandle<()>> = None;
-        opt_dsp_join_handle = Some(dsp::dsp_interface::dsp_start(dsp_r.clone(), rb_iq.clone()));
+        // Start the pipeline thread
+        let mut opt_pipeline_join_handle: option::Option<thread::JoinHandle<()>> = None;
+        opt_pipeline_join_handle = Some(pipeline::pipeline::pipeline_start(pipeline_r.clone(), rb_iq.clone()));
 
         // Initialise the application data
         Appdata { 
@@ -138,9 +139,9 @@ impl Appdata {
             i_hw_control : i_hw_control,
             hw_sender : hw_s,
             hw_receiver : hw_r,
-            dsp_sender : dsp_s,
-            dsp_receiver : dsp_r,
-            opt_dsp_join_handle : opt_dsp_join_handle,
+            pipeline_sender : pipeline_s,
+            pipeline_receiver : pipeline_r,
+            opt_pipeline_join_handle : opt_pipeline_join_handle,
             rb_iq : rb_iq,
         }
     }
@@ -179,13 +180,13 @@ impl Appdata {
             println!("Reader terminated");
         }
 
-        // Stop the DSP
-        self.dsp_sender.send(common::messages::DSPMsg::Terminate).unwrap();
+        // Stop the pipeline
+        self.pipeline_sender.send(common::messages::PipelineMsg::Terminate).unwrap();
         thread::sleep(Duration::from_millis(1000));
-        if let Some(h) = self.opt_dsp_join_handle.take(){
-            println!("Waiting for DSP to terminate...");
+        if let Some(h) = self.opt_pipeline_join_handle.take(){
+            println!("Waiting for pipeline to terminate...");
             h.join();
-            println!("DSP terminated");
+            println!("Pipeline terminated");
         }
         
         // Stop the hardware

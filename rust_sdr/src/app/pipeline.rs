@@ -1,7 +1,7 @@
 /*
-dsp_interface.rs
+pipeline.rs
 
-FFI interface to DSP lib
+Holder for pipeline modules
 
 Copyright (C) 2022 by G3UKB Bob Cowdery
 
@@ -24,26 +24,4 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use std::thread;
-use std::time::Duration;
-use std::sync::Arc;
-
-use crate::app::common::messages;
-use crate::app::common::ringb;
-
-//==================================================================================
-// Runtime object for thread
-pub struct DSPData{
-    
-}
-
-// Implementation methods on UDPRData
-impl DSPData {
-	// Create a new instance and initialise the default arrays
-    pub fn new() -> DSPData {
-
-		DSPData {
-           
-		}
-	}
-}
+pub mod pipeline;
