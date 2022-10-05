@@ -170,7 +170,6 @@ pub fn frame_decode(n_smpls: u32, n_rx: u32, rate: u32, in_sz: u32, udp_frame: [
 	}
 
 	// We have now extracted contiguous IQ and Mic samples into separate buffers
-	// Copy the temp buffers into the appropriate ring buffer
 	
 	// Process Mic data and local
 	// TBD

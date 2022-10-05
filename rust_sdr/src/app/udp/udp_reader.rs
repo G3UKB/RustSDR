@@ -35,6 +35,7 @@ use std::io::{self, Write};
 use socket2;
 
 use crate::app::protocol;
+use crate::app::common::ringb;
 use crate::app::common::common_defs;
 use crate::app::common::messages;
 
@@ -43,6 +44,7 @@ use crate::app::common::messages;
 pub struct UDPRData<'a>{
     receiver : crossbeam_channel::Receiver<messages::ReaderMsg>,
 	p_sock :  &'a socket2::Socket,
+    rb_iq : &'a ringb::SyncByteRingBuf,
     udp_frame : [MaybeUninit<u8>; common_defs::FRAME_SZ as usize],
     prot_frame : [u8; common_defs::PROT_SZ as usize *2],
     //pub i_cc: protocol::cc_in::CCDataMutex,
@@ -53,7 +55,7 @@ pub struct UDPRData<'a>{
 // Implementation methods on UDPRData
 impl UDPRData<'_> {
 	// Create a new instance and initialise the default arrays
-    pub fn new<'a>(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : &'a socket2::Socket) -> UDPRData<'a> {
+    pub fn new<'a>(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : &'a socket2::Socket, rb_iq : &'a ringb::SyncByteRingBuf) -> UDPRData<'a> {
         // Create an instance of the cc_in type
         //let i_cc = protocol::cc_in::CCDataMutex::new();
         // Create an instance of the sequence type
@@ -62,6 +64,7 @@ impl UDPRData<'_> {
 		UDPRData {
             receiver: receiver,
 			p_sock: p_sock,
+            rb_iq : rb_iq,
             udp_frame: [MaybeUninit::uninit(); common_defs::FRAME_SZ as usize],
             prot_frame: [0; common_defs::PROT_SZ as usize *2],
             //i_cc: i_cc,
@@ -180,24 +183,47 @@ impl UDPRData<'_> {
             }
         }
         protocol::decoder::frame_decode(common_defs::NUM_SMPLS_1_RADIO, num_rx, common_defs::SMPLS_48K, common_defs::FRAME_SZ*2, self.prot_frame);
+
+        // Copy the UDP frame into the rb_iq ring buffer
+        let vec_proc_frame = self.prot_frame.to_vec();
+        let r = self.rb_iq.try_write();
+        static mut s: u32 = 0;
+        match r {
+            Ok(mut m) => {
+                let r = m.write(&vec_proc_frame);
+                match r {
+                    Err(e) => (), //println!("Error on write to rb_iq {:?}", e),
+                    Ok(sz) => {
+                        println!("Wrote {:?} bytes to rb_iq", sz);
+                        unsafe {
+                            s = s + sz as u32;
+                            println!("Written {:?}", s);
+                        }
+                    }
+                }
+            }
+            Err(e) => println!("Lock error on rb_iq {:?}", e),
+        }
+            
     }
 
 }
 
+
 //==================================================================================
 // Thread startup
-pub fn reader_start(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : Arc<socket2::Socket>) -> thread::JoinHandle<()>{
+pub fn reader_start(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : Arc<socket2::Socket>, rb_iq : Arc<ringb::SyncByteRingBuf>) -> thread::JoinHandle<()>{
     let join_handle = thread::spawn(  move || {
-        reader_run(receiver, &p_sock);
+        reader_run(receiver, &p_sock, &rb_iq);
     });
     return join_handle;
 }
 
-fn reader_run(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : &socket2::Socket) {
+fn reader_run(receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, p_sock : &socket2::Socket, rb_iq : &ringb::SyncByteRingBuf) {
     println!("UDP Reader running");
 
     // Instantiate the runtime object
-    let mut i_reader = UDPRData::new(receiver,  p_sock);
+    let mut i_reader = UDPRData::new(receiver,  p_sock, rb_iq);
 
     // Exits when the reader loop exits
     i_reader.reader_run();

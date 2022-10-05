@@ -86,7 +86,11 @@ impl Appdata {
 
         // Create ring buffers 
         // Buffer for read IQ data to DSP
-        let rb_iq = Arc::new(common::ringb::SyncByteRingBuf::with_capacity(1024)); // Size to be adjusted
+        let num_rx = 1; // Until this is set
+        let base: u32 = 2;
+        //let rb_iq_capacity = base.pow((fast_math::log2((num_rx * common::common_defs::FRAME_SZ * 6 * 8).ceil() as f32) / fast_math::log2(2) as f32) as f32);
+        let rb_iq_capacity: usize = (common::common_defs::FRAME_SZ * 6 * 8) as usize;
+        let rb_iq = Arc::new(common::ringb::SyncByteRingBuf::with_capacity(rb_iq_capacity)); // Size to be adjusted
 
         // Create the shared socket
         let mut i_sock = udp::udp_socket::Sockdata::new();
@@ -116,7 +120,7 @@ impl Appdata {
                 opt_udp_writer = Some(i_udp_writer); 
                 
                 // Start the UDP reader thread
-                opt_reader_join_handle = Some(udp::udp_reader::reader_start(r_r.clone(), arc3));
+                opt_reader_join_handle = Some(udp::udp_reader::reader_start(r_r.clone(), arc3, rb_iq.clone()));
             },
             None => {
                 println!("Address invalid, UDP reader and writer will not be started! Is hardware on-line?");
