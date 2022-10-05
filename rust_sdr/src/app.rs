@@ -31,9 +31,9 @@ pub mod protocol;
 pub mod pipeline;
 pub mod dsp;
 
+use std::sync::{Arc, Mutex, Condvar};
 use std::thread;
 use std::time::Duration;
-use std::sync::Arc;
 use std::option;
 
 use socket2;
@@ -89,6 +89,11 @@ impl Appdata {
         let num_rx = 1; // Until this is set
         let rb_iq_capacity: usize = (num_rx * common::common_defs::PROT_SZ * 2 * common::common_defs::BYTES_PER_SAMPLE * common::common_defs::FRAMES_IN_RING ) as usize;
         let rb_iq = Arc::new(common::ringb::SyncByteRingBuf::with_capacity(rb_iq_capacity)); // Size to be adjusted
+
+        // Create condition variables
+        // Between UDP Reader and Pipeline for data transfer
+        let iq_cond = Arc::new((Mutex::new(false), Condvar::new()));
+        let iq_cond_1 = Arc::clone(&iq_cond);
 
         // Create the shared socket
         let mut i_sock = udp::udp_socket::Sockdata::new();
