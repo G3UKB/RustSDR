@@ -184,20 +184,35 @@ impl UDPRData<'_> {
         }
         protocol::decoder::frame_decode(common_defs::NUM_SMPLS_1_RADIO, num_rx, common_defs::SMPLS_48K, common_defs::FRAME_SZ*2, self.prot_frame);
 
+        //================================================================================
         // Copy the UDP frame into the rb_iq ring buffer
-        let vec_proc_frame = self.prot_frame.to_vec();
-        let r = self.rb_iq.try_write();
-        match r {
-            Ok(mut m) => {
-                let r = m.write(&vec_proc_frame);
-                match r {
-                    Err(e) => println!("Write error on rb_iq {:?}", e),
-                    Ok(sz) => {
-                        println!("Wrote {:?} bytes to rb_iq", sz);
+        let mut loop_timeout = 10;
+        loop {
+            let vec_proc_frame = self.prot_frame.to_vec();
+            let r = self.rb_iq.try_write();
+            match r {
+                Ok(mut m) => {
+                    let r = m.write(&vec_proc_frame);
+                    match r {
+                        Err(e) => {
+                            println!("Write error on rb_iq, skipping block {:?}", e);
+                            break;
+                        }
+                        Ok(sz) => {
+                            println!("Wrote {:?} bytes to rb_iq", sz);
+                            break;
+                        }
+                    }
+                }
+                Err(e) => {
+                    //println!("Write lock error on rb_iq {:?}", e);
+                    loop_timeout -= 1;
+                    if loop_timeout <= 0 {
+                        println!("Failed to get write lock on rb_iq after 10 attempts!");
+                        break;
                     }
                 }
             }
-            Err(e) => println!("Write lock error on rb_iq {:?}", e),
         }
             
     }

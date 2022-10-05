@@ -58,6 +58,10 @@ impl PipelineData<'_> {
     // Run loop for DSP
     pub fn pipeline_run(&mut self) {
         loop {
+            // Wait for signal to start processing
+            // A signal is given when a message or data is available
+
+            
             // Check for messages
             let r = self.receiver.try_recv();
             match r {
@@ -85,10 +89,6 @@ impl PipelineData<'_> {
                 }
                 Err(e) => println!("Read lock error on rb_iq{:?}", e),
             }
-
-            // Small delay to prevent CPU hogging
-            // Probably needs to be a signal
-            thread::sleep(Duration::from_millis(1));
         }
     }
 }

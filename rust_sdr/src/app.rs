@@ -160,11 +160,13 @@ impl Appdata {
             None => println!("Address invalid, hardware will not be primed!"),
         }
         thread::sleep(Duration::from_millis(1000));
-        // Start the UDP reader
-        self.r_sender.send(common::messages::ReaderMsg::StartListening).unwrap();
 
         // Start the pipeline
         self.pipeline_sender.send(common::messages::PipelineMsg::StartPipeline).unwrap();
+        thread::sleep(Duration::from_millis(100));
+
+        // Start the UDP reader
+        self.r_sender.send(common::messages::ReaderMsg::StartListening).unwrap();
 
         // Run the hardware
         self.i_hw_control.do_start(false);
