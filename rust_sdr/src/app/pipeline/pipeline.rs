@@ -27,8 +27,10 @@ bob@bobcowdery.plus.com
 use std::thread;
 use std::time::Duration;
 use std::sync::Arc;
+use std::io::{self, Read, Write};
 
 use crate::app::common::messages;
+use crate::app::common::common_defs;
 use crate::app::common::ringb;
 
 //==================================================================================
@@ -36,6 +38,8 @@ use crate::app::common::ringb;
 pub struct PipelineData<'a>{
     receiver : crossbeam_channel::Receiver<messages::PipelineMsg>,
     rb_iq : &'a ringb::SyncByteRingBuf,
+    iq_data : Vec<u8>,
+    run : bool,
 }
 
 // Implementation methods on UDPRData
@@ -46,6 +50,8 @@ impl PipelineData<'_> {
 		PipelineData {
             receiver: receiver,
             rb_iq: rb_iq,
+            iq_data : vec![0; (common_defs::PROT_SZ * 2) as usize],
+            run: false,
 		}
 	}
 
@@ -58,12 +64,31 @@ impl PipelineData<'_> {
                 Ok(msg) => {
                     match msg {
                         messages::PipelineMsg::Terminate => break,
+                        messages::PipelineMsg::StartPipeline => self.run = true,
+                        messages::PipelineMsg::StopPipeline => self.run = false,
                     };
                 },
                 // Do nothing if there are no message matches
                 _ => (),
             };
-            thread::sleep(Duration::from_millis(100));
+
+            // Execution of pipeline tasks
+            // Read IQ data (TDB read Mic data)
+            let r = self.rb_iq.try_read();   
+            match r {
+                Ok(mut m) => {
+                    let iq_data = m.read(&mut self.iq_data);
+                    match iq_data {
+                        Ok(sz) => println!("Read {:?} bytes from rb_iq", sz),
+                        Err(e) => println!("Error on read {:?} from rb_iq", e),
+                    }
+                }
+                Err(e) => println!("Read lock error on rb_iq{:?}", e),
+            }
+
+            // Small delay to prevent CPU hogging
+            // Probably needs to be a signal
+            thread::sleep(Duration::from_millis(1));
         }
     }
 }

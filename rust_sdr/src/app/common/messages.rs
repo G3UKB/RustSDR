@@ -39,4 +39,6 @@ pub enum HWMsg {
 
 pub enum PipelineMsg {
     Terminate,
+    StartPipeline,
+    StopPipeline,
 }

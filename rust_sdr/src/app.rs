@@ -87,9 +87,7 @@ impl Appdata {
         // Create ring buffers 
         // Buffer for read IQ data to DSP
         let num_rx = 1; // Until this is set
-        let base: u32 = 2;
-        //let rb_iq_capacity = base.pow((fast_math::log2((num_rx * common::common_defs::FRAME_SZ * 6 * 8).ceil() as f32) / fast_math::log2(2) as f32) as f32);
-        let rb_iq_capacity: usize = (common::common_defs::FRAME_SZ * 6 * 8) as usize;
+        let rb_iq_capacity: usize = (num_rx * common::common_defs::PROT_SZ * 2 * common::common_defs::BYTES_PER_SAMPLE * common::common_defs::FRAMES_IN_RING ) as usize;
         let rb_iq = Arc::new(common::ringb::SyncByteRingBuf::with_capacity(rb_iq_capacity)); // Size to be adjusted
 
         // Create the shared socket
@@ -162,10 +160,13 @@ impl Appdata {
             None => println!("Address invalid, hardware will not be primed!"),
         }
         thread::sleep(Duration::from_millis(1000));
-        // Let the reader start
+        // Start the UDP reader
         self.r_sender.send(common::messages::ReaderMsg::StartListening).unwrap();
-        //thread::sleep(Duration::from_millis(1000));
 
+        // Start the pipeline
+        self.pipeline_sender.send(common::messages::PipelineMsg::StartPipeline).unwrap();
+
+        // Run the hardware
         self.i_hw_control.do_start(false);
         thread::sleep(Duration::from_millis(1000));
     }

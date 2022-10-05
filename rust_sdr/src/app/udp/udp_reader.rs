@@ -187,22 +187,17 @@ impl UDPRData<'_> {
         // Copy the UDP frame into the rb_iq ring buffer
         let vec_proc_frame = self.prot_frame.to_vec();
         let r = self.rb_iq.try_write();
-        static mut s: u32 = 0;
         match r {
             Ok(mut m) => {
                 let r = m.write(&vec_proc_frame);
                 match r {
-                    Err(e) => (), //println!("Error on write to rb_iq {:?}", e),
+                    Err(e) => println!("Write error on rb_iq {:?}", e),
                     Ok(sz) => {
                         println!("Wrote {:?} bytes to rb_iq", sz);
-                        unsafe {
-                            s = s + sz as u32;
-                            println!("Written {:?}", s);
-                        }
                     }
                 }
             }
-            Err(e) => println!("Lock error on rb_iq {:?}", e),
+            Err(e) => println!("Write lock error on rb_iq {:?}", e),
         }
             
     }
