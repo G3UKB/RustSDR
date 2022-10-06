@@ -192,7 +192,7 @@ impl UDPRData<'_> {
 
         //================================================================================
         // Copy the UDP frame into the rb_iq ring buffer
-        let mut loop_timeout = 20;
+        let mut loop_timeout = 1;
         let vec_proc_frame = self.prot_frame.to_vec();
         loop {
             let r = self.rb_iq.try_write();
@@ -207,7 +207,8 @@ impl UDPRData<'_> {
                         Ok(sz) => {
                             println!("Wrote {:?} bytes to rb_iq", sz);
                             // Need to signal the pipeline that data is available
-                            self.iq_cond.0.lock().unwrap();
+                            let mut locked = self.iq_cond.0.lock().unwrap();
+                            *locked = true;
                             self.iq_cond.1.notify_one();
                             break;
                         }

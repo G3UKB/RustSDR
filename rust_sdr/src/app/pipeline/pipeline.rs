@@ -26,7 +26,7 @@ bob@bobcowdery.plus.com
 
 use std::thread;
 use std::time::Duration;
-use std::sync::{Arc, Mutex, Condvar};
+use std::sync::{Arc, Mutex, Condvar, MutexGuard, WaitTimeoutResult};
 use std::io::{self, Read, Write};
 
 use crate::app::common::messages;
@@ -62,39 +62,44 @@ impl PipelineData<'_> {
         loop {
             // Wait for signal to start processing
             // A signal is given when a message or data is available
-            let mut running = self.iq_cond.0.lock().unwrap();
-            self.iq_cond.1.wait(running);
-            
-            // Check for messages
-            let r = self.receiver.try_recv();
-            match r {
-                Ok(msg) => {
-                    match msg {
-                        messages::PipelineMsg::Terminate => break,
-                        messages::PipelineMsg::StartPipeline => self.run = true,
-                        messages::PipelineMsg::StopPipeline => self.run = false,
-                    };
-                },
-                // Do nothing if there are no message matches
-                _ => (),
-            };
-
-            // Execution of pipeline tasks
-            // Read IQ data (TDB read Mic data)
-            let r = self.rb_iq.try_read();   
-            match r {
-                Ok(mut m) => {
-                    let iq_data = m.read(&mut self.iq_data);
-                    match iq_data {
-                        Ok(sz) => println!("Read {:?} bytes from rb_iq", sz),
-                        Err(e) => println!("Error on read {:?} from rb_iq", e),
+            let mut locked = self.iq_cond.0.lock().unwrap();
+            let result = self.iq_cond.1.wait_timeout(locked, Duration::from_millis(100)).unwrap();
+            locked = result.0;
+                // Execution of pipeline tasks
+                // Read IQ data (TDB read Mic data)
+                if *locked == true {
+                    *locked = false;
+                    let r = self.rb_iq.try_read();   
+                    match r {
+                        Ok(mut m) => {
+                            let iq_data = m.read(&mut self.iq_data);
+                            match iq_data {
+                                Ok(sz) => println!("Read {:?} bytes from rb_iq", sz),
+                                Err(e) => println!("Error on read {:?} from rb_iq", e),
+                            }
+                        }
+                        Err(e) => println!("Failed to get read lock on rb_iq{:?}", e),
                     }
                 }
-                Err(e) => println!("Failed to get read lock on rb_iq{:?}", e),
+                else {
+                    // Check for messages
+                    let r = self.receiver.try_recv();
+                    match r {
+                        Ok(msg) => {
+                            match msg {
+                                messages::PipelineMsg::Terminate => break,
+                                messages::PipelineMsg::StartPipeline => self.run = true,
+                                messages::PipelineMsg::StopPipeline => self.run = false,
+                            };
+                        },
+                        // Do nothing if there are no message matches
+                        _ => (),
+                    };
+                }
             }
         }
     }
-}
+
 
 //==================================================================================
 // Thread startup

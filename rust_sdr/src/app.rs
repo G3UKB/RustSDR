@@ -157,8 +157,7 @@ impl Appdata {
     // Initialise to a running state
     pub fn app_init(&mut self) {
         println!("Initialising hardware...");
-        //self.i_hw_control.do_start(false);
-        //thread::sleep(Duration::from_millis(1000));
+        
         // Call prime to init the hardware
         match &mut self.opt_udp_writer {
             Some(writer) => writer.prime(),  
@@ -166,12 +165,11 @@ impl Appdata {
         }
         thread::sleep(Duration::from_millis(1000));
 
-        // Start the pipeline
-        self.pipeline_sender.send(common::messages::PipelineMsg::StartPipeline).unwrap();
-        thread::sleep(Duration::from_millis(100));
-
         // Start the UDP reader
         self.r_sender.send(common::messages::ReaderMsg::StartListening).unwrap();
+
+        // Start the pipeline
+        self.pipeline_sender.send(common::messages::PipelineMsg::StartPipeline).unwrap();
 
         // Run the hardware
         self.i_hw_control.do_start(false);
@@ -182,19 +180,19 @@ impl Appdata {
     // Tidy close everything
     pub fn app_close(&mut self) { 
         
-        // Stop the UDP reader
+        // Tell threads to stop
+        self.r_sender.send(common::messages::ReaderMsg::StopListening).unwrap();
+        self.pipeline_sender.send(common::messages::PipelineMsg::Terminate).unwrap();
+        self.r_sender.send(common::messages::ReaderMsg::Terminate).unwrap();
+
+        // Wait UDP reader
         if let Some(h) = self.opt_reader_join_handle.take(){
-            self.r_sender.send(common::messages::ReaderMsg::StopListening).unwrap();
-            thread::sleep(Duration::from_millis(1000));
-            self.r_sender.send(common::messages::ReaderMsg::Terminate).unwrap();
             println!("Waiting for reader to terminate...");
             h.join();
             println!("Reader terminated");
         }
 
-        // Stop the pipeline
-        self.pipeline_sender.send(common::messages::PipelineMsg::Terminate).unwrap();
-        thread::sleep(Duration::from_millis(1000));
+        // Wait pipeline
         if let Some(h) = self.opt_pipeline_join_handle.take(){
             println!("Waiting for pipeline to terminate...");
             h.join();
@@ -203,9 +201,8 @@ impl Appdata {
         
         // Stop the hardware
         self.i_hw_control.do_stop();
-        thread::sleep(Duration::from_millis(10000));
         println!("Hardware stopped");
        
-        thread::sleep(Duration::from_millis(10000));
+        thread::sleep(Duration::from_millis(1000));
     }
 }
