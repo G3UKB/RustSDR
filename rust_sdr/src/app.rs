@@ -93,7 +93,7 @@ impl Appdata {
         // Create condition variables
         // Between UDP Reader and Pipeline for data transfer
         let iq_cond = Arc::new((Mutex::new(false), Condvar::new()));
-        let iq_cond_1 = Arc::clone(&iq_cond);
+        //let iq_cond_1 = Arc::clone(&iq_cond);
 
         // Create the shared socket
         let mut i_sock = udp::udp_socket::Sockdata::new();
@@ -123,7 +123,7 @@ impl Appdata {
                 opt_udp_writer = Some(i_udp_writer); 
                 
                 // Start the UDP reader thread
-                opt_reader_join_handle = Some(udp::udp_reader::reader_start(r_r.clone(), arc3, rb_iq.clone()));
+                opt_reader_join_handle = Some(udp::udp_reader::reader_start(r_r.clone(), arc3, rb_iq.clone(), iq_cond.clone()));
             },
             None => {
                 println!("Address invalid, UDP reader and writer will not be started! Is hardware on-line?");
@@ -132,7 +132,7 @@ impl Appdata {
 
         // Start the pipeline thread
         let mut opt_pipeline_join_handle: option::Option<thread::JoinHandle<()>> = None;
-        opt_pipeline_join_handle = Some(pipeline::pipeline::pipeline_start(pipeline_r.clone(), rb_iq.clone()));
+        opt_pipeline_join_handle = Some(pipeline::pipeline::pipeline_start(pipeline_r.clone(), rb_iq.clone(), iq_cond.clone()));
 
         // Initialise the application data
         Appdata { 

@@ -26,7 +26,7 @@ bob@bobcowdery.plus.com
 
 use std::thread;
 use std::time::Duration;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, Condvar};
 use std::io::{self, Read, Write};
 
 use crate::app::common::messages;
@@ -38,6 +38,7 @@ use crate::app::common::ringb;
 pub struct PipelineData<'a>{
     receiver : crossbeam_channel::Receiver<messages::PipelineMsg>,
     rb_iq : &'a ringb::SyncByteRingBuf,
+    iq_cond : &'a (Mutex<bool>, Condvar),
     iq_data : Vec<u8>,
     run : bool,
 }
@@ -45,12 +46,13 @@ pub struct PipelineData<'a>{
 // Implementation methods on UDPRData
 impl PipelineData<'_> {
 	// Create a new instance and initialise the default arrays
-    pub fn new(receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, rb_iq : &ringb::SyncByteRingBuf) -> PipelineData {
+    pub fn new<'a> (receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, rb_iq : &'a ringb::SyncByteRingBuf, iq_cond : &'a (Mutex<bool>, Condvar)) -> PipelineData {
 
 		PipelineData {
             receiver: receiver,
             rb_iq: rb_iq,
             iq_data : vec![0; (common_defs::PROT_SZ * 2) as usize],
+            iq_cond : iq_cond,
             run: false,
 		}
 	}
@@ -60,7 +62,8 @@ impl PipelineData<'_> {
         loop {
             // Wait for signal to start processing
             // A signal is given when a message or data is available
-
+            let mut running = self.iq_cond.0.lock().unwrap();
+            self.iq_cond.1.wait(running);
             
             // Check for messages
             let r = self.receiver.try_recv();
@@ -87,7 +90,7 @@ impl PipelineData<'_> {
                         Err(e) => println!("Error on read {:?} from rb_iq", e),
                     }
                 }
-                Err(e) => println!("Read lock error on rb_iq{:?}", e),
+                Err(e) => println!("Failed to get read lock on rb_iq{:?}", e),
             }
         }
     }
@@ -95,18 +98,21 @@ impl PipelineData<'_> {
 
 //==================================================================================
 // Thread startup
-pub fn pipeline_start(receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, rb_iq : Arc<ringb::SyncByteRingBuf>) -> thread::JoinHandle<()>{
+pub fn pipeline_start(
+    receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, 
+    rb_iq : Arc<ringb::SyncByteRingBuf>,
+    iq_cond : Arc<(Mutex<bool>, Condvar)>) -> thread::JoinHandle<()>{
     let join_handle = thread::spawn(  move || {
-        pipeline_run(receiver, &rb_iq);
+        pipeline_run(receiver, &rb_iq, &iq_cond);
     });
     return join_handle;
 }
 
-fn pipeline_run(receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, rb_iq : &ringb::SyncByteRingBuf) {
+fn pipeline_run(receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, rb_iq : &ringb::SyncByteRingBuf, iq_cond : &(Mutex<bool>, Condvar)) {
     println!("Pipeline running");
 
     // Instantiate the runtime object
-    let mut i_pipeline = PipelineData::new(receiver, rb_iq);
+    let mut i_pipeline = PipelineData::new(receiver, rb_iq, iq_cond);
 
     // Exits when the reader loop exits
     i_pipeline.pipeline_run();
