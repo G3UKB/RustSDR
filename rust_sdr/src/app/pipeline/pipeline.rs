@@ -57,7 +57,7 @@ impl PipelineData<'_> {
 		}
 	}
 
-    // Run loop for DSP
+    // Run loop for pipeline
     pub fn pipeline_run(&mut self) {
         loop {
             // Wait for signal to start processing
@@ -80,8 +80,7 @@ impl PipelineData<'_> {
                         }
                         Err(e) => println!("Failed to get read lock on rb_iq [{:?}]. Skipping cycle.", e),
                     }
-                }
-                else {
+                } else {
                     // Check for messages
                     let r = self.receiver.try_recv();
                     match r {
