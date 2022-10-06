@@ -74,11 +74,11 @@ impl PipelineData<'_> {
                         Ok(mut m) => {
                             let iq_data = m.read(&mut self.iq_data);
                             match iq_data {
-                                Ok(sz) => println!("Read {:?} bytes from rb_iq", sz),
+                                Ok(sz) => (), //println!("Read {:?} bytes from rb_iq", sz),
                                 Err(e) => println!("Error on read {:?} from rb_iq", e),
                             }
                         }
-                        Err(e) => println!("Failed to get read lock on rb_iq{:?}", e),
+                        Err(e) => println!("Failed to get read lock on rb_iq [{:?}]. Skipping cycle.", e),
                     }
                 }
                 else {

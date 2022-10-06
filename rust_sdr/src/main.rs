@@ -26,6 +26,7 @@ bob@bobcowdery.plus.com
 
 use std::thread;
 use std::time::Duration;
+use std::io::{stdin, stdout, Read, Write};
 
 pub mod app;
 
@@ -42,12 +43,20 @@ fn main() {
     // This will initialise all modules
     i_app.app_init();
 
-    // Temporary code to wait a while then close everything and exit
-    thread::sleep(Duration::from_millis(5000));
+    // Temporary code to wait for Rtn then close everything and exit
+    println!("\n*****Press Return to close*****\n");
+    pause();
     println!("Starting shutdown...");
     i_app.app_close();
 
     println!("Rust console closing...");
     thread::sleep(Duration::from_millis(1000));
+}
+
+fn pause() {
+    let mut stdout = stdout();
+    stdout.write(b"Press Enter to continue...").unwrap();
+    stdout.flush().unwrap();
+    stdin().read(&mut [0]).unwrap();
 }
 

@@ -202,7 +202,7 @@ impl UDPRData<'_> {
                         println!("Write error on rb_iq, skipping block {:?}", e);
                     }
                     Ok(sz) => {
-                        println!("Wrote {:?} bytes to rb_iq", sz);
+                        //println!("Wrote {:?} bytes to rb_iq", sz);
                         // Signal the pipeline that data is available
                         let mut locked = self.iq_cond.0.lock().unwrap();
                         *locked = true;
