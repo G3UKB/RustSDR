@@ -165,11 +165,11 @@ impl Appdata {
         }
         thread::sleep(Duration::from_millis(1000));
 
-        // Start the UDP reader
-        self.r_sender.send(common::messages::ReaderMsg::StartListening).unwrap();
-
         // Start the pipeline
         self.pipeline_sender.send(common::messages::PipelineMsg::StartPipeline).unwrap();
+
+        // Start the UDP reader
+        self.r_sender.send(common::messages::ReaderMsg::StartListening).unwrap();
 
         // Run the hardware
         self.i_hw_control.do_start(false);
@@ -203,6 +203,5 @@ impl Appdata {
         self.i_hw_control.do_stop();
         println!("Hardware stopped");
        
-        thread::sleep(Duration::from_millis(1000));
     }
 }

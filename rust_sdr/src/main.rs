@@ -43,7 +43,7 @@ fn main() {
     i_app.app_init();
 
     // Temporary code to wait a while then close everything and exit
-    thread::sleep(Duration::from_millis(10000));
+    thread::sleep(Duration::from_millis(5000));
     println!("Starting shutdown...");
     i_app.app_close();
 

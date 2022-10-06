@@ -192,35 +192,26 @@ impl UDPRData<'_> {
 
         //================================================================================
         // Copy the UDP frame into the rb_iq ring buffer
-        let mut loop_timeout = 1;
         let vec_proc_frame = self.prot_frame.to_vec();
-        loop {
-            let r = self.rb_iq.try_write();
-            match r {
-                Ok(mut m) => {
-                    let r = m.write(&vec_proc_frame);
-                    match r {
-                        Err(e) => {
-                            println!("Write error on rb_iq, skipping block {:?}", e);
-                            break;
-                        }
-                        Ok(sz) => {
-                            println!("Wrote {:?} bytes to rb_iq", sz);
-                            // Need to signal the pipeline that data is available
-                            let mut locked = self.iq_cond.0.lock().unwrap();
-                            *locked = true;
-                            self.iq_cond.1.notify_one();
-                            break;
-                        }
+        let r = self.rb_iq.try_write();
+        match r {
+            Ok(mut m) => {
+                let r = m.write(&vec_proc_frame);
+                match r {
+                    Err(e) => {
+                        println!("Write error on rb_iq, skipping block {:?}", e);
+                    }
+                    Ok(sz) => {
+                        println!("Wrote {:?} bytes to rb_iq", sz);
+                        // Signal the pipeline that data is available
+                        let mut locked = self.iq_cond.0.lock().unwrap();
+                        *locked = true;
+                        self.iq_cond.1.notify_one();
                     }
                 }
-                Err(e) => {
-                    loop_timeout -= 1;
-                    if loop_timeout <= 0 {
-                        println!("Failed to get write lock on rb_iq after 20 attempts, skipping block!");
-                        break;
-                    }
-                }
+            }
+            Err(e) => {
+                    println!("Writing IQ ring buffer: [{:?}]. Skipping block!", e);
             }
         }   
     }
