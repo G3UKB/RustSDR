@@ -31,6 +31,8 @@ pub const FRAME_SZ : u32 = 1032;
 pub const PROT_SZ : u32 = 504;
 // Max IQ samples array sz
 pub const IQ_ARR_SZ : u32 = NUM_SMPLS_1_RADIO * MAX_RADIOS * BYTES_PER_SAMPLE;
+// Size for one radio
+pub const IQ_ARR_SZ_R1 : u32 = NUM_SMPLS_1_RADIO * BYTES_PER_SAMPLE;
 // This is temporary as we don't have the actual size yet
 pub const MIC_ARR_SZ : u32 = IQ_ARR_SZ;
 

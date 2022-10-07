@@ -40,7 +40,9 @@ pub struct PipelineData<'a>{
     rb_iq : &'a ringb::SyncByteRingBuf,
     iq_cond : &'a (Mutex<bool>, Condvar),
     iq_data : Vec<u8>,
+    dec_iq_data : [f32; common_defs::NUM_SMPLS_1_RADIO as usize],
     run : bool,
+    num_rx : u32,
 }
 
 // Implementation methods on UDPRData
@@ -51,9 +53,13 @@ impl PipelineData<'_> {
 		PipelineData {
             receiver: receiver,
             rb_iq: rb_iq,
-            iq_data : vec![0; (common_defs::PROT_SZ * 2) as usize],
-            iq_cond : iq_cond,
+            iq_data: vec![0; (common_defs::PROT_SZ * 2) as usize],
+            // Allow for one receiver until we enhance to multiple
+            dec_iq_data : [0.0; (common_defs::NUM_SMPLS_1_RADIO) as usize],
+            iq_cond: iq_cond,
             run: false,
+            // Until we have data set to 1
+            num_rx: 1,
 		}
 	}
 
@@ -97,8 +103,50 @@ impl PipelineData<'_> {
                 }
             }
         }
-    }
 
+        // Decode the frame into a form suitable for signal processing
+        fn decode(&mut self) {
+        /*
+        *
+        * Each IQ block is formatted as follows:
+        *	For 1 receiver:
+        *	0                        ... in_iq_sz
+        *	<I2><I1><I0><Q2><Q1><Q0>
+        *	For 2 receivers:
+        *	0                        					... in_iq_sz
+        *    <I12><I11><I10><Q12><Q11><Q10><I22><I21><I20><Q22><Q21><Q20>
+        *	etc to 8 receivers
+        *	The output is interleaved IQ per receiver.
+        *
+        * Each Mic block is formatted as follows:
+        *	0                        ... in_mic_sz
+        *	<M1><M0><M1><M0>
+        */
+
+        // We move data from the iq_data vec to the dec_iq_data array ready to FFI to DSP.
+        // We also scale the data and convert from big endian to little endian as the hardware
+        // uses big endian format.
+
+        // Scale factors
+        let base: i32 = 2;
+        let input_iq_scale: f64 = 1.0 /(base.pow(23)) as f64;
+
+        // Iterate over each set of sample data
+	    // There are 3xI and 3xQ bytes for each receiver interleaved
+        // Scale and convert each 24 bit value into the f32 array
+        let mut raw: u32 = 0;
+        while raw <= (common_defs::PROT_SZ * 2_ - common_defs::BYTES_PER_SAMPLE) {
+            // Here we would iterate over each receiver and use a 2d array but for now one receiver
+
+
+            raw += common_defs::BYTES_PER_SAMPLE;
+        }
+        
+
+
+        }
+
+    }
 
 //==================================================================================
 // Thread startup
