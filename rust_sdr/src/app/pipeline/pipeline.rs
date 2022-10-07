@@ -40,7 +40,7 @@ pub struct PipelineData<'a>{
     rb_iq : &'a ringb::SyncByteRingBuf,
     iq_cond : &'a (Mutex<bool>, Condvar),
     iq_data : Vec<u8>,
-    dec_iq_data : [f32; common_defs::NUM_SMPLS_1_RADIO as usize],
+    dec_iq_data : [f64; common_defs::NUM_SMPLS_1_RADIO as usize],
     run : bool,
     num_rx : u32,
 }
@@ -135,11 +135,17 @@ impl PipelineData<'_> {
 	    // There are 3xI and 3xQ bytes for each receiver interleaved
         // Scale and convert each 24 bit value into the f32 array
         let mut raw: u32 = 0;
+        let mut dec: u32 = 0;
+        let mut as_int: u32 = 0;
         while raw <= (common_defs::PROT_SZ * 2_ - common_defs::BYTES_PER_SAMPLE) {
             // Here we would iterate over each receiver and use a 2d array but for now one receiver
-
+            // Pack the 3 x 8bit BE into an int in LE
+            as_int = ((((self.iq_data[(raw+2) as usize] as u32) << 8) | ((self.iq_data[(raw+1) as usize] as u32) << 16) | ((self.iq_data[raw as usize] as u32) << 24)) >>8);
+            // Put into target and scale
+            self.dec_iq_data[dec as usize] = (as_int as f64) * input_iq_scale;
 
             raw += common_defs::BYTES_PER_SAMPLE;
+            dec += 1;
         }
         
 
