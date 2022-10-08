@@ -34,10 +34,10 @@ use crate::app::common::common_defs;
 extern "C" {
 	fn WDSPwisdom(s: *const c_char);
 	fn OpenChannel(
-		ch_id: c_int, in_sz: c_int, dsp_sz: c_int, 
-		in_rate: c_int, dsp_rate: c_int, out_rate: c_int, 
-		ch_type: c_int, state: c_int, tdelayup: c_double, 
-		tslewup: c_double, tdelaydown: c_double, tslewdown: c_double, bfo: c_int);
+		ch_id: i32, in_sz: i32, dsp_sz: i32, 
+		in_rate: i32, dsp_rate: i32, out_rate: i32, 
+		ch_type: i32, state: i32, tdelayup: f64, 
+		tslewup: f64, tdelaydown: f64, tslewdown: f64, bfo: i32);
 }
 
 // Run WDSP wisdom to optimise the FFT sizes
@@ -102,7 +102,7 @@ pub fn wdsp_open_ch(
 		ch_id, input_sz, input_sz, 
 		in_rate, dsp_rate, out_rate, 
 		ch_type, common_defs::STATE_STOPPED as i32, 
-		tdelayup, tslewup, tdelaydown, tslewdown, 0)};
+		tdelayup, tslewup, tdelaydown, tslewdown, 1)};
 
 }
 

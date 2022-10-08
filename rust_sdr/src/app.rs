@@ -85,7 +85,7 @@ impl Appdata {
         // Try open ch
         println!("Open ch");
         dsp::dsp_interface::wdsp_open_ch(
-            common::common_defs::CH_RX as i32, 0, 1024, 1024, 
+            common::common_defs::CH_RX as i32, 1, 1024, 1024, 
             48000, 48000, 0.0, 
             0.0, 0.0, 0.0);
         println!("Ch open");
