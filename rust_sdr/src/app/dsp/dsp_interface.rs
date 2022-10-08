@@ -24,26 +24,15 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use std::thread;
-use std::time::Duration;
-use std::sync::Arc;
+use std::ffi::CString;
+use std::os::raw::c_char;
 
-use crate::app::common::messages;
-use crate::app::common::ringb;
-
-//==================================================================================
-// Runtime object for thread
-pub struct DSPData{
-    
+#[link(name = "wdsp")]
+extern "C" {
+	fn WDSPwisdom(s: *const c_char);
 }
 
-// Implementation methods on UDPRData
-impl DSPData {
-	// Create a new instance and initialise the default arrays
-    pub fn new() -> DSPData {
-
-		DSPData {
-           
-		}
-	}
+pub fn wdsp_wisdom() {
+	let s  = CString::new("./").unwrap();
+    unsafe {WDSPwisdom(s.as_ptr())};
 }

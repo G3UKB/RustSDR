@@ -79,6 +79,9 @@ pub struct Appdata{
 // Instantiate the application modules
 impl Appdata {
     pub fn new() -> Appdata {
+        // First check/create the DSP Wisdom file
+        dsp::dsp_interface::wdsp_wisdom();
+
         // Create the message q's for reader, hardware and Pipeline
         let (r_s, r_r) = unbounded();
         let (hw_s, hw_r) = unbounded();
