@@ -82,6 +82,14 @@ impl Appdata {
         // First check/create the DSP Wisdom file
         dsp::dsp_interface::wdsp_wisdom();
 
+        // Try open ch
+        println!("Open ch");
+        dsp::dsp_interface::wdsp_open_ch(
+            common::common_defs::CH_RX as i32, 0, 1024, 1024, 
+            48000, 48000, 0.0, 
+            0.0, 0.0, 0.0);
+        println!("Ch open");
+
         // Create the message q's for reader, hardware and Pipeline
         let (r_s, r_r) = unbounded();
         let (hw_s, hw_r) = unbounded();

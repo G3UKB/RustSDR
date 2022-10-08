@@ -24,15 +24,89 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use std::ffi::CString;
+use std::ffi:: {CString, c_int, c_double, c_long};
 use std::os::raw::c_char;
 
+use crate::app::common::common_defs;
+
+// External interfaces exposed through the WDSP library
 #[link(name = "wdsp")]
 extern "C" {
 	fn WDSPwisdom(s: *const c_char);
+	fn OpenChannel(
+		ch_id: c_int, in_sz: c_int, dsp_sz: c_int, 
+		in_rate: c_int, dsp_rate: c_int, out_rate: c_int, 
+		ch_type: c_int, state: c_int, tdelayup: c_double, 
+		tslewup: c_double, tdelaydown: c_double, tslewdown: c_double, bfo: c_int);
 }
 
+// Run WDSP wisdom to optimise the FFT sizes
+// This is always called at start of day and will do nothing if the file exists
 pub fn wdsp_wisdom() {
 	let s  = CString::new("./").unwrap();
     unsafe {WDSPwisdom(s.as_ptr())};
+}
+
+// Open WDSP channel
+pub fn wdsp_open_ch(
+		ch_type:i32, ch_id: i32, iq_sz: i32, mic_sz: i32, 
+		in_rate: i32, out_rate: i32, tdelayup: f64, 
+		tslewup: f64, tdelaydown:f64, tslewdown:f64) {
+	/* Open a new DSP channel
+	**
+	** Arguments:
+	** 	ch_type 	-- CH_RX | CH_TX
+	**	channel		-- Channel to use
+	** 	iq_size		-- 128, 256, 1024, 2048, 4096
+	** 	mic_size	-- as iq_size for same sample rate
+	** 	in_rate		-- input sample rate
+	** 	out_rate	-- output sample rate
+	** 	tdelayup	-- delay before up slew
+	** 	tslewup		-- length of up slew
+	**  tdelaydown	-- delay before down slew
+	** 	tslewdown	-- length of down slew
+	**
+	** Note:
+	** 	There are additional parameters to open_channel. These are handled as follows:
+	** 		o in_size - the number of samples supplied to the channel.
+	** 		o input_samplerate - taken from the set_speed() API call, default 48K.
+	** 		o dsp_rate - same as input_samplerate.
+	** 		o output_samplerate - fixed at 48K for RX TBD TX
+	**
+	** The channel is not automatically started. Call set_ch_state() to start the channel.
+	*/
+
+
+	let mut input_sz: i32;
+	let mut dsp_rate: i32;
+
+	if ch_type == common_defs::CH_RX as i32 {
+		// For RX we keep the input and dsp size the same.
+		input_sz = iq_sz;
+	} else {
+		// For TX we arrange that the same number of samples arrive at the output as for RX
+		// This depends on the input and output rates
+		input_sz = mic_sz;
+	}
+	// Set the internal rate to the input samplerate
+	dsp_rate = in_rate;
+
+	// Open the channel
+	// There is no return value so we have to trust it worked
+	println!("{},{},{},{},{},{},{},{},{},{},{},{},{}", ch_id, input_sz, input_sz, 
+	in_rate, dsp_rate, out_rate, 
+	ch_type, common_defs::STATE_STOPPED as i32, 
+	tdelayup, tslewup, tdelaydown, tslewdown, 0);
+
+	unsafe{OpenChannel(
+		ch_id, input_sz, input_sz, 
+		in_rate, dsp_rate, out_rate, 
+		ch_type, common_defs::STATE_STOPPED as i32, 
+		tdelayup, tslewup, tdelaydown, tslewdown, 0)};
+
+}
+
+// Close WDSP channels
+pub fn wdsp_close_ch() {
+	
 }
