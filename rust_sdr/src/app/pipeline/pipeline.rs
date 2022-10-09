@@ -63,8 +63,8 @@ impl PipelineData<'_> {
             rb_iq: rb_iq,
             iq_data: vec![0; (common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) as usize],
             // Standard block sz
-            dec_iq_data : [0.0; (common_defs::DSP_BLK_SZ) as usize],
-            proc_iq_data : [0.0; (common_defs::DSP_BLK_SZ) as usize],
+            dec_iq_data : [0.0; common_defs::DSP_BLK_SZ as usize],
+            proc_iq_data : [0.0; common_defs::DSP_BLK_SZ as usize],
             iq_cond: iq_cond,
             run: false,
             // Until we have data set to 1
@@ -179,7 +179,7 @@ impl PipelineData<'_> {
         self.decode();
         let mut error: i32 = 0;
         dsp::dsp_interface::wdsp_exchange(0, &mut self.dec_iq_data,  &mut self.proc_iq_data, &mut error );
-        //println!("{:?}", self.proc_iq_data );
+        println!("{:?}", self.proc_iq_data[0] );
     }
 
 }
