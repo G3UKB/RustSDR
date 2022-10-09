@@ -97,7 +97,7 @@ pub fn wdsp_open_ch(
 		ch_id, input_sz, input_sz, 
 		in_rate, dsp_rate, out_rate, 
 		ch_type, common_defs::STATE_STOPPED as i32, 
-		tdelayup, tslewup, tdelaydown, tslewdown, 1)};
+		tdelayup, tslewup, tdelaydown, tslewdown, 0)};
 
 }
 

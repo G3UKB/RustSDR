@@ -54,7 +54,7 @@ fn main() {
 
 fn pause() {
     let mut stdout = stdout();
-    stdout.write(b"\nPress Enter to close...\n").unwrap();
+    stdout.write(b"\nPress Enter to close...\n\n").unwrap();
     stdout.flush().unwrap();
     stdin().read(&mut [0]).unwrap();
 }

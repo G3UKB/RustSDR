@@ -82,7 +82,7 @@ impl Appdata {
         // First check/create the DSP Wisdom file
         dsp::dsp_interface::wdsp_wisdom();
 
-        // Try open ch
+        // Open a DSP receiver channel
         dsp::dsp_interface::wdsp_open_ch(
             common::common_defs::CH_RX as i32, 1, common::common_defs::DSP_BLK_SZ as i32, 
             common::common_defs::DSP_BLK_SZ as i32, common::common_defs::SMPLS_48K as i32, 

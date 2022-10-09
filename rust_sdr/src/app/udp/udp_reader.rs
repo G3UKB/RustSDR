@@ -213,11 +213,13 @@ impl UDPRData<'_> {
             }
         }
         if success {
-            // Signal the pipeline that data is available
-            let mut locked = self.iq_cond.0.lock().unwrap();
-            *locked = true;
-            self.iq_cond.1.notify_one();
-        }   
+            if self.rb_iq.try_read().unwrap().available() >= (common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) as usize {
+                // Signal the pipeline that enough data is available
+                let mut locked = self.iq_cond.0.lock().unwrap();
+                *locked = true;
+                self.iq_cond.1.notify_one();
+            }
+        }  
     }
 }
 
