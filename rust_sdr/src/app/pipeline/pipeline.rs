@@ -40,7 +40,7 @@ pub struct PipelineData<'a>{
     rb_iq : &'a ringb::SyncByteRingBuf,
     iq_cond : &'a (Mutex<bool>, Condvar),
     iq_data : Vec<u8>,
-    dec_iq_data : [f64; common_defs::NUM_SMPLS_1_RADIO as usize],
+    dec_iq_data : [f64; common_defs::DSP_BLK_SZ as usize],
     run : bool,
     num_rx : u32,
 }
@@ -53,9 +53,9 @@ impl PipelineData<'_> {
 		PipelineData {
             receiver: receiver,
             rb_iq: rb_iq,
-            iq_data: vec![0; (common_defs::PROT_SZ * 2) as usize],
-            // Allow for one receiver until we enhance to multiple
-            dec_iq_data : [0.0; (common_defs::NUM_SMPLS_1_RADIO) as usize],
+            iq_data: vec![0; (common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) as usize],
+            // Standard block sz
+            dec_iq_data : [0.0; (common_defs::DSP_BLK_SZ) as usize],
             iq_cond: iq_cond,
             run: false,
             // Until we have data set to 1

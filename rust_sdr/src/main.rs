@@ -44,7 +44,6 @@ fn main() {
     i_app.app_init();
 
     // Temporary code to wait for Rtn then close everything and exit
-    println!("\n*****Press Return to close*****\n");
     pause();
     println!("Starting shutdown...");
     i_app.app_close();
@@ -55,7 +54,7 @@ fn main() {
 
 fn pause() {
     let mut stdout = stdout();
-    stdout.write(b"Press Enter to continue...").unwrap();
+    stdout.write(b"\nPress Enter to close...\n").unwrap();
     stdout.flush().unwrap();
     stdin().read(&mut [0]).unwrap();
 }
