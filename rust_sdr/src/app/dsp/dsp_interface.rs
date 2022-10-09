@@ -114,7 +114,6 @@ pub fn wdsp_close_ch() {
 }
 
 // Data exchange
-pub fn wdsp_exchange(ch_id: i32, in_buf: &mut [f64; common_defs::DSP_BLK_SZ as usize],  out_buf: &mut [f64; common_defs::DSP_BLK_SZ as usize], error: &mut i32) {
-
+pub fn wdsp_exchange(ch_id: i32, in_buf: &mut [f64; (common_defs::DSP_BLK_SZ * 2) as usize],  out_buf: &mut [f64; (common_defs::DSP_BLK_SZ * 2) as usize], error: &mut i32) {
 	unsafe{fexchange0(ch_id,  in_buf.as_mut_ptr(),  out_buf.as_mut_ptr(),  error)}
 }
