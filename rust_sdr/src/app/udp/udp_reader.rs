@@ -121,8 +121,7 @@ impl UDPRData<'_> {
 
     // Split frame into protocol fields and data content and decode
     fn split_frame(&mut self) { 
-        //static mut count: u32 = 0;
-        //static mut done: bool = false;
+        
         let num_rx = 1;
         unsafe { 
             // Check for frame type
@@ -188,8 +187,8 @@ impl UDPRData<'_> {
                 // TBD
             }
         }
-        protocol::decoder::frame_decode(common_defs::NUM_SMPLS_1_RADIO, num_rx, common_defs::SMPLS_48K, common_defs::FRAME_SZ*2, self.prot_frame);
-
+        protocol::decoder::frame_decode(common_defs::NUM_SMPLS_1_RADIO, num_rx, common_defs::SMPLS_48K, common_defs::PROT_SZ*2, self.prot_frame);
+        
         //================================================================================
         // Copy the UDP frame into the rb_iq ring buffer
         let mut success = false;

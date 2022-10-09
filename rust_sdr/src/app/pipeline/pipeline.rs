@@ -179,8 +179,7 @@ impl PipelineData<'_> {
         self.decode();
         let mut error: i32 = 0;
         dsp::dsp_interface::wdsp_exchange(0, &mut self.dec_iq_data,  &mut self.proc_iq_data, &mut error );
-        println!("Err {}", error);
-        //println!("{:?}", self.proc_iq_data[0] );
+        //println!("Err {}", error);
     }
 
 }
