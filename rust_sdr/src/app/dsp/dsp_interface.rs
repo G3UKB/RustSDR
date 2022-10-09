@@ -38,6 +38,8 @@ extern "C" {
 		in_rate: i32, dsp_rate: i32, out_rate: i32, 
 		ch_type: i32, state: i32, tdelayup: f64, 
 		tslewup: f64, tdelaydown: f64, tslewdown: f64, bfo: i32);
+	fn SetChannelState (ch_id: i32, state: i32, dmode: i32) -> i32;
+	fn fexchange0(ch_id: i32, in_buf: &mut [f64; common_defs::DSP_BLK_SZ as usize], out_buf: &mut [f64; common_defs::DSP_BLK_SZ as usize], error: &mut i32);
 }
 
 // Run WDSP wisdom to optimise the FFT sizes
@@ -101,7 +103,17 @@ pub fn wdsp_open_ch(
 
 }
 
+// Set channel state
+pub fn wdsp_set_ch_state(ch_id: i32, state: i32, dmode: i32) -> i32 {
+	unsafe{return SetChannelState(ch_id, state, dmode)}
+}
+
 // Close WDSP channels
 pub fn wdsp_close_ch() {
 	
+}
+
+// Data exchange
+pub fn wdsp_exchange(ch_id: i32, in_buf: &mut [f64; common_defs::DSP_BLK_SZ as usize],  out_buf: &mut [f64; common_defs::DSP_BLK_SZ as usize], error: &mut i32 ) {
+	unsafe{fexchange0(ch_id, in_buf, out_buf, error)}
 }

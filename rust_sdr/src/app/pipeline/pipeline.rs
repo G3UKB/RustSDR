@@ -32,6 +32,7 @@ use std::io::{self, Read, Write};
 use crate::app::common::messages;
 use crate::app::common::common_defs;
 use crate::app::common::ringb;
+use crate::app::dsp;
 
 enum ACTIONS {
     ACTION_NONE,
@@ -47,6 +48,7 @@ pub struct PipelineData<'a>{
     iq_cond : &'a (Mutex<bool>, Condvar),
     iq_data : Vec<u8>,
     dec_iq_data : [f64; common_defs::DSP_BLK_SZ as usize],
+    proc_iq_data : [f64; common_defs::DSP_BLK_SZ as usize],
     run : bool,
     num_rx : u32,
 }
@@ -62,6 +64,7 @@ impl PipelineData<'_> {
             iq_data: vec![0; (common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) as usize],
             // Standard block sz
             dec_iq_data : [0.0; (common_defs::DSP_BLK_SZ) as usize],
+            proc_iq_data : [0.0; (common_defs::DSP_BLK_SZ) as usize],
             iq_cond: iq_cond,
             run: false,
             // Until we have data set to 1
@@ -76,50 +79,14 @@ impl PipelineData<'_> {
             match action {
                 ACTIONS::ACTION_NONE => (),
                 ACTIONS::ACTION_TERM => break,
-                ACTIONS::ACTION_DATA => (),
+                ACTIONS::ACTION_DATA => self.sequence(),
             }
-            /* 
-            // Wait for signal to start processing
-            // A signal is given when a message or data is available
-            let mut locked = self.iq_cond.0.lock().unwrap();
-            let result = self.iq_cond.1.wait_timeout(locked, Duration::from_millis(100)).unwrap();
-            locked = result.0;
-                // Execution of pipeline tasks
-                // Read IQ data (TDB read Mic data)
-                if *locked == true {
-                    *locked = false;
-                    let r = self.rb_iq.try_read();   
-                    match r {
-                        Ok(mut m) => {
-                            let iq_data = m.read(&mut self.iq_data);
-                            match iq_data {
-                                Ok(sz) => (), //println!("Read {:?} bytes from rb_iq", sz),
-                                Err(e) => (), //println!("Error on read {:?} from rb_iq", e),
-                            }
-                        }
-                        Err(e) => println!("Failed to get read lock on rb_iq [{:?}]. Skipping cycle.", e),
-                    }
-                } else {
-                    // Check for messages
-                    let r = self.receiver.try_recv();
-                    match r {
-                        Ok(msg) => {
-                            match msg {
-                                messages::PipelineMsg::Terminate => break,
-                                messages::PipelineMsg::StartPipeline => self.run = true,
-                                messages::PipelineMsg::StopPipeline => self.run = false,
-                            };
-                        },
-                        // Do nothing if there are no message matches
-                        _ => (),
-                };
-            }
-            */
         }
     }
 
-    // Lock and extract data from ring buffers if available
+    // Lock and extract data from ring buffers if available.
     // Return ACTION to execute.
+    // All locks are released at end of this fn. DO NOT put processing in here.
     fn extract(&mut self) -> ACTIONS {
         // Wait for signal to start processing
         // A signal is given when a message or data is available
@@ -193,17 +160,26 @@ impl PipelineData<'_> {
     let mut raw: u32 = 0;
     let mut dec: u32 = 0;
     let mut as_int: u32 = 0;
-    while raw <= (common_defs::PROT_SZ * 2_ - common_defs::BYTES_PER_SAMPLE) {
+    while raw <= ((common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) - common_defs::BYTES_PER_SAMPLE) {
         // Here we would iterate over each receiver and use a 2d array but for now one receiver
-        // Pack the 3 x 8bit BE into an int in LE
+        // Pack the 3 x 8 bit BE into an int in LE
         as_int = ((((self.iq_data[(raw+2) as usize] as u32) << 8) | ((self.iq_data[(raw+1) as usize] as u32) << 16) | ((self.iq_data[raw as usize] as u32) << 24)) >>8);
-        // Put into target and scale
+        // Scale and write to target array
         self.dec_iq_data[dec as usize] = (as_int as f64) * input_iq_scale;
 
         raw += common_defs::BYTES_PER_SAMPLE;
         dec += 1;
     }
     
+    }
+
+    // Run the pipeline sequence
+    fn sequence(&mut self) {
+        // We just exchange for now
+        self.decode();
+        let mut error: i32 = 0;
+        dsp::dsp_interface::wdsp_exchange(0, &mut self.dec_iq_data,  &mut self.proc_iq_data, &mut error );
+        //println!("{:?}", self.proc_iq_data );
     }
 
 }
