@@ -92,12 +92,7 @@ pub fn wdsp_open_ch(
 	dsp_rate = in_rate;
 
 	// Open the channel
-	// There is no return value so we have to trust it worked
-	println!("{},{},{},{},{},{},{},{},{},{},{},{},{}", ch_id, input_sz, input_sz, 
-	in_rate, dsp_rate, out_rate, 
-	ch_type, common_defs::STATE_STOPPED as i32, 
-	tdelayup, tslewup, tdelaydown, tslewdown, 0);
-
+	// There is no return value so will probably crash if there is a problem
 	unsafe{OpenChannel(
 		ch_id, input_sz, input_sz, 
 		in_rate, dsp_rate, out_rate, 

@@ -73,6 +73,8 @@ pub const BYTES_PER_SAMPLE : u32 = 6;   // 2*24 bits
 pub const FRAMES_IN_RING : u32 = 8;     // Number of frames to accommodate in the IQ ring buffer
 
 // DSP
+// Block size
+pub const DSP_BLK_SZ : u32 = 1024;
 // Channel type
 pub const CH_RX : u32 = 0;
 pub const CH_TX : u32 = 0;

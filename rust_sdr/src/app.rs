@@ -83,12 +83,10 @@ impl Appdata {
         dsp::dsp_interface::wdsp_wisdom();
 
         // Try open ch
-        println!("Open ch");
         dsp::dsp_interface::wdsp_open_ch(
-            common::common_defs::CH_RX as i32, 1, 1024, 1024, 
-            48000, 48000, 0.0, 
-            0.0, 0.0, 0.0);
-        println!("Ch open");
+            common::common_defs::CH_RX as i32, 1, common::common_defs::DSP_BLK_SZ as i32, 
+            common::common_defs::DSP_BLK_SZ as i32, common::common_defs::SMPLS_48K as i32, 
+            common::common_defs::SMPLS_48K as i32, 0.0, 0.0, 0.0, 0.0);
 
         // Create the message q's for reader, hardware and Pipeline
         let (r_s, r_r) = unbounded();
