@@ -212,7 +212,6 @@ impl UDPRData<'_> {
                         println!("Write error on rb_iq, skipping block {:?}", e);
                     }
                     Ok(_sz) => {
-                        //println!("Wrote {:?} bytes to rb_iq", _sz);
                         success = true;  
                     }
                 }
@@ -221,14 +220,14 @@ impl UDPRData<'_> {
                 println!("Writing IQ ring buffer: [{:?}]. Skipping block!", e);
             }
         }
+        
         if success {
-            if self.rb_iq.try_read().unwrap().available() >= (common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) as usize {
-                // Signal the pipeline that enough data is available
-                let mut locked = self.iq_cond.0.lock().unwrap();
-                *locked = true;
-                self.iq_cond.1.notify_one();
-            }
-        }  
+            // Signal the pipeline that data is available
+            let mut locked = self.iq_cond.0.lock().unwrap();
+            *locked = true;
+            self.iq_cond.1.notify_one();
+        } 
+        
     }
 }
 

@@ -99,19 +99,22 @@ impl PipelineData<'_> {
         if *locked == true {
             // We were signaled so data available
             *locked = false;
-            let r = self.rb_iq.try_read();   
-            match r {
-                Ok(mut m) => {
-                    let iq_data = m.read(&mut self.iq_data);
-                    match iq_data {
-                        Ok(_sz) => {
-                            action = ACTIONS::ActionData;
-                            //println!("Read {:?} bytes from rb_iq", _sz);
+            if self.rb_iq.try_read().unwrap().available() >= (common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) as usize {
+                // Enough data available
+                let r = self.rb_iq.try_read();   
+                match r {
+                    Ok(mut m) => {
+                        let iq_data = m.read(&mut self.iq_data);
+                        match iq_data {
+                            Ok(_sz) => {
+                                action = ACTIONS::ActionData;
+                                //println!("Read {:?} bytes from rb_iq", _sz);
+                            }
+                            Err(e) => println!("Read error on rb_iq {:?}. Skipping cycle.", e),
                         }
-                        Err(_e) => (), //println!("Error on read {:?} from rb_iq", _e),
                     }
+                    Err(e) => println!("Failed to get read lock on rb_iq [{:?}]. Skipping cycle.", e),
                 }
-                Err(e) => println!("Failed to get read lock on rb_iq [{:?}]. Skipping cycle.", e),
             }
         } else {
             // Timeout so check for messages
