@@ -40,9 +40,10 @@ fn main() {
     // Create an instance of the Application manager type
     let mut i_app = app::Appdata::new();
 
-    // This will initialise all modules
+    // This will initialise all modules and run the system
     i_app.app_init();
 
+    // At this point e would be doing GUI stuff
     // Temporary code to wait for Rtn then close everything and exit
     pause();
     println!("Starting shutdown...");

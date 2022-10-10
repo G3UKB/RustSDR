@@ -30,7 +30,7 @@ pub const FRAME_SZ : u32 = 1032;
 // Protocal packet sz (2 per UDP frame)
 pub const PROT_SZ : u32 = 504;
 // Max IQ samples array sz
-pub const IQ_ARR_SZ : u32 = NUM_SMPLS_1_RADIO * MAX_RADIOS * BYTES_PER_SAMPLE;
+pub const IQ_ARR_SZ : u32 = NUM_SMPLS_3_RADIO * MAX_RADIOS * BYTES_PER_SAMPLE;
 // Size for one radio
 pub const IQ_ARR_SZ_R1 : u32 = NUM_SMPLS_1_RADIO * BYTES_PER_SAMPLE;
 // This is temporary as we don't have the actual size yet

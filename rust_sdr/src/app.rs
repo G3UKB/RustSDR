@@ -2,7 +2,7 @@
 app.rs
 
 Module - app
-manages startup, shutdown and object cache
+Manages startup, shutdown and object cache
 
 Copyright (C) 2022 by G3UKB Bob Cowdery
 
@@ -65,7 +65,7 @@ pub struct Appdata{
     pub hw_receiver : crossbeam_channel::Receiver<common::messages::HWMsg>,
 
     //=================================================
-    // Pipeline module related
+    // Pipeline
     // Channel
     pub pipeline_sender : crossbeam_channel::Sender<common::messages::PipelineMsg>,
     pub pipeline_receiver : crossbeam_channel::Receiver<common::messages::PipelineMsg>,
@@ -76,8 +76,10 @@ pub struct Appdata{
 }
 
 //=========================================================================================
-// Instantiate the application modules
+// Implementation
 impl Appdata {
+
+    // Instantiate the application modules
     pub fn new() -> Appdata {
         // First check/create the DSP Wisdom file
         dsp::dsp_interface::wdsp_wisdom();
@@ -89,6 +91,8 @@ impl Appdata {
             common::common_defs::SMPLS_48K as i32, 0.0, 0.0, 0.0, 0.0);
         // and start the channel
         dsp::dsp_interface::wdsp_set_ch_state(0, 1, 0);
+
+        // TBD same for TX channel
 
         // Create the message q's for reader, hardware and Pipeline
         let (r_s, r_r) = unbounded();
@@ -104,9 +108,8 @@ impl Appdata {
         // Create condition variables
         // Between UDP Reader and Pipeline for data transfer
         let iq_cond = Arc::new((Mutex::new(false), Condvar::new()));
-        //let iq_cond_1 = Arc::clone(&iq_cond);
 
-        // Create the shared socket
+        // Create the shared socket, initially as a broadcast socket for discovery
         let mut i_sock = udp::udp_socket::Sockdata::new();
         let p_sock = i_sock.udp_sock_ref();
 
@@ -121,7 +124,7 @@ impl Appdata {
         // Revert the socket to non-broadcast and set buffer size
         i_sock.udp_revert_socket();
 
-        // Create the UDP reader and writer
+        // Create the UDP reader and writer if we have a valid hardware address
         let mut opt_udp_writer: option::Option<udp::udp_writer::UDPWData> = None;
         let mut opt_reader_join_handle: option::Option<thread::JoinHandle<()>> = None;
         let arc2 = p_sock.clone();
@@ -149,7 +152,6 @@ impl Appdata {
         Appdata { 
             i_sock : i_sock,
             p_sock : p_sock,
-            //p_addr : p_addr,
             opt_udp_writer : opt_udp_writer,
             opt_reader_join_handle : opt_reader_join_handle,
             r_sender : r_s,
@@ -165,24 +167,25 @@ impl Appdata {
     }
 
     //=========================================================================================
-    // Initialise to a running state
+    // Initialise system to a running state
     pub fn app_init(&mut self) {
         println!("Initialising hardware...");
         
-        // Call prime to init the hardware
+        // Call prime to init the hardware cc values
         match &mut self.opt_udp_writer {
             Some(writer) => writer.prime(),  
             None => println!("Address invalid, hardware will not be primed!"),
         }
         thread::sleep(Duration::from_millis(100));
 
-        // Start the pipeline. Will wait for data.
+        // Start the pipeline. Waits for data available signal.
         self.pipeline_sender.send(common::messages::PipelineMsg::StartPipeline).unwrap();
 
         // Start the UDP reader. Will wait for UDP data when hardware starts.
+        // Then signals the pipeline
         self.r_sender.send(common::messages::ReaderMsg::StartListening).unwrap();
 
-        // Run the hardware
+        // Start the hardware IQ stream and optional wide band data.
         self.i_hw_control.do_start(false);
     }
 
@@ -195,17 +198,17 @@ impl Appdata {
         self.pipeline_sender.send(common::messages::PipelineMsg::Terminate).unwrap();
         self.r_sender.send(common::messages::ReaderMsg::Terminate).unwrap();
 
-        // Wait UDP reader
+        // Wait for UDP reader to exit
         if let Some(h) = self.opt_reader_join_handle.take(){
             println!("Waiting for reader to terminate...");
-            h.join();
+            h.join().expect("Join UDP Reader failed!");
             println!("Reader terminated");
         }
 
-        // Wait pipeline
+        // Wait for pipeline to exit
         if let Some(h) = self.opt_pipeline_join_handle.take(){
             println!("Waiting for pipeline to terminate...");
-            h.join();
+            h.join().expect("Join Pipeline failed!");;
             println!("Pipeline terminated");
         }
         

@@ -25,11 +25,14 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use std::collections::VecDeque;
-
 use crate::app::common::common_defs;
 
-pub fn frame_decode(n_smpls: u32, n_rx: u32, rate: u32, in_sz: u32, udp_frame: [u8; common_defs::PROT_SZ as usize * 2]) {
+// Decode the IQ frame
+pub fn frame_decode(
+		n_smpls: u32, n_rx: u32, rate: u32, in_sz: u32,
+	 	udp_frame: [u8; common_defs::PROT_SZ as usize * 2],
+		iq: &mut [u8; common_defs::IQ_ARR_SZ as usize],
+		mic: &mut [u8; common_defs::MIC_ARR_SZ as usize]) {
 
 	/* Decode the incoming data packet
 	*
@@ -38,7 +41,9 @@ pub fn frame_decode(n_smpls: u32, n_rx: u32, rate: u32, in_sz: u32, udp_frame: [
 	*  	n_rx				--	number of receivers
 	*  	rate				-- 	48000/96000/192000
 	* 	in_sz				--	size of input data buffer
-	*  	ptr_in_bytes   		--  ptr to the input data
+	*  	udp_frame   		--  input data
+	*	iq					--	IQ output data
+	*	mic					--	Mic output data
 	*/
 
 	// Data exchange operates on the ring buffers.
@@ -60,7 +65,7 @@ pub fn frame_decode(n_smpls: u32, n_rx: u32, rate: u32, in_sz: u32, udp_frame: [
 
 	let mic_blk_sel = rate / 48000;
 	// This is a count of blocks to skip and must be static
-	static skip_mic_data: i32 = 0;
+	static mut skip_mic_data: i32 = 0;
 
 	// Set of variables to manage the decode
 	let mut nskip = 0;
@@ -91,7 +96,7 @@ pub fn frame_decode(n_smpls: u32, n_rx: u32, rate: u32, in_sz: u32, udp_frame: [
 
 	// The total number of IQ bytes to be concatenated
 	total_iq_bytes = n_smpls * n_rx * 6;	// 6 bytes per sample (2 x 24 bit)
-	total_iq_bytes_ct = total_iq_bytes - 1;
+	total_iq_bytes_ct = total_iq_bytes - 1;	// iteration counter
 
 	// Determine if we are using HPSDR or local mic input
 	// Note that for local we let the normal processing run through except when it comes to
@@ -115,10 +120,10 @@ pub fn frame_decode(n_smpls: u32, n_rx: u32, rate: u32, in_sz: u32, udp_frame: [
 	// We need some buffers to move the IQ data into when we consolidate it.
 	// The size of these buffers can vary per call. However Rust arrays are
 	// fixed size so we create the maximum size we might need.
-	let mut iq: [u8; common_defs::IQ_ARR_SZ as usize] = [0; common_defs::IQ_ARR_SZ as usize];
+	//let mut iq: [u8; common_defs::IQ_ARR_SZ as usize] = [0; common_defs::IQ_ARR_SZ as usize];
 	// For the mic data we need two buffers, one to pack the incoming mic data
 	// from the hardware and one for local mic data from the local device.
-	let mut mic: [u8; common_defs::MIC_ARR_SZ as usize] = [0; common_defs::MIC_ARR_SZ as usize];
+	//let mut mic: [u8; common_defs::MIC_ARR_SZ as usize] = [0; common_defs::MIC_ARR_SZ as usize];
 	//TBD
 
 	// The number of IQ bytes for each receiver(s) sample

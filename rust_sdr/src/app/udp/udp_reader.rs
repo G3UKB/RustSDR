@@ -27,10 +27,9 @@ bob@bobcowdery.plus.com
 
 use std::thread;
 use std::time::Duration;
-use std::option;
 use std::mem::MaybeUninit;
 use std::sync::{Arc, Mutex, Condvar};
-use std::io::{self, Write};
+use std::io::Write;
 
 use socket2;
 
@@ -51,6 +50,8 @@ pub struct UDPRData<'a>{
     //pub i_cc: protocol::cc_in::CCDataMutex,
     pub i_seq: protocol::seq_in::SeqData,
     listen: bool,
+    iq: [u8; common_defs::IQ_ARR_SZ as usize],
+    mic: [u8; common_defs::MIC_ARR_SZ as usize],
 }
 
 // Implementation methods on UDPRData
@@ -71,15 +72,19 @@ impl UDPRData<'_> {
 			p_sock: p_sock,
             rb_iq : rb_iq,
             iq_cond : iq_cond,
+            // Received UDP data buffer
             udp_frame: [MaybeUninit::uninit(); common_defs::FRAME_SZ as usize],
+            // UDP data contains a header + 2 protocol frames
             prot_frame: [0; common_defs::PROT_SZ as usize *2],
             //i_cc: i_cc,
             i_seq: i_seq,
             listen: false,
+            iq: [0; common_defs::IQ_ARR_SZ as usize],
+            mic: [0; common_defs::MIC_ARR_SZ as usize],
 		}
 	}
 
-    // Run loop for reader
+    // This is the thread main loop. When this exits the thread exits.
     pub fn reader_run(&mut self) {
         loop {
             // Check for messages
@@ -90,19 +95,20 @@ impl UDPRData<'_> {
                         messages::ReaderMsg::Terminate => break,
                         messages::ReaderMsg::StartListening => {
                             self.listen = true;
-                            println!("Listening for data...");
+                            println!("Listening for UDP data...");
                         }
                         messages::ReaderMsg::StopListening => {
                             self.listen = false;
-                            println!("Stopped listening for data");
+                            println!("Stopped listening UDP for data");
                         }
                     };
                 },
                 // Do nothing if there are no message matches
                 _ => (),
             };
-            // Check for read data
+            // Are we in listen mode
             if self.listen {
+                // Wait for UDP data or timeout so we can check the channel
                 let r = self.p_sock.recv_from(self.udp_frame.as_mut());
                 match r {
                     Ok((sz,_addr)) => {
@@ -122,7 +128,16 @@ impl UDPRData<'_> {
     // Split frame into protocol fields and data content and decode
     fn split_frame(&mut self) { 
         
+        // Assume 1 radio for now
         let num_rx = 1;
+        let mut j: usize = 0;
+        let mut ep6_seq : [u8; 4] = [0,0,0,0];
+        let mut end_frame_1 = common_defs::END_FRAME_1;
+        let mut end_frame_2 = common_defs::END_FRAME_2;
+        let mut data_sz = common_defs::PROT_SZ * 2;
+        let mut num_smpls = common_defs::NUM_SMPLS_1_RADIO;
+
+        // Unsafe because of potentially uninitialised array
         unsafe { 
             // Check for frame type
             if self.udp_frame[3].assume_init() == common_defs::EP6 {
@@ -135,33 +150,20 @@ impl UDPRData<'_> {
                 // Sync Cmd End Seq
                 // if the sequence number check fails it means we have missed some frames
                 // Nothing we can do so it just gets reported.
-                let mut j: usize = 0;
-                let mut ep6_seq : [u8; 4] = [0,0,0,0];
 
+                // Move sequence data into temp array
                 for i in 4..8 {
                     ep6_seq[j] = (self.udp_frame[i as usize]).assume_init();
                     j += 1;
                 }
-                if self.i_seq.check_ep6_seq(ep6_seq) {
-                    //print!("*");
-                    //io::stdout().flush().unwrap();
-                    //count += 1;
-                } else {
-                    //print!("x");
-                    //io::stdout().flush().unwrap();
-                    //if !done {
-                    //    println!("\nCount on seq error {}", count);
-                    //    if count != 0 {done = true};
-                    //}
+                if !self.i_seq.check_ep6_seq(ep6_seq) {
+                    //Boolean return incase we need to do anything
+                    // Sequence errors are reported in cc-in
                 }
 
                 // For 1,2 radios the entire dataframe is used
                 // For 3 radios there are 4 padding bytes in each frame
                 // TBD: For now fix num_rx at one as we don't have the data yet 
-                let mut end_frame_1 = common_defs::END_FRAME_1;
-                let mut end_frame_2 = common_defs::END_FRAME_2;
-                let mut data_sz = common_defs::PROT_SZ * 2;
-                let mut num_smpls = common_defs::NUM_SMPLS_1_RADIO;
                 if num_rx == 2 {
                     num_smpls = common_defs::NUM_SMPLS_2_RADIO;
                 } else if num_rx == 3 {
@@ -172,43 +174,50 @@ impl UDPRData<'_> {
                 }
 
                 // Extract the data from the UDP frame into the protocol frame
+                // Frame 1
                 j = 0;
                 for b in common_defs::START_FRAME_1..end_frame_1 {
                     self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
                     j += 1;
                 }
-                j = 0;
+                // Frame 2
                 for b in common_defs::START_FRAME_2..end_frame_2 {
                     self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
                     j += 1;
                 }
+
             } else if self.udp_frame[3].assume_init() == common_defs::EP4 {
                 // We have wideband data
                 // TBD
             }
         }
-        protocol::decoder::frame_decode(common_defs::NUM_SMPLS_1_RADIO, num_rx, common_defs::SMPLS_48K, common_defs::PROT_SZ*2, self.prot_frame);
-        
+        // We now have contiguous IQ data and Mic data from both protocol frames in prot_frame
+        // Now decode the frame
+        protocol::decoder::frame_decode(
+                num_smpls, num_rx, common_defs::SMPLS_48K, data_sz, 
+                self.prot_frame, &mut self.iq, &mut self.mic);
+
         //================================================================================
+        // At this point we have separated the IQ and Mic data into separate buffers
         // Copy the UDP frame into the rb_iq ring buffer
         let mut success = false;
-        let vec_proc_frame = self.prot_frame.to_vec();
+        let vec_iq = self.iq.to_vec();
         let r = self.rb_iq.try_write();
         match r {
             Ok(mut m) => {
-                let r = m.write(&vec_proc_frame);
+                let r = m.write(&vec_iq);
                 match r {
                     Err(e) => {
                         println!("Write error on rb_iq, skipping block {:?}", e);
                     }
-                    Ok(sz) => {
-                        //println!("Wrote {:?} bytes to rb_iq", sz);
+                    Ok(_sz) => {
+                        //println!("Wrote {:?} bytes to rb_iq", _sz);
                         success = true;  
                     }
                 }
             }
             Err(e) => {
-                    println!("Writing IQ ring buffer: [{:?}]. Skipping block!", e);
+                println!("Writing IQ ring buffer: [{:?}]. Skipping block!", e);
             }
         }
         if success {
