@@ -30,14 +30,14 @@ use std::os::raw::c_char;
 use crate::app::common::common_defs;
 
 // External interfaces exposed through the WDSP library
-#[link(name = "wdsp")]
+#[link(name = "wdsp_win")]
 extern "C" {
 	fn WDSPwisdom(s: *const c_char);
 	fn OpenChannel(
 		ch_id: i32, in_sz: i32, dsp_sz: i32, 
 		in_rate: i32, dsp_rate: i32, out_rate: i32, 
 		ch_type: i32, state: i32, tdelayup: f64, 
-		tslewup: f64, tdelaydown: f64, tslewdown: f64, bfo: i32);
+		tslewup: f64, tdelaydown: f64, tslewdown: f64);
 	fn SetChannelState (ch_id: i32, state: i32, dmode: i32) -> i32;
 	fn fexchange0(ch_id: i32, in_buf: *mut f64, out_buf: *mut f64, error: *mut i32);
 }
@@ -99,7 +99,7 @@ pub fn wdsp_open_ch(
 		ch_id, input_sz, input_sz, 
 		in_rate, dsp_rate, out_rate, 
 		ch_type, common_defs::STATE_STOPPED as i32, 
-		tdelayup, tslewup, tdelaydown, tslewdown, 0)};
+		tdelayup, tslewup, tdelaydown, tslewdown)};
 
 }
 
