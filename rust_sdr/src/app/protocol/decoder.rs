@@ -117,15 +117,6 @@ pub fn frame_decode(
 	}
 	total_mic_bytes_ct = total_mic_bytes - 1;
 
-	// We need some buffers to move the IQ data into when we consolidate it.
-	// The size of these buffers can vary per call. However Rust arrays are
-	// fixed size so we create the maximum size we might need.
-	//let mut iq: [u8; common_defs::IQ_ARR_SZ as usize] = [0; common_defs::IQ_ARR_SZ as usize];
-	// For the mic data we need two buffers, one to pack the incoming mic data
-	// from the hardware and one for local mic data from the local device.
-	//let mut mic: [u8; common_defs::MIC_ARR_SZ as usize] = [0; common_defs::MIC_ARR_SZ as usize];
-	//TBD
-
 	// The number of IQ bytes for each receiver(s) sample
 	iq_bytes = n_rx * common_defs::BYTES_PER_SAMPLE;
 	// IQ byte counter

@@ -191,12 +191,13 @@ impl UDPRData<'_> {
                 // TBD
             }
         }
+        
         // We now have contiguous IQ data and Mic data from both protocol frames in prot_frame
         // Now decode the frame
         protocol::decoder::frame_decode(
                 num_smpls, num_rx, common_defs::SMPLS_48K, data_sz, 
                 self.prot_frame, &mut self.iq, &mut self.mic);
-
+        
         //================================================================================
         // At this point we have separated the IQ and Mic data into separate buffers
         // Copy the UDP frame into the rb_iq ring buffer
