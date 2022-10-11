@@ -32,8 +32,8 @@ pub enum ReaderMsg {
 
 pub enum WriterMsg {
     Terminate,
-    StartListening,
-    StopListening,
+    PrimeHardware,
+    WriteData,
 }
 
 pub enum HWMsg {

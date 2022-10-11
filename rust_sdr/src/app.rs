@@ -51,7 +51,11 @@ pub struct Appdata{
     //pub p_addr: option::Option<Arc<socket2::SockAddr>>,
 
     // UDP Reader and Writer
+    // Writer thread join handle
     pub opt_writer_join_handle : option::Option<thread::JoinHandle<()>>,
+    // Channel
+    pub w_sender : crossbeam_channel::Sender<common::messages::WriterMsg>,
+    pub w_receiver : crossbeam_channel::Receiver<common::messages::WriterMsg>,
     // Reader thread join handle
     pub opt_reader_join_handle: option::Option<thread::JoinHandle<()>>,
     // Channel
@@ -166,6 +170,8 @@ impl Appdata {
             opt_reader_join_handle : opt_reader_join_handle,
             r_sender : r_s,
             r_receiver : r_r,
+            w_sender : w_s,
+            w_receiver : w_r,
             i_hw_control : i_hw_control,
             hw_sender : hw_s,
             hw_receiver : hw_r,
@@ -181,12 +187,8 @@ impl Appdata {
     pub fn app_init(&mut self) {
         println!("Initialising hardware...");
         
-        // Call prime to init the hardware cc values
-        match &mut self.opt_udp_writer {
-            Some(writer) => writer.prime(),  
-            None => println!("Address invalid, hardware will not be primed!"),
-        }
-        thread::sleep(Duration::from_millis(100));
+        // Prime the hardware.
+        self.w_sender.send(common::messages::WriterMsg::PrimeHardware).unwrap();
 
         // Start the pipeline. Waits for data available signal.
         self.pipeline_sender.send(common::messages::PipelineMsg::StartPipeline).unwrap();
@@ -206,7 +208,15 @@ impl Appdata {
         // Tell threads to stop
         self.r_sender.send(common::messages::ReaderMsg::StopListening).unwrap();
         self.pipeline_sender.send(common::messages::PipelineMsg::Terminate).unwrap();
+        self.w_sender.send(common::messages::WriterMsg::Terminate).unwrap();
         self.r_sender.send(common::messages::ReaderMsg::Terminate).unwrap();
+
+        // Wait for UDP writer to exit
+        if let Some(h) = self.opt_writer_join_handle.take(){
+            println!("Waiting for writer to terminate...");
+            h.join().expect("Join UDP Writer failed!");
+            println!("Writer terminated");
+        }
 
         // Wait for UDP reader to exit
         if let Some(h) = self.opt_reader_join_handle.take(){

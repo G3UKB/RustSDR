@@ -55,7 +55,7 @@ impl UDPWData<'_> {
 	// Create a new instance and initialise the default arrays
 	pub fn new<'a>(
             receiver : crossbeam_channel::Receiver<messages::WriterMsg>,
-            p_sock : &socket2::Socket, p_addr : &socket2::SockAddr,
+            p_sock : &'a socket2::Socket, p_addr : &'a socket2::SockAddr,
             rb_audio : &'a ringb::SyncByteRingBuf,
             audio_cond : &'a (Mutex<bool>, Condvar)) -> UDPWData<'a> {
         // Create an instance of the cc_out type
@@ -86,23 +86,17 @@ impl UDPWData<'_> {
                 Ok(msg) => {
                     match msg {
                         messages::WriterMsg::Terminate => break,
-                        messages::WriterMsg::StartListening => {
-                            self.listen = true;
-                            println!("Listening for messages...");
+                        messages::WriterMsg::PrimeHardware => {
+                            self.prime();
                         }
-                        messages::WriterMsg::StopListening => {
-                            self.listen = false;
-                            println!("Stopped listening messages");
+                        messages::WriterMsg::WriteData => {
+                            self.write_data();
                         }
                     };
                 },
                 // Do nothing if there are no message matches
                 _ => (),
             };
-            // Are we in listen mode
-            if self.listen {
-                
-            }
         }
     }
 
