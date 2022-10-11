@@ -51,7 +51,7 @@ pub struct Appdata{
     //pub p_addr: option::Option<Arc<socket2::SockAddr>>,
 
     // UDP Reader and Writer
-    pub opt_udp_writer :  option::Option<udp::udp_writer::UDPWData>,
+    pub opt_writer_join_handle : option::Option<thread::JoinHandle<()>>,
     // Reader thread join handle
     pub opt_reader_join_handle: option::Option<thread::JoinHandle<()>>,
     // Channel
@@ -96,6 +96,7 @@ impl Appdata {
 
         // Create the message q's for reader, hardware and Pipeline
         let (r_s, r_r) = unbounded();
+        let (w_s, w_r) = unbounded();
         let (hw_s, hw_r) = unbounded();
         let (pipeline_s, pipeline_r) = unbounded();
 
@@ -110,6 +111,7 @@ impl Appdata {
         // Create condition variables
         // Between UDP Reader and Pipeline for data transfer
         let iq_cond = Arc::new((Mutex::new(false), Condvar::new()));
+        let audio_cond = Arc::new((Mutex::new(false), Condvar::new()));
 
         // Create the shared socket, initially as a broadcast socket for discovery
         let mut i_sock = udp::udp_socket::Sockdata::new();
@@ -129,17 +131,22 @@ impl Appdata {
         // Create the UDP reader and writer if we have a valid hardware address
         let mut opt_udp_writer: option::Option<udp::udp_writer::UDPWData> = None;
         let mut opt_reader_join_handle: option::Option<thread::JoinHandle<()>> = None;
+        let mut opt_writer_join_handle: option::Option<thread::JoinHandle<()>> = None;
         let arc2 = p_sock.clone();
         let arc3 = p_sock.clone();
+        let arc4 = p_sock.clone();
         match p_addr {
             Some(addr) => { 
                 // Create UDP writer 
-                let arc4 = addr.clone();
-                let i_udp_writer = udp::udp_writer::UDPWData::new(arc2, arc4);
-                opt_udp_writer = Some(i_udp_writer); 
+                let arc5 = addr.clone();
+                //let i_udp_writer = udp::udp_writer::UDPWData::new(arc2, arc4);
+                //opt_udp_writer = Some(i_udp_writer); 
                 
+                // Start the UDP writer thread
+                opt_writer_join_handle = Some(udp::udp_writer::writer_start(w_r.clone(), arc3, arc5, rb_audio.clone(), audio_cond.clone()));
+
                 // Start the UDP reader thread
-                opt_reader_join_handle = Some(udp::udp_reader::reader_start(r_r.clone(), arc3, rb_iq.clone(), iq_cond.clone()));
+                opt_reader_join_handle = Some(udp::udp_reader::reader_start(r_r.clone(), arc4, rb_iq.clone(), iq_cond.clone()));
             },
             None => {
                 println!("Address invalid, UDP reader and writer will not be started! Is hardware on-line?");
@@ -155,7 +162,7 @@ impl Appdata {
         Appdata { 
             i_sock : i_sock,
             p_sock : p_sock,
-            opt_udp_writer : opt_udp_writer,
+            opt_writer_join_handle : opt_writer_join_handle,
             opt_reader_join_handle : opt_reader_join_handle,
             r_sender : r_s,
             r_receiver : r_r,
