@@ -30,6 +30,12 @@ pub enum ReaderMsg {
     StopListening,
 }
 
+pub enum WriterMsg {
+    Terminate,
+    StartListening,
+    StopListening,
+}
+
 pub enum HWMsg {
     Terminate,
     DiscoverHw,

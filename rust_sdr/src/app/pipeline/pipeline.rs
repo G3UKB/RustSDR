@@ -28,11 +28,13 @@ use std::thread;
 use std::time::Duration;
 use std::sync::{Arc, Mutex, Condvar, MutexGuard, WaitTimeoutResult};
 use std::io::{Read, Write};
+use std::cell::RefCell;
 
 use crate::app::common::messages;
 use crate::app::common::common_defs;
 use crate::app::common::ringb;
 use crate::app::dsp;
+use crate::app::udp::udp_writer;
 
 enum ACTIONS {
     ActionNone,
@@ -50,6 +52,7 @@ pub struct PipelineData<'a>{
     iq_data : Vec<u8>,
     dec_iq_data : [f64; (common_defs::DSP_BLK_SZ * 2) as usize],
     proc_iq_data : [f64; (common_defs::DSP_BLK_SZ * 2) as usize],
+    prot_frame : [u8; common_defs::PROT_SZ as usize *2],
     run : bool,
     num_rx : u32,
 }
@@ -72,6 +75,7 @@ impl PipelineData<'_> {
             // Exchange size with DSP is 1024 I and 1024 Q samples interleaved as f64
             dec_iq_data : [0.0; (common_defs::DSP_BLK_SZ * 2)as usize],
             proc_iq_data : [0.0; (common_defs::DSP_BLK_SZ * 2) as usize],
+            prot_frame : [0; (common_defs::PROT_SZ as usize *2) as usize],
             run: false,
             // Until we have data set to 1
             num_rx: 1,
@@ -157,8 +161,25 @@ impl PipelineData<'_> {
         self.decode();
         let mut error: i32 = 0;
         dsp::dsp_interface::wdsp_exchange(0, &mut self.dec_iq_data,  &mut self.proc_iq_data, &mut error );
-         if error != 0 {
-            println!("DSP Error! {}", error);
+         if error == 0 {
+            // We have output data from the DSP
+            // Encode the data into a form suitable for the hardware
+            self.encode();
+            // Copy data to the audio ring buffer
+            /* 
+            let vec_audio = self.prot_frame.to_vec();
+            let r = self.rb_audio.write().write(&vec_audio);
+            match r {
+                Err(e) => {
+                    println!("Write error on rb_audio, skipping block {:?}", e);
+                }
+                Ok(_sz) => {
+                    
+                    // Now call the UDP writer to send the data
+                    //self.writer.write_data();
+                }
+            }
+            */
          }
     }
 
@@ -208,6 +229,16 @@ impl PipelineData<'_> {
     
     }
 
+    // Encode the frame into a form suitable for the hardware
+    fn encode(&mut self) {
+        /*
+        * The output data is structured as follows:
+        * <L1><L0><R1><R0><I1><I0><Q1><Q0><L1><L0><R1><R0><I1><I0><Q1><Q0>...
+        *
+        * The L and R samples are sourced according to the audio output spec.
+        */
+
+    }
 }
 
 //==================================================================================
@@ -223,7 +254,11 @@ pub fn pipeline_start(
     return join_handle;
 }
 
-fn pipeline_run(receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, rb_iq : &ringb::SyncByteRingBuf, iq_cond : &(Mutex<bool>, Condvar), rb_audio : &ringb::SyncByteRingBuf) {
+fn pipeline_run(
+        receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, 
+        rb_iq : &ringb::SyncByteRingBuf, 
+        iq_cond : &(Mutex<bool>, Condvar), 
+        rb_audio : &ringb::SyncByteRingBuf) {
     println!("Pipeline running");
 
     // Instantiate the runtime object

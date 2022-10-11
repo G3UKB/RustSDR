@@ -148,7 +148,8 @@ impl Appdata {
 
         // Start the pipeline thread
         let mut opt_pipeline_join_handle: option::Option<thread::JoinHandle<()>> = None;
-        opt_pipeline_join_handle = Some(pipeline::pipeline::pipeline_start(pipeline_r.clone(), rb_iq.clone(), iq_cond.clone(), rb_audio.clone()));
+        opt_pipeline_join_handle = Some(pipeline::pipeline::pipeline_start(
+                pipeline_r.clone(), rb_iq.clone(), iq_cond.clone(), rb_audio.clone()));
 
         // Initialise the application data
         Appdata { 
