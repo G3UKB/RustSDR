@@ -46,6 +46,7 @@ pub struct PipelineData<'a>{
     receiver : crossbeam_channel::Receiver<messages::PipelineMsg>,
     rb_iq : &'a ringb::SyncByteRingBuf,
     iq_cond : &'a (Mutex<bool>, Condvar),
+    rb_audio : &'a ringb::SyncByteRingBuf,
     iq_data : Vec<u8>,
     dec_iq_data : [f64; (common_defs::DSP_BLK_SZ * 2) as usize],
     proc_iq_data : [f64; (common_defs::DSP_BLK_SZ * 2) as usize],
@@ -56,17 +57,21 @@ pub struct PipelineData<'a>{
 // Implementation methods on UDPRData
 impl PipelineData<'_> {
 	// Create a new instance and initialise the default arrays
-    pub fn new<'a> (receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, rb_iq : &'a ringb::SyncByteRingBuf, iq_cond : &'a (Mutex<bool>, Condvar)) -> PipelineData {
+    pub fn new<'a> (
+        receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, 
+        rb_iq : &'a ringb::SyncByteRingBuf, iq_cond : &'a (Mutex<bool>, Condvar),
+        rb_audio : &'a ringb::SyncByteRingBuf) -> PipelineData {
 
 		PipelineData {
             receiver: receiver,
             rb_iq: rb_iq,
+            iq_cond: iq_cond,
+            rb_audio: rb_audio,
             // Read size from rb gives us 1024 samples interleaved
             iq_data: vec![0; (common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) as usize],
             // Exchange size with DSP is 1024 I and 1024 Q samples interleaved as f64
             dec_iq_data : [0.0; (common_defs::DSP_BLK_SZ * 2)as usize],
             proc_iq_data : [0.0; (common_defs::DSP_BLK_SZ * 2) as usize],
-            iq_cond: iq_cond,
             run: false,
             // Until we have data set to 1
             num_rx: 1,
@@ -210,18 +215,19 @@ impl PipelineData<'_> {
 pub fn pipeline_start(
     receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, 
     rb_iq : Arc<ringb::SyncByteRingBuf>,
-    iq_cond : Arc<(Mutex<bool>, Condvar)>) -> thread::JoinHandle<()>{
+    iq_cond : Arc<(Mutex<bool>, Condvar)>,
+    rb_audio : Arc<ringb::SyncByteRingBuf>) -> thread::JoinHandle<()> {
     let join_handle = thread::spawn(  move || {
-        pipeline_run(receiver, &rb_iq, &iq_cond);
+        pipeline_run(receiver, &rb_iq, &iq_cond, &rb_audio);
     });
     return join_handle;
 }
 
-fn pipeline_run(receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, rb_iq : &ringb::SyncByteRingBuf, iq_cond : &(Mutex<bool>, Condvar)) {
+fn pipeline_run(receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, rb_iq : &ringb::SyncByteRingBuf, iq_cond : &(Mutex<bool>, Condvar), rb_audio : &ringb::SyncByteRingBuf) {
     println!("Pipeline running");
 
     // Instantiate the runtime object
-    let mut i_pipeline = PipelineData::new(receiver, rb_iq, iq_cond);
+    let mut i_pipeline = PipelineData::new(receiver, rb_iq, iq_cond, rb_audio);
 
     // Exits when the reader loop exits
     i_pipeline.pipeline_run();

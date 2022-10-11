@@ -102,8 +102,10 @@ impl Appdata {
         // Create ring buffers 
         // Buffer for read IQ data to DSP
         let num_rx = 1; // Until this is set
-        let rb_iq_capacity: usize = (num_rx * common::common_defs::PROT_SZ * 2 * common::common_defs::BYTES_PER_SAMPLE * common::common_defs::FRAMES_IN_RING ) as usize;
-        let rb_iq = Arc::new(common::ringb::SyncByteRingBuf::with_capacity(rb_iq_capacity)); // Size to be adjusted
+        let rb_capacity: usize = (num_rx * common::common_defs::PROT_SZ * 2 * common::common_defs::BYTES_PER_SAMPLE * common::common_defs::FRAMES_IN_RING ) as usize;
+        let rb_iq = Arc::new(common::ringb::SyncByteRingBuf::with_capacity(rb_capacity));
+        // Buffer to write audio data from DSP
+        let rb_audio = Arc::new(common::ringb::SyncByteRingBuf::with_capacity(rb_capacity));
 
         // Create condition variables
         // Between UDP Reader and Pipeline for data transfer
@@ -146,7 +148,7 @@ impl Appdata {
 
         // Start the pipeline thread
         let mut opt_pipeline_join_handle: option::Option<thread::JoinHandle<()>> = None;
-        opt_pipeline_join_handle = Some(pipeline::pipeline::pipeline_start(pipeline_r.clone(), rb_iq.clone(), iq_cond.clone()));
+        opt_pipeline_join_handle = Some(pipeline::pipeline::pipeline_start(pipeline_r.clone(), rb_iq.clone(), iq_cond.clone(), rb_audio.clone()));
 
         // Initialise the application data
         Appdata { 
