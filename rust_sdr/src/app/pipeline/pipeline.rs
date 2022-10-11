@@ -99,6 +99,7 @@ impl PipelineData<'_> {
         if *locked == true {
             // We were signaled so data available
             *locked = false;
+            /*
             if self.rb_iq.try_read().unwrap().available() >= (common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) as usize {
                 // Enough data available
                 let r = self.rb_iq.try_read();   
@@ -114,6 +115,17 @@ impl PipelineData<'_> {
                         }
                     }
                     Err(e) => println!("Failed to get read lock on rb_iq [{:?}]. Skipping cycle.", e),
+                }
+            }
+            */
+            if self.rb_iq.read().available() >= (common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) as usize {
+                let iq_data = self.rb_iq.read().read(&mut self.iq_data);
+                match iq_data {
+                    Ok(_sz) => {
+                        action = ACTIONS::ActionData;
+                        //println!("Read {:?} bytes from rb_iq", _sz);
+                    }
+                    Err(e) => println!("Read error on rb_iq {:?}. Skipping cycle.", e),
                 }
             }
         } else {
@@ -140,7 +152,9 @@ impl PipelineData<'_> {
         self.decode();
         let mut error: i32 = 0;
         dsp::dsp_interface::wdsp_exchange(0, &mut self.dec_iq_data,  &mut self.proc_iq_data, &mut error );
-        //println!("Err {}", error);
+         if error != 0 {
+            println!("DSP Error! {}", error);
+         }
     }
 
     // Decode the frame into a form suitable for signal processing

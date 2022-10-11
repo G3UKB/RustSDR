@@ -203,6 +203,7 @@ impl UDPRData<'_> {
         // Copy the UDP frame into the rb_iq ring buffer
         let mut success = false;
         let vec_iq = self.iq.to_vec();
+        /* 
         let r = self.rb_iq.try_write();
         match r {
             Ok(mut m) => {
@@ -220,7 +221,17 @@ impl UDPRData<'_> {
                 println!("Writing IQ ring buffer: [{:?}]. Skipping block!", e);
             }
         }
-        
+        */
+        let r = self.rb_iq.write().write(&vec_iq);
+        match r {
+            Err(e) => {
+                println!("Write error on rb_iq, skipping block {:?}", e);
+            }
+            Ok(_sz) => {
+                success = true;  
+            }
+        }
+
         if success {
             // Signal the pipeline that data is available
             let mut locked = self.iq_cond.0.lock().unwrap();
