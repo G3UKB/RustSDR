@@ -52,7 +52,7 @@ pub struct PipelineData<'a>{
     iq_data : Vec<u8>,
     dec_iq_data : [f64; (common_defs::DSP_BLK_SZ * 2) as usize],
     proc_iq_data : [f64; (common_defs::DSP_BLK_SZ * 2) as usize],
-    prot_frame : [u8; common_defs::PROT_SZ as usize *2],
+    output_frame : [u8; common_defs::DSP_BLK_SZ as usize * 4],
     run : bool,
     num_rx : u32,
 }
@@ -75,7 +75,8 @@ impl PipelineData<'_> {
             // Exchange size with DSP is 1024 I and 1024 Q samples interleaved as f64
             dec_iq_data : [0.0; (common_defs::DSP_BLK_SZ * 2)as usize],
             proc_iq_data : [0.0; (common_defs::DSP_BLK_SZ * 2) as usize],
-            prot_frame : [0; (common_defs::PROT_SZ as usize *2) as usize],
+            // Output contiguous audio and TX IQ data
+            output_frame : [0; (common_defs::DSP_BLK_SZ as usize * 4) as usize],
             run: false,
             // Until we have data set to 1
             num_rx: 1,
@@ -165,21 +166,18 @@ impl PipelineData<'_> {
             // We have output data from the DSP
             // Encode the data into a form suitable for the hardware
             self.encode();
-            // Copy data to the audio ring buffer
-            /* 
-            let vec_audio = self.prot_frame.to_vec();
-            let r = self.rb_audio.write().write(&vec_audio);
+            // Copy data to the output ring buffer 
+            let vec_audio = self.proc_iq_data.to_vec();
+            let r = self.rb_audio.write().write(&self.output_frame);
             match r {
                 Err(e) => {
                     println!("Write error on rb_audio, skipping block {:?}", e);
                 }
                 Ok(_sz) => {
-                    
-                    // Now call the UDP writer to send the data
-                    //self.writer.write_data();
+                    // We could signal data available but may not be necessary
+                    // At the moment the writer thread just takes data when available
                 }
             }
-            */
          }
     }
 
@@ -238,6 +236,47 @@ impl PipelineData<'_> {
         * The L and R samples are sourced according to the audio output spec.
         */
 
+        // Copy and encode the samples
+		// proc_iq_data contains interleaved L/R double samples
+		// proc_out_iq_data will contains interleaved I/Q double samples but no TX for now
+		// output_frame is the output buffer to receive byte data in 16 bit big endian format
+		// Both audio and IQ data are 16 bit values making 8 bytes in all
+
+        // We get 1024 f64 samples interleaved left/right
+        // We will get f64 float samples interleaves IQ output data
+        // This means we have 1024*8*2 bytes of data to iterate on the input
+        // However the output is 16 bit packed so we have 1024*2*2 to iterate on the output
+        // Both in and out are interleaved which is the final factor of 2
+        let out_sz: usize = (common_defs::DSP_BLK_SZ * 4 * 2) as usize;
+        let mut dest: usize = 0;
+        let mut src: usize = 0;
+        let mut L: i16;
+        let mut R: i16;
+        let mut I: i16;
+        let mut Q: i16;
+        let base: i32 = 2;
+        let output_scale: f64 = base.pow(15) as f64;
+
+
+        // We iterate on the output side starting at the LSB
+        while dest <= out_sz - 8 {
+            L = (self.proc_iq_data[src] * output_scale) as i16;
+            R = (self.proc_iq_data[src+1] * output_scale) as i16;
+            I = 0 as i16;
+            Q = 0 as i16;
+            self.output_frame[dest] = ((L >> 8) & 0xff) as u8;
+            self.output_frame[dest+1] = (L & 0xff) as u8;
+            self.output_frame[dest+2] = ((R >> 8) & 0xff) as u8;
+            self.output_frame[dest+3] = (R & 0xff) as u8;
+
+            self.output_frame[dest+4] = I as u8;
+            self.output_frame[dest+5] = I as u8;
+            self.output_frame[dest+6] = Q as u8;
+            self.output_frame[dest+7] = Q as u8;
+
+            dest += 8;
+            src += 2;
+        }
     }
 }
 
