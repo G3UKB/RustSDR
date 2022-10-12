@@ -34,7 +34,7 @@ pub const IQ_ARR_SZ : u32 = NUM_SMPLS_3_RADIO * MAX_RADIOS * BYTES_PER_SAMPLE;
 // Size for one radio
 pub const IQ_ARR_SZ_R1 : u32 = NUM_SMPLS_1_RADIO * BYTES_PER_SAMPLE;
 // This is temporary as we don't have the actual size yet
-pub const MIC_ARR_SZ : u32 = IQ_ARR_SZ;
+pub const MIC_ARR_SZ_R1 : u32 = IQ_ARR_SZ_R1;
 
 // Protocol fields
 pub const EP2 : u8 = 0x02;

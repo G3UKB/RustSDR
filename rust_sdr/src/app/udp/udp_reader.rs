@@ -50,8 +50,8 @@ pub struct UDPRData<'a>{
     //pub i_cc: protocol::cc_in::CCDataMutex,
     pub i_seq: protocol::seq_in::SeqData,
     listen: bool,
-    iq: [u8; common_defs::IQ_ARR_SZ as usize],
-    mic: [u8; common_defs::MIC_ARR_SZ as usize],
+    iq: [u8; common_defs::IQ_ARR_SZ_R1 as usize],
+    mic: [u8; common_defs::MIC_ARR_SZ_R1 as usize],
 }
 
 // Implementation methods on UDPRData
@@ -79,8 +79,8 @@ impl UDPRData<'_> {
             //i_cc: i_cc,
             i_seq: i_seq,
             listen: false,
-            iq: [0; common_defs::IQ_ARR_SZ as usize],
-            mic: [0; common_defs::MIC_ARR_SZ as usize],
+            iq: [0; common_defs::IQ_ARR_SZ_R1 as usize],
+            mic: [0; common_defs::MIC_ARR_SZ_R1 as usize],
 		}
 	}
 

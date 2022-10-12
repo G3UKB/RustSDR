@@ -31,8 +31,8 @@ use crate::app::common::common_defs;
 pub fn frame_decode(
 		n_smpls: u32, n_rx: u32, rate: u32, in_sz: u32,
 	 	udp_frame: [u8; common_defs::PROT_SZ as usize * 2],
-		iq: &mut [u8; common_defs::IQ_ARR_SZ as usize],
-		mic: &mut [u8; common_defs::MIC_ARR_SZ as usize]) {
+		iq: &mut [u8; common_defs::IQ_ARR_SZ_R1 as usize],
+		mic: &mut [u8; common_defs::MIC_ARR_SZ_R1 as usize]) {
 
 	/* Decode the incoming data packet
 	*
