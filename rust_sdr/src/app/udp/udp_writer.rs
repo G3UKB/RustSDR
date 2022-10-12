@@ -59,7 +59,8 @@ impl UDPWData<'_> {
             rb_audio : &'a ringb::SyncByteRingBuf,
             audio_cond : &'a (Mutex<bool>, Condvar)) -> UDPWData<'a> {
         // Create an instance of the cc_out type
-        let i_cc = protocol::cc_out::CCDataMutex::new();
+        let mut i_cc = protocol::cc_out::CCDataMutex::new();
+        i_cc.cc_init();
         // Create an instance of the sequence type
         let i_seq = protocol::seq_out::SeqData::new();
 
@@ -99,6 +100,8 @@ impl UDPWData<'_> {
             };
             // Send any outgoing data
             self.write_data();
+
+            thread::sleep(Duration::from_millis(10));
         }
     }
 
@@ -121,7 +124,7 @@ impl UDPWData<'_> {
 
     pub fn write_data(&mut self) {
         loop {
-            if self.rb_audio.try_read().unwrap().available() >= (common_defs::PROT_SZ * 2) as usize {
+            //if self.rb_audio.try_read().unwrap().available() >= (common_defs::PROT_SZ * 2) as usize {
                 // Enough data available
                 let r = self.rb_audio.try_read();   
                 match r {
@@ -132,6 +135,10 @@ impl UDPWData<'_> {
                                 // Encode the next frame
                                 protocol::encoder::encode(&mut self.i_seq, &mut self.i_cc, &mut self.udp_frame, &mut self.prot_frame);
                                 // Send to hardware
+                                //println!("**********************************");
+                                //for i in 8..16 {
+                                //println!("{:#0x}", self.udp_frame[i]);
+                                //}
                                 let r = self.p_sock.send_to(&self.udp_frame, &self.p_addr);
                                 match r {
                                     Ok(_sz) => (),
@@ -149,7 +156,7 @@ impl UDPWData<'_> {
                         break;
                     }
                 }
-            }
+            //}
         }
     }
 
@@ -166,7 +173,7 @@ pub fn writer_start(
     let join_handle = thread::spawn(  move || {
         writer_run(receiver, &p_sock, &p_addr, &rb_audio, &audio_cond);
     });
-    return join_handle;
+    return join_handle; //join_handle;
 }
 
 fn writer_run(

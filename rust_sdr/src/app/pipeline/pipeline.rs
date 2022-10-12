@@ -52,7 +52,7 @@ pub struct PipelineData<'a>{
     iq_data : Vec<u8>,
     dec_iq_data : [f64; (common_defs::DSP_BLK_SZ * 2) as usize],
     proc_iq_data : [f64; (common_defs::DSP_BLK_SZ * 2) as usize],
-    output_frame : [u8; common_defs::DSP_BLK_SZ as usize * 4],
+    output_frame : [u8; common_defs::DSP_BLK_SZ as usize * 8],
     run : bool,
     num_rx : u32,
 }
@@ -76,7 +76,7 @@ impl PipelineData<'_> {
             dec_iq_data : [0.0; (common_defs::DSP_BLK_SZ * 2)as usize],
             proc_iq_data : [0.0; (common_defs::DSP_BLK_SZ * 2) as usize],
             // Output contiguous audio and TX IQ data
-            output_frame : [0; (common_defs::DSP_BLK_SZ as usize * 4) as usize],
+            output_frame : [0; (common_defs::DSP_BLK_SZ as usize * 8) as usize],
             run: false,
             // Until we have data set to 1
             num_rx: 1,
