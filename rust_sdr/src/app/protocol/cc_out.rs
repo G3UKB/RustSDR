@@ -177,7 +177,6 @@ impl CCData {
 			cc_el: ([ 0x00, 0x00, 0x00, 0x00, 0x00 ]),
 		}
 	}
-
 }
 
 pub struct CCDataMutex {
