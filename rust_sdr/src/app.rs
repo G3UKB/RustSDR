@@ -30,6 +30,7 @@ pub mod udp;
 pub mod protocol;
 pub mod pipeline;
 pub mod dsp;
+pub mod audio;
 
 use std::sync::{Arc, Mutex, Condvar};
 use std::thread;
@@ -111,6 +112,8 @@ impl Appdata {
         let rb_iq = Arc::new(common::ringb::SyncByteRingBuf::with_capacity(rb_capacity));
         // Buffer to write audio data from DSP
         let rb_audio = Arc::new(common::ringb::SyncByteRingBuf::with_capacity(rb_capacity));
+        // Buffer to write audio data from DSP for local audio
+        let rb_local_audio = Arc::new(common::ringb::SyncByteRingBuf::with_capacity(rb_capacity));
 
         // Create condition variables
         // Between UDP Reader and Pipeline for data transfer
@@ -161,6 +164,9 @@ impl Appdata {
         let mut opt_pipeline_join_handle: option::Option<thread::JoinHandle<()>> = None;
         opt_pipeline_join_handle = Some(pipeline::pipeline::pipeline_start(
                 pipeline_r.clone(), rb_iq.clone(), iq_cond.clone(), rb_audio.clone()));
+
+        // Create the local audio
+        let i_local_audio = audio::audio_out::AudioData::new(&rb_local_audio.clone());
 
         // Initialise the application data
         Appdata { 

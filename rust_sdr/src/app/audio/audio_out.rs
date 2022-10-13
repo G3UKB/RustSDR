@@ -32,16 +32,16 @@ use crate::app::common::ringb;
 
 //==================================================================================
 // Audio output 
-pub struct AudioData {
-    rb_audio : & ringb::SyncByteRingBuf,
+pub struct AudioData<'a> {
+    rb_audio : &'a ringb::SyncByteRingBuf,
 }
 
-impl AudioData {
+impl AudioData<'_> {
 	// Create a new instance and initialise the default data
-	pub fn new(rb_audio : & ringb::SyncByteRingBuf,) -> AudioData {
+	pub fn new(rb_audio : & ringb::SyncByteRingBuf) -> AudioData {
 		
         AudioData {
-            rb_audio = rb_audio,
+            rb_audio : rb_audio,
         }
     }
 
@@ -60,9 +60,9 @@ impl AudioData {
         let sample_format = supported_config.sample_format();
         let config = supported_config.into();
         let stream = match sample_format {
-        SampleFormat::F32 => device.build_output_stream(&config, write_audio::<f32>, err_fn),
-        SampleFormat::I16 => device.build_output_stream(&config, write_audio::<i16>, err_fn),
-        SampleFormat::U16 => device.build_output_stream(&config, write_audio::<u16>, err_fn),
+        SampleFormat::F32 => device.build_output_stream(&config, Self::write_audio::<f32>, err_fn),
+        SampleFormat::I16 => device.build_output_stream(&config, Self::write_audio::<i16>, err_fn),
+        SampleFormat::U16 => device.build_output_stream(&config, Self::write_audio::<u16>, err_fn),
         }.unwrap();
 
         // Start the default stream
