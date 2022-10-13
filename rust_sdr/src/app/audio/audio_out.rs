@@ -27,6 +27,7 @@ bob@bobcowdery.plus.com
 
 use cpal::{Data, Sample, SampleFormat};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+use std::vec;
 
 use crate::app::common::ringb;
 
@@ -46,7 +47,7 @@ impl AudioData<'_> {
     }
 
     // Create an audio output stream
-    pub fn init_audio() {
+    pub fn init_audio(&mut self) {
         let host = cpal::default_host();
         let device = host.default_output_device().expect("no output device available");
 
@@ -60,20 +61,30 @@ impl AudioData<'_> {
         let sample_format = supported_config.sample_format();
         let config = supported_config.into();
         let stream = match sample_format {
-        SampleFormat::F32 => device.build_output_stream(&config, Self::write_audio::<f32>, err_fn),
-        SampleFormat::I16 => device.build_output_stream(&config, Self::write_audio::<i16>, err_fn),
-        SampleFormat::U16 => device.build_output_stream(&config, Self::write_audio::<u16>, err_fn),
+        SampleFormat::F32 => device.build_output_stream(&config, write_audio::<f32>, err_fn),
+        SampleFormat::I16 => device.build_output_stream(&config, write_audio::<i16>, err_fn),
+        SampleFormat::U16 => device.build_output_stream(&config, write_audio::<u16>, err_fn),
         }.unwrap();
 
         // Start the default stream
         stream.play().unwrap();
     }
 
-    // Callback when the audio output needs more data
-    fn write_audio<T: Sample>(data: &mut [T], _: &cpal::OutputCallbackInfo) {
-        // Check the ring buffer for data
-        for sample in data.iter_mut() {
-            *sample = Sample::from(&0.0);
+}
+
+// Callback when the audio output needs more data
+fn write_audio<T: Sample>(data: &mut [T], _: &cpal::OutputCallbackInfo) {
+    let mut data: Vec<f32> = vec![0.0; data.len()];
+    let mut i = 0;
+    // Check the ring buffer for data
+    let audio_data = self.rb_audio.read().read(&mut data);
+    match audio_data {
+        Ok(_sz) => {
+            for sample in data.iter_mut() {
+                *sample = data[i];
+                i += 1;
+            }
         }
+        Err(e) => println!("Read error on rb_iq {:?}. Skipping cycle.", e),
     }
 }
