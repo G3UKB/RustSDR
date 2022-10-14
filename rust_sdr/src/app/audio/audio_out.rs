@@ -50,7 +50,7 @@ impl AudioData {
     }
 
     // Create an audio output stream
-    pub fn init_audio(mut self) {
+    pub fn init_audio(&mut self) {
         println!("Initialising local audio...");
         let host = cpal::default_host();
         let device = host
@@ -71,17 +71,17 @@ impl AudioData {
         let stream = match sample_format {
             SampleFormat::F32 => device.build_output_stream(
                 &config,
-                move |data, info| write_audio::<f32>(data, info, self.rb_audio),
+                move |data, info| write_audio::<f32>(data, info, self.rb_audio.clone()),
                 err_fn,
             ),
             SampleFormat::I16 => device.build_output_stream(
                 &config,
-                move |data, info| write_audio::<i16>(data, info, self.rb_audio),
+                move |data, info| write_audio::<i16>(data, info, self.rb_audio.clone()),
                 err_fn,
             ),
             SampleFormat::U16 => device.build_output_stream(
                 &config,
-                move |data, info| write_audio::<u16>(data, info, self.rb_audio),
+                move |data, info| write_audio::<u16>(data, info, self.rb_audio.clone()),
                 err_fn,
             ),
         }
@@ -103,16 +103,16 @@ fn write_audio<T: Sample>(data: &mut [f32], _: &cpal::OutputCallbackInfo, rb_aud
     let mut in_data: Vec<f32> = vec![0.0; data.len()];
     let mut i = 0;
 
-    let audio_data = rb_audio.read().read(&mut rb_data);
-    match audio_data {
-        Ok(_sz) => {
+    //let audio_data = rb_audio.read().read(&mut rb_data);
+    //match audio_data {
+    //    Ok(_sz) => {
             for sample in data.iter_mut() {
                 *sample = in_data[i];
                 i += 1;
             }
-        }
-        Err(e) => println!("Read error on rb_iq {:?}. Skipping cycle.", e),
-    }
+    //    }
+    //    Err(e) => println!("Read error on rb_iq {:?}. Skipping cycle.", e),
+    //}
     
 }
 

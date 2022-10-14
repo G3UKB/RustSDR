@@ -78,6 +78,10 @@ pub struct Appdata{
     pub opt_pipeline_join_handle: option::Option<thread::JoinHandle<()>>,
     // Ring buffer Reader thread <-> pipeline thread
     pub rb_iq : Arc<common::ringb::SyncByteRingBuf>,
+
+    //=================================================
+    // Local audio
+    pub i_local_audio : audio::audio_out::AudioData,
 }
 
 //=========================================================================================
@@ -166,8 +170,8 @@ impl Appdata {
                 pipeline_r.clone(), rb_iq.clone(), iq_cond.clone(), rb_audio.clone()));
 
         // Create the local audio
-        let i_local_audio = audio::audio_out::AudioData::new(rb_local_audio.clone());
-        i_local_audio.init_audio();
+        let mut i_local_audio = audio::audio_out::AudioData::new(rb_local_audio.clone());
+        
 
         // Initialise the application data
         Appdata { 
@@ -186,6 +190,7 @@ impl Appdata {
             pipeline_receiver : pipeline_r,
             opt_pipeline_join_handle : opt_pipeline_join_handle,
             rb_iq : rb_iq,
+            i_local_audio : i_local_audio,
         }
     }
     
@@ -206,6 +211,8 @@ impl Appdata {
 
         // Start the hardware IQ stream and optional wide band data.
         self.i_hw_control.do_start(false);
+
+        self.i_local_audio.init_audio();
     }
 
     //=========================================================================================
