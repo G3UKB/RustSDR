@@ -188,7 +188,7 @@ impl Appdata {
             rb_iq : rb_iq,
         }
     }
-
+    
     //=========================================================================================
     // Initialise system to a running state
     pub fn app_init(&mut self) {
