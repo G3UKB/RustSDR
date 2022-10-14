@@ -82,6 +82,7 @@ pub struct Appdata{
     //=================================================
     // Local audio
     pub i_local_audio : audio::audio_out::AudioData,
+    pub stream : Option<cpal::Stream>,
 }
 
 //=========================================================================================
@@ -191,6 +192,7 @@ impl Appdata {
             opt_pipeline_join_handle : opt_pipeline_join_handle,
             rb_iq : rb_iq,
             i_local_audio : i_local_audio,
+            stream : None,
         }
     }
     
@@ -212,13 +214,18 @@ impl Appdata {
         // Start the hardware IQ stream and optional wide band data.
         self.i_hw_control.do_start(false);
 
-        self.i_local_audio.init_audio();
+        // Start the local audio stream
+        self.stream = Some(self.i_local_audio.init_audio());
+        
     }
 
     //=========================================================================================
     // Tidy close everything
     pub fn app_close(&mut self) { 
         
+        // Close local audio
+        self.i_local_audio.close_audio(&(self.stream.as_ref().unwrap()));
+
         // Tell threads to stop
         self.r_sender.send(common::messages::ReaderMsg::StopListening).unwrap();
         self.pipeline_sender.send(common::messages::PipelineMsg::Terminate).unwrap();
