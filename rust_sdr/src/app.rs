@@ -166,7 +166,8 @@ impl Appdata {
                 pipeline_r.clone(), rb_iq.clone(), iq_cond.clone(), rb_audio.clone()));
 
         // Create the local audio
-        let i_local_audio = audio::audio_out::AudioData::new(&rb_local_audio.clone());
+        let i_local_audio = audio::audio_out::AudioData::new(rb_local_audio.clone());
+        i_local_audio.init_audio();
 
         // Initialise the application data
         Appdata { 
