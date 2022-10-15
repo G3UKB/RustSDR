@@ -185,7 +185,7 @@ impl PipelineData<'_> {
             // Now encode and copy data for local audio output
             self.encode_for_local_audio();
             // Copy data to the local audio ring buffer 
-            let r = self.rb_audio.write().write(&self.audio_frame);
+            let r = self.rb_local_audio.write().write(&self.audio_frame);
             match r {
                 Err(e) => {
                     println!("Write error on rb_local_audio, skipping block {:?}", e);
@@ -234,7 +234,11 @@ impl PipelineData<'_> {
     while raw <= ((common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) - common_defs::BYTES_PER_SAMPLE) {
         // Here we would iterate over each receiver and use a 2d array but for now one receiver
         // Pack the 3 x 8 bit BE into an int in LE
-        as_int = ((((self.iq_data[(raw+2) as usize] as i32) << 8) | ((self.iq_data[(raw+1) as usize] as i32) << 16) | ((self.iq_data[raw as usize] as i32) << 24)) >>8);
+        as_int = ((
+                ((self.iq_data[(raw+2) as usize] as i32) << 8) | 
+                ((self.iq_data[(raw+1) as usize] as i32) << 16) | 
+                ((self.iq_data[raw as usize] as i32) << 24))
+                >>8);
         // Scale and write to target array
         self.dec_iq_data[dec as usize] = (as_int as f64) * input_iq_scale;
 
@@ -319,14 +323,14 @@ impl PipelineData<'_> {
         while dest <= out_sz - 8 {
             L = (self.proc_iq_data[src] * output_scale) as i32;
             R = (self.proc_iq_data[src+1] * output_scale) as i32;
-            self.output_frame[dest+3] = ((L >> 24) & 0xff) as u8;
-            self.output_frame[dest+2] = ((L >> 16) & 0xff) as u8;
-            self.output_frame[dest+1] = ((L >> 8) & 0xff) as u8;
-            self.output_frame[dest] = (L & 0xff) as u8;
-            self.output_frame[dest+3] = ((R >> 24) & 0xff) as u8;
-            self.output_frame[dest+2] = ((R >> 16) & 0xff) as u8;
-            self.output_frame[dest+1] = ((R >> 8) & 0xff) as u8;
-            self.output_frame[dest] = (R & 0xff) as u8;
+            self.audio_frame[dest+3] = ((L >> 24) & 0xff) as u8;
+            self.audio_frame[dest+2] = ((L >> 16) & 0xff) as u8;
+            self.audio_frame[dest+1] = ((L >> 8) & 0xff) as u8;
+            self.audio_frame[dest] = (L & 0xff) as u8;
+            self.audio_frame[dest+3] = ((R >> 24) & 0xff) as u8;
+            self.audio_frame[dest+2] = ((R >> 16) & 0xff) as u8;
+            self.audio_frame[dest+1] = ((R >> 8) & 0xff) as u8;
+            self.audio_frame[dest] = (R & 0xff) as u8;
 
             dest += 8;
             src += 2;

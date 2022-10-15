@@ -114,13 +114,14 @@ fn write_audio<T: Sample>(data: &mut [f32], _: &cpal::OutputCallbackInfo, rb_aud
     let audio_data = rb_audio.read().read(&mut rb_data);
     match audio_data {
         Ok(_sz) => {
+            println!("Read {}", _sz);
             u8_to_f32((data.len()*8) as u32, &rb_data, &mut in_data);
             for sample in data.iter_mut() {
                 *sample = in_data[i];
                 i += 1;
             }
         }
-        Err(e) => println!("Read error on rb_iq {:?}. Skipping cycle.", e),
+        Err(e) => println!("Read error on rb_audio {:?}. Skipping cycle.", e),
     }
     
 }
