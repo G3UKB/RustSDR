@@ -49,10 +49,12 @@ pub struct PipelineData<'a>{
     rb_iq : &'a ringb::SyncByteRingBuf,
     iq_cond : &'a (Mutex<bool>, Condvar),
     rb_audio : &'a ringb::SyncByteRingBuf,
+    rb_local_audio : &'a ringb::SyncByteRingBuf,
     iq_data : Vec<u8>,
     dec_iq_data : [f64; (common_defs::DSP_BLK_SZ * 2) as usize],
     proc_iq_data : [f64; (common_defs::DSP_BLK_SZ * 2) as usize],
     output_frame : [u8; common_defs::DSP_BLK_SZ as usize * 8],
+    audio_frame : [u8; common_defs::DSP_BLK_SZ as usize * 8],
     run : bool,
     num_rx : u32,
 }
@@ -63,13 +65,14 @@ impl PipelineData<'_> {
     pub fn new<'a> (
         receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, 
         rb_iq : &'a ringb::SyncByteRingBuf, iq_cond : &'a (Mutex<bool>, Condvar),
-        rb_audio : &'a ringb::SyncByteRingBuf) -> PipelineData {
+        rb_audio : &'a ringb::SyncByteRingBuf, rb_local_audio : &'a ringb::SyncByteRingBuf) -> PipelineData {
 
 		PipelineData {
             receiver: receiver,
             rb_iq: rb_iq,
             iq_cond: iq_cond,
             rb_audio: rb_audio,
+            rb_local_audio: rb_local_audio,
             // Read size from rb gives us 1024 samples interleaved
             iq_data: vec![0; (common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) as usize],
             // Exchange size with DSP is 1024 I and 1024 Q samples interleaved as f64
@@ -77,6 +80,8 @@ impl PipelineData<'_> {
             proc_iq_data : [0.0; (common_defs::DSP_BLK_SZ * 2) as usize],
             // Output contiguous audio and TX IQ data
             output_frame : [0; (common_defs::DSP_BLK_SZ as usize * 8) as usize],
+            // Local audio out
+            audio_frame : [0; (common_defs::DSP_BLK_SZ as usize * 8) as usize],
             run: false,
             // Until we have data set to 1
             num_rx: 1,
@@ -165,13 +170,25 @@ impl PipelineData<'_> {
          if error == 0 {
             // We have output data from the DSP
             // Encode the data into a form suitable for the hardware
-            self.encode();
+            self.encode_for_hardware();
             // Copy data to the output ring buffer 
-            let vec_audio = self.proc_iq_data.to_vec();
             let r = self.rb_audio.write().write(&self.output_frame);
             match r {
                 Err(e) => {
                     println!("Write error on rb_audio, skipping block {:?}", e);
+                }
+                Ok(_sz) => {
+                    // We could signal data available but may not be necessary
+                    // At the moment the writer thread just takes data when available
+                }
+            }
+            // Now encode and copy data for local audio output
+            self.encode_for_local_audio();
+            // Copy data to the local audio ring buffer 
+            let r = self.rb_audio.write().write(&self.audio_frame);
+            match r {
+                Err(e) => {
+                    println!("Write error on rb_local_audio, skipping block {:?}", e);
                 }
                 Ok(_sz) => {
                     // We could signal data available but may not be necessary
@@ -228,7 +245,7 @@ impl PipelineData<'_> {
     }
 
     // Encode the frame into a form suitable for the hardware
-    fn encode(&mut self) {
+    fn encode_for_hardware(&mut self) {
         /*
         * The output data is structured as follows:
         * <L1><L0><R1><R0><I1><I0><Q1><Q0><L1><L0><R1><R0><I1><I0><Q1><Q0>...
@@ -278,6 +295,43 @@ impl PipelineData<'_> {
             src += 2;
         }
     }
+
+    // Encode the frame into a form suitable for the hardware
+    fn encode_for_local_audio(&mut self) {
+        /*
+        * The output data is structured as follows:
+        * <L0><L1><L2><L3><R0><R1><R2><R3>...
+        *
+        * The L and R samples are in f32 format LE.
+        */
+
+        // Copy and encode the samples
+		
+        let out_sz: usize = (common_defs::DSP_BLK_SZ * 4 * 2) as usize;
+        let mut dest: usize = 0;
+        let mut src: usize = 0;
+        let mut L: i32;
+        let mut R: i32;
+        let base: i32 = 2;
+        let output_scale: f64 = base.pow(15) as f64;
+
+        // We iterate on the output side starting at the MSB
+        while dest <= out_sz - 8 {
+            L = (self.proc_iq_data[src] * output_scale) as i32;
+            R = (self.proc_iq_data[src+1] * output_scale) as i32;
+            self.output_frame[dest+3] = ((L >> 24) & 0xff) as u8;
+            self.output_frame[dest+2] = ((L >> 16) & 0xff) as u8;
+            self.output_frame[dest+1] = ((L >> 8) & 0xff) as u8;
+            self.output_frame[dest] = (L & 0xff) as u8;
+            self.output_frame[dest+3] = ((R >> 24) & 0xff) as u8;
+            self.output_frame[dest+2] = ((R >> 16) & 0xff) as u8;
+            self.output_frame[dest+1] = ((R >> 8) & 0xff) as u8;
+            self.output_frame[dest] = (R & 0xff) as u8;
+
+            dest += 8;
+            src += 2;
+        }
+    }
 }
 
 //==================================================================================
@@ -286,9 +340,10 @@ pub fn pipeline_start(
     receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, 
     rb_iq : Arc<ringb::SyncByteRingBuf>,
     iq_cond : Arc<(Mutex<bool>, Condvar)>,
-    rb_audio : Arc<ringb::SyncByteRingBuf>) -> thread::JoinHandle<()> {
+    rb_audio : Arc<ringb::SyncByteRingBuf>,
+    rb_local_audio : Arc<ringb::SyncByteRingBuf>) -> thread::JoinHandle<()> {
     let join_handle = thread::spawn(  move || {
-        pipeline_run(receiver, &rb_iq, &iq_cond, &rb_audio);
+        pipeline_run(receiver, &rb_iq, &iq_cond, &rb_audio, &rb_local_audio);
     });
     return join_handle;
 }
@@ -297,11 +352,12 @@ fn pipeline_run(
         receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, 
         rb_iq : &ringb::SyncByteRingBuf, 
         iq_cond : &(Mutex<bool>, Condvar), 
-        rb_audio : &ringb::SyncByteRingBuf) {
+        rb_audio : &ringb::SyncByteRingBuf,
+        rb_local_audio : &ringb::SyncByteRingBuf){
     println!("Pipeline running");
 
     // Instantiate the runtime object
-    let mut i_pipeline = PipelineData::new(receiver, rb_iq, iq_cond, rb_audio);
+    let mut i_pipeline = PipelineData::new(receiver, rb_iq, iq_cond, rb_audio, rb_local_audio);
 
     // Exits when the reader loop exits
     i_pipeline.pipeline_run();

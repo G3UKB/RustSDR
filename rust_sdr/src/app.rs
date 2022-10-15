@@ -168,7 +168,7 @@ impl Appdata {
         // Start the pipeline thread
         let mut opt_pipeline_join_handle: option::Option<thread::JoinHandle<()>> = None;
         opt_pipeline_join_handle = Some(pipeline::pipeline::pipeline_start(
-                pipeline_r.clone(), rb_iq.clone(), iq_cond.clone(), rb_audio.clone()));
+                pipeline_r.clone(), rb_iq.clone(), iq_cond.clone(), rb_audio.clone(), rb_local_audio.clone()));
 
         // Create the local audio
         let mut i_local_audio = audio::audio_out::AudioData::new(rb_local_audio.clone());

@@ -107,26 +107,49 @@ fn write_audio<T: Sample>(data: &mut [f32], _: &cpal::OutputCallbackInfo, rb_aud
     // Byte data from ring buffer
     //println!("Len {}", data.len());
     
-    let mut rb_data: Vec<u8> = vec![0; data.len()*4];
+    let mut rb_data: Vec<u8> = vec![0; data.len()*8];
     let mut in_data: Vec<f32> = vec![0.0; data.len()];
     let mut i = 0;
 
-    //let audio_data = rb_audio.read().read(&mut rb_data);
-    //match audio_data {
-    //    Ok(_sz) => {
+    let audio_data = rb_audio.read().read(&mut rb_data);
+    match audio_data {
+        Ok(_sz) => {
+            u8_to_f32((data.len()*8) as u32, &rb_data, &mut in_data);
             for sample in data.iter_mut() {
                 *sample = in_data[i];
                 i += 1;
             }
-    //    }
-    //    Err(e) => println!("Read error on rb_iq {:?}. Skipping cycle.", e),
-    //}
+        }
+        Err(e) => println!("Read error on rb_iq {:?}. Skipping cycle.", e),
+    }
     
 }
 
 // Convert a Vec:u8 to a Vec:f32
-fn u8_to_f32() {
-    // The U8 data in the ring buffer is ordered as LE 16 bit values
-
+fn u8_to_f32(out_sz: u32, rb_data: &Vec<u8>, in_data: &mut Vec<f32>) {
+    // The U8 data in the ring buffer is ordered as LE i32 values 
+    let mut raw: u32 = 0;
+    let mut dec: u32 = 0;
+    let mut as_int_left: i32;
+    let mut as_int_right: i32;
+    while raw <= out_sz -8 {
+        // Here we would iterate over each receiver and use a 2d array but for now one receiver
+        // Pack the 3 x 8 bit BE into an int in LE
+        as_int_left = (
+            ((rb_data[(raw+3) as usize] as i32)) | 
+            ((rb_data[(raw+2) as usize] as i32) << 8) | 
+            ((rb_data[(raw+1) as usize] as i32) << 16) | 
+            ((rb_data[raw as usize] as i32) << 24));
+        as_int_right = (
+            ((rb_data[(raw+7) as usize] as i32)) | 
+            ((rb_data[(raw+6) as usize] as i32) << 8) | 
+            ((rb_data[(raw+5) as usize] as i32) << 16) | 
+            ((rb_data[(raw+4) as usize] as i32) << 24));
+        // Scale and write to target array
+        in_data[dec as usize] = (as_int_left as f32);
+        in_data[(dec+1) as usize] = (as_int_right as f32);
+        raw += 8;
+        dec += 2;
+    }
 }
 
