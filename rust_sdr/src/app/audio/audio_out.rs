@@ -97,6 +97,7 @@ impl AudioData {
     
     // Close stream
     pub fn close_audio(&mut self, stream: &cpal::Stream) {
+        stream.pause().unwrap();
         println!("Closing audio stream");
     }
 
@@ -112,10 +113,11 @@ fn write_audio<T: Sample>(data: &mut [f32], _: &cpal::OutputCallbackInfo, rb_aud
     let mut i = 0;
 
     let audio_data = rb_audio.read().read(&mut rb_data);
+    //println!("{:?}", rb_data);
     match audio_data {
         Ok(_sz) => {
-            println!("Read {}", _sz);
-            u8_to_f32((data.len()*8) as u32, &rb_data, &mut in_data);
+            //println!("{:?}", in_data);
+            u8_to_f32(((data.len()/2)*8) as u32, &rb_data, &mut in_data);
             for sample in data.iter_mut() {
                 *sample = in_data[i];
                 i += 1;
@@ -147,6 +149,7 @@ fn u8_to_f32(out_sz: u32, rb_data: &Vec<u8>, in_data: &mut Vec<f32>) {
             ((rb_data[(raw+5) as usize] as i32) << 16) | 
             ((rb_data[(raw+4) as usize] as i32) << 24));
         // Scale and write to target array
+        println!("{}<{}", as_int_left,as_int_right);
         in_data[dec as usize] = (as_int_left as f32);
         in_data[(dec+1) as usize] = (as_int_right as f32);
         raw += 8;
