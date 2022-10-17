@@ -227,7 +227,7 @@ impl PipelineData<'_> {
 
     // Iterate over each set of sample data
     // There are 3xI and 3xQ bytes for each receiver interleaved
-    // Scale and convert each 24 bit value into the f32 array
+    // Scale and convert each 24 bit value into the f64 array
     let mut raw: u32 = 0;
     let mut dec: u32 = 0;
     let mut as_int: i32;

@@ -1,7 +1,8 @@
 /*
-common.rs
+converters.rs
+module converters
 
-Holder for common modules
+Convertion of buffer types
 
 Copyright (C) 2022 by G3UKB Bob Cowdery
 
@@ -24,8 +25,22 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-pub mod common_defs;
-pub mod messages;
-pub mod cc_out_defs;
-pub mod ringb;
-pub mod converters;
+// Convert input buffer in i8 BE to output buffer f64 LE
+pub fn i8be_to_f64le() {
+
+}
+
+// Convert input buffer in f64 LE to output buffer i8 BE
+pub fn f64le_to_i8be() {
+
+}
+
+// Convert input buffer in f64 LE to output buffer f32 LE
+//pub fn f64le_to_i8be() {
+//
+//}
+
+// Convert input buffer in i8 LE to output buffer f32 LE
+pub fn i8le_to_f32le() {
+
+}

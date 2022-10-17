@@ -149,7 +149,7 @@ fn u8_to_f32(out_sz: u32, rb_data: &Vec<u8>, in_data: &mut Vec<f32>) {
             ((rb_data[(raw+5) as usize] as i32) << 16) | 
             ((rb_data[(raw+4) as usize] as i32) << 24));
         // Scale and write to target array
-        println!("{}<{}", as_int_left,as_int_right);
+        println!("{}, {}", as_int_left,as_int_right);
         in_data[dec as usize] = (as_int_left as f32);
         in_data[(dec+1) as usize] = (as_int_right as f32);
         raw += 8;
