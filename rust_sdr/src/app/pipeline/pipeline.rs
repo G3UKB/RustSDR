@@ -274,9 +274,14 @@ impl PipelineData<'_> {
         // This means we have 1024*8*2 bytes of data to iterate on the input
         // However the output is 16 bit packed so we have 1024*2*2 to iterate on the output
         // Both in and out are interleaved which is the final factor of 2
-        let out_sz: usize = (common_defs::DSP_BLK_SZ * 4 * 2) as usize;
+        let out_sz: u32 = (common_defs::DSP_BLK_SZ * 4 * 2);
         let base: i32 = 2;
         let output_scale: f64 = base.pow(15) as f64;
+
+        // Convert and scale input to output data.
+        converters::f64le_to_i8be(&self.proc_iq_data, &mut self.output_frame, output_scale, out_sz);
+
+        /* 
         let mut dest: usize = 0;
         let mut src: usize = 0;
         let mut L: i16;
@@ -303,6 +308,7 @@ impl PipelineData<'_> {
             dest += 8;
             src += 2;
         }
+        */
     }
 
     // Encode the frame into a form suitable for the hardware

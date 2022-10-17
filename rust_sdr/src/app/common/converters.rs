@@ -65,8 +65,39 @@ pub fn i8be_to_f64le(in_data: &Vec<u8>, out_data: &mut [f64; (common_defs::DSP_B
 }
 
 // Convert input buffer in f64 LE to output buffer i8 BE
-pub fn f64le_to_i8be() {
+pub fn f64le_to_i8be(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], out_data: &mut [u8; common_defs::DSP_BLK_SZ as usize * 8], scale: f64, sz: u32) {
+    // This conversion is the opposite of the i8be_to_f64le() and is output side of the DSP
+    // The converted data is suitable for insertion into the ring buffer to the UDP writer.
 
+    //let out_sz: usize = (common_defs::DSP_BLK_SZ * 4 * 2) as usize;
+    //let base: i32 = 2;
+    //let output_scale: f64 = base.pow(15) as f64;
+    let mut dest: usize = 0;
+    let mut src: usize = 0;
+    let mut L: i16;
+    let mut R: i16;
+    let mut I: i16;
+    let mut Q: i16;
+    
+    // We iterate on the output side starting at the LSB
+    while dest <= (sz - 8) as usize {
+        L = (in_data[src] * scale) as i16;
+        R = (in_data[src+1] * scale) as i16;
+        I = 0 as i16;
+        Q = 0 as i16;
+        out_data[dest] = ((L >> 8) & 0xff) as u8;
+        out_data[dest+1] = (L & 0xff) as u8;
+        out_data[dest+2] = ((R >> 8) & 0xff) as u8;
+        out_data[dest+3] = (R & 0xff) as u8;
+
+        out_data[dest+4] = I as u8;
+        out_data[dest+5] = I as u8;
+        out_data[dest+6] = Q as u8;
+        out_data[dest+7] = Q as u8;
+
+        dest += 8;
+        src += 2;
+    }
 }
 
 // Convert input buffer in f64 LE to output buffer i8 LE
