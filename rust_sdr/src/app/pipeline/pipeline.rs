@@ -33,6 +33,7 @@ use std::cell::RefCell;
 use crate::app::common::messages;
 use crate::app::common::common_defs;
 use crate::app::common::ringb;
+use crate::app::common::converters;
 use crate::app::dsp;
 use crate::app::udp::udp_writer;
 
@@ -200,52 +201,57 @@ impl PipelineData<'_> {
 
     // Decode the frame into a form suitable for signal processing
     fn decode(&mut self) {
-    /*
-    *
-    * Each IQ block is formatted as follows:
-    *	For 1 receiver:
-    *	0                        ... in_iq_sz
-    *	<I2><I1><I0><Q2><Q1><Q0>
-    *	For 2 receivers:
-    *	0                        					... in_iq_sz
-    *    <I12><I11><I10><Q12><Q11><Q10><I22><I21><I20><Q22><Q21><Q20>
-    *	etc to 8 receivers
-    *	The output is interleaved IQ per receiver.
-    *
-    * Each Mic block is formatted as follows:
-    *	0                        ... in_mic_sz
-    *	<M1><M0><M1><M0>
-    */
+        /*
+        *
+        * Each IQ block is formatted as follows:
+        *	For 1 receiver:
+        *	0                        ... in_iq_sz
+        *	<I2><I1><I0><Q2><Q1><Q0>
+        *	For 2 receivers:
+        *	0                        					... in_iq_sz
+        *    <I12><I11><I10><Q12><Q11><Q10><I22><I21><I20><Q22><Q21><Q20>
+        *	etc to 8 receivers
+        *	The output is interleaved IQ per receiver.
+        *
+        * Each Mic block is formatted as follows:
+        *	0                        ... in_mic_sz
+        *	<M1><M0><M1><M0>
+        */
 
-    // We move data from the iq_data vec to the dec_iq_data array ready to FFI to DSP.
-    // We also scale the data and convert from big endian to little endian as the hardware
-    // uses big endian format.
+        // We move data from the iq_data vec to the dec_iq_data array ready to FFI to DSP.
+        // We also scale the data and convert from big endian to little endian as the hardware
+        // uses big endian format.
 
-    // Scale factors
-    let base: i32 = 2;
-    let input_iq_scale: f64 = 1.0 /(base.pow(23)) as f64;
+        // Scale factors
+        let base: i32 = 2;
+        let input_iq_scale: f64 = 1.0 /(base.pow(23)) as f64;
+        // Size to iterate over
+        let sz: u32 = ((common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) - common_defs::BYTES_PER_SAMPLE);
+        // Convert and scale input to output data.
+        converters::i8be_to_f64le(&self.iq_data, &mut self.dec_iq_data, input_iq_scale, sz);
 
-    // Iterate over each set of sample data
-    // There are 3xI and 3xQ bytes for each receiver interleaved
-    // Scale and convert each 24 bit value into the f64 array
-    let mut raw: u32 = 0;
-    let mut dec: u32 = 0;
-    let mut as_int: i32;
-    while raw <= ((common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) - common_defs::BYTES_PER_SAMPLE) {
-        // Here we would iterate over each receiver and use a 2d array but for now one receiver
-        // Pack the 3 x 8 bit BE into an int in LE
-        as_int = ((
-                ((self.iq_data[(raw+2) as usize] as i32) << 8) | 
-                ((self.iq_data[(raw+1) as usize] as i32) << 16) | 
-                ((self.iq_data[raw as usize] as i32) << 24))
-                >>8);
-        // Scale and write to target array
-        self.dec_iq_data[dec as usize] = (as_int as f64) * input_iq_scale;
+        /*
+        // Iterate over each set of sample data
+        // There are 3xI and 3xQ bytes for each receiver interleaved
+        // Scale and convert each 24 bit value into the f64 array
+        let mut raw: u32 = 0;
+        let mut dec: u32 = 0;
+        let mut as_int: i32;
+        while raw <= ((common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) - common_defs::BYTES_PER_SAMPLE) {
+            // Here we would iterate over each receiver and use a 2d array but for now one receiver
+            // Pack the 3 x 8 bit BE into an int in LE
+            as_int = ((
+                    ((self.iq_data[(raw+2) as usize] as i32) << 8) | 
+                    ((self.iq_data[(raw+1) as usize] as i32) << 16) | 
+                    ((self.iq_data[raw as usize] as i32) << 24))
+                    >>8);
+            // Scale and write to target array
+            self.dec_iq_data[dec as usize] = (as_int as f64) * input_iq_scale;
 
-        raw += common_defs::BYTES_PER_SAMPLE;
-        dec += 1;
-    }
-    
+            raw += common_defs::BYTES_PER_SAMPLE;
+            dec += 1;
+        }
+        */
     }
 
     // Encode the frame into a form suitable for the hardware
@@ -269,16 +275,15 @@ impl PipelineData<'_> {
         // However the output is 16 bit packed so we have 1024*2*2 to iterate on the output
         // Both in and out are interleaved which is the final factor of 2
         let out_sz: usize = (common_defs::DSP_BLK_SZ * 4 * 2) as usize;
+        let base: i32 = 2;
+        let output_scale: f64 = base.pow(15) as f64;
         let mut dest: usize = 0;
         let mut src: usize = 0;
         let mut L: i16;
         let mut R: i16;
         let mut I: i16;
         let mut Q: i16;
-        let base: i32 = 2;
-        let output_scale: f64 = base.pow(15) as f64;
-
-
+        
         // We iterate on the output side starting at the LSB
         while dest <= out_sz - 8 {
             L = (self.proc_iq_data[src] * output_scale) as i16;
