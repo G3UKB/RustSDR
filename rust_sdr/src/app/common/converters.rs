@@ -69,9 +69,6 @@ pub fn f64le_to_i8be(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], ou
     // This conversion is the opposite of the i8be_to_f64le() and is output side of the DSP
     // The converted data is suitable for insertion into the ring buffer to the UDP writer.
 
-    //let out_sz: usize = (common_defs::DSP_BLK_SZ * 4 * 2) as usize;
-    //let base: i32 = 2;
-    //let output_scale: f64 = base.pow(15) as f64;
     let mut dest: usize = 0;
     let mut src: usize = 0;
     let mut L: i16;
@@ -79,6 +76,12 @@ pub fn f64le_to_i8be(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], ou
     let mut I: i16;
     let mut Q: i16;
     
+    // We get 1024 f64 samples interleaved left/right
+    // We 'will' get f64 float samples interleaved IQ output data when TX is implemented
+    // This means we have 1024*sizeof f64(8)*left/right(2) bytes of data to iterate on the input
+    // However the output is 16 bit packed so we have 1024*2*2 to iterate on the output
+    // Both in and out are interleaved
+
     // We iterate on the output side starting at the LSB
     while dest <= (sz - 8) as usize {
         L = (in_data[src] * scale) as i16;
