@@ -462,15 +462,15 @@ impl CCDataMutex {
 		self.cc_board_config(CCOBoardConfig::BoardBoth);
 		self.cc_mic_src(CCOMicSrc::MicPen);
 		self.cc_alex_attn(CCOAlexAttn::Attn0db);
-		self.cc_preamp(CCOPreamp::PreAmpOff );
+		self.cc_preamp(CCOPreamp::PreAmpOff);
 		self.cc_alex_rx_ant(CCORxAnt::RxAntNone);
 		self.cc_alex_rx_out(CCOAlexRxOut::RxOutOff );
 		self.cc_alex_tx_rly(CCOAlexTxRly::TxRlyTx1);
 		self.cc_duplex(CCODuplex::DuplexOff);
 		self.cc_num_rx(CCONumRx::NumRx1);
 		self.cc_alex_auto(CCOAlexAuto::AlexAuto);
-		self.cc_set_rx_tx_freq(7150000);
-		self.cc_set_tx_freq(7150000);
+		self.cc_set_rx_tx_freq(7100000);
+		self.cc_set_tx_freq(7100000);
 	}
 
 }

@@ -108,7 +108,7 @@ impl AudioData {
 // Callback when the audio output needs more data
 fn write_audio<T: Sample>(data: &mut [f32], _: &cpal::OutputCallbackInfo, rb_audio: &ringb::SyncByteRingBuf) {
     // Byte data from ring buffer
-    let mut rb_data: Vec<u8> = vec![0; data.len()*4];
+    let mut rb_data: Vec<u8> = vec![0; data.len()*2];
     // Converted data
     let mut out_data: Vec<f32> = vec![0.0; data.len()];
     // Iterator
@@ -122,7 +122,7 @@ fn write_audio<T: Sample>(data: &mut [f32], _: &cpal::OutputCallbackInfo, rb_aud
             //println!("Data");
             // The U8 data in the ring buffer is ordered as LE i32 values
             // Convert from 8 i8 bytes to 2 f32 samples
-            converters::i8le_to_f32le(&rb_data, &mut out_data, ((data.len()/2)*4) as u32);
+            converters::i8le_to_f32le(&rb_data, &mut out_data, ((data.len())*2) as u32);
             //println!("{:?}", out_data);
             // Copy data to audio buffer
             for sample in data.iter_mut() {
