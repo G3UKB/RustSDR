@@ -222,13 +222,8 @@ impl PipelineData<'_> {
         // We also scale the data and convert from big endian to little endian as the hardware
         // uses big endian format.
 
-        // Scale factors
-        let base: i32 = 2;
-        let input_iq_scale: f64 = 1.0 /(base.pow(23)) as f64;
-        // Size to iterate over
-        let sz: u32 = ((common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) - common_defs::BYTES_PER_SAMPLE);
         // Convert and scale input to output data.
-        converters::i8be_to_f64le(&self.iq_data, &mut self.dec_iq_data, input_iq_scale, sz);
+        converters::i8be_to_f64le(&self.iq_data, &mut self.dec_iq_data);
 
         /*
         // Iterate over each set of sample data
@@ -274,12 +269,12 @@ impl PipelineData<'_> {
         // This means we have 1024*8*2 bytes of data to iterate on the input
         // However the output is 16 bit packed so we have 1024*2*2 to iterate on the output
         // Both in and out are interleaved which is the final factor of 2
-        let out_sz: u32 = (common_defs::DSP_BLK_SZ * 4 * 2);
-        let base: i32 = 2;
-        let output_scale: f64 = base.pow(15) as f64;
+        //let out_sz: u32 = (common_defs::DSP_BLK_SZ * 4 * 2);
+        //let base: i32 = 2;
+        //let output_scale: f64 = base.pow(15) as f64;
 
         // Convert and scale input to output data.
-        converters::f64le_to_i8be(&self.proc_iq_data, &mut self.output_frame, output_scale, out_sz);
+        converters::f64le_to_i8be(&self.proc_iq_data, &mut self.output_frame);
 
         /* 
         let mut dest: usize = 0;
@@ -320,8 +315,11 @@ impl PipelineData<'_> {
         * The L and R samples are in f32 format LE.
         */
 
+        // Convert and scale input to output data.
+        converters::f64le_to_i8le(&self.proc_iq_data, &mut self.audio_frame);
+
         // Copy and encode the samples
-		
+		/*
         let out_sz: usize = (common_defs::DSP_BLK_SZ * 4 * 2) as usize;
         let mut dest: usize = 0;
         let mut src: usize = 0;
@@ -346,6 +344,7 @@ impl PipelineData<'_> {
             dest += 8;
             src += 2;
         }
+        */
     }
 }
 

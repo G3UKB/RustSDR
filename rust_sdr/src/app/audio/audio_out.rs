@@ -31,6 +31,7 @@ use std::vec;
 use std::io::Read;
 use std::sync::Arc;
 
+use crate::app::common::converters;
 use crate::app::common::ringb;
 
 //==================================================================================
@@ -129,8 +130,10 @@ fn write_audio<T: Sample>(data: &mut [f32], _: &cpal::OutputCallbackInfo, rb_aud
 }
 
 // Convert a Vec:u8 to a Vec:f32
-fn u8_to_f32(out_sz: u32, rb_data: &Vec<u8>, in_data: &mut Vec<f32>) {
+fn u8_to_f32(out_sz: u32, rb_data: &Vec<u8>, out_data: &mut Vec<f32>) {
     // The U8 data in the ring buffer is ordered as LE i32 values 
+    converters::i8le_to_f32le(&rb_data, out_data, out_sz);
+/* 
     let mut raw: u32 = 0;
     let mut dec: u32 = 0;
     let mut as_int_left: i32;
@@ -139,12 +142,12 @@ fn u8_to_f32(out_sz: u32, rb_data: &Vec<u8>, in_data: &mut Vec<f32>) {
         // Here we would iterate over each receiver and use a 2d array but for now one receiver
         // Pack the 3 x 8 bit BE into an int in LE
         as_int_left = (
-            ((rb_data[(raw+3) as usize] as i32)) | 
+            rb_data[(raw+3) as usize] as i32 | 
             ((rb_data[(raw+2) as usize] as i32) << 8) | 
             ((rb_data[(raw+1) as usize] as i32) << 16) | 
             ((rb_data[raw as usize] as i32) << 24));
         as_int_right = (
-            ((rb_data[(raw+7) as usize] as i32)) | 
+            rb_data[(raw+7) as usize] as i32 | 
             ((rb_data[(raw+6) as usize] as i32) << 8) | 
             ((rb_data[(raw+5) as usize] as i32) << 16) | 
             ((rb_data[(raw+4) as usize] as i32) << 24));
@@ -155,5 +158,6 @@ fn u8_to_f32(out_sz: u32, rb_data: &Vec<u8>, in_data: &mut Vec<f32>) {
         raw += 8;
         dec += 2;
     }
+    */
 }
 

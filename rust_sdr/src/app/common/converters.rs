@@ -32,10 +32,17 @@ use crate::app::common::common_defs;
 //
 
 // Convert input buffer in i8 BE to output buffer f64 LE
-pub fn i8be_to_f64le(in_data: &Vec<u8>, out_data: &mut [f64; (common_defs::DSP_BLK_SZ * 2) as usize], scale: f64, sz: u32) { 
+// Input side of DSP
+pub fn i8be_to_f64le(in_data: &Vec<u8>, out_data: &mut [f64; (common_defs::DSP_BLK_SZ * 2) as usize]) { 
     // The in_data is a Vec<i8> 1024 complex samples where each each interleaved I and Q are 24 bits in BE format.
     // Thus the length of the input data is 1024*6 representing the 1024 complex samples.
     // The output data is 1024 complex samples in f64 LE format suitable for the DSP exchange function.
+
+    // Scale factors
+    let base: i32 = 2;
+    let scale: f64 = 1.0 /(base.pow(23)) as f64;
+    // Size to iterate over
+    let sz: u32 = ((common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) - common_defs::BYTES_PER_SAMPLE);
 
     let mut in_index: u32 = 0;
     let mut out_index: u32 = 0;
@@ -65,9 +72,14 @@ pub fn i8be_to_f64le(in_data: &Vec<u8>, out_data: &mut [f64; (common_defs::DSP_B
 }
 
 // Convert input buffer in f64 LE to output buffer i8 BE
-pub fn f64le_to_i8be(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], out_data: &mut [u8; common_defs::DSP_BLK_SZ as usize * 8], scale: f64, sz: u32) {
-    // This conversion is the opposite of the i8be_to_f64le() and is output side of the DSP
+// Output side of DSP to hardware
+pub fn f64le_to_i8be(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], out_data: &mut [u8; common_defs::DSP_BLK_SZ as usize * 8]) {
+    // This conversion is the opposite of the i8be_to_f64le() and is the output side of the DSP.
     // The converted data is suitable for insertion into the ring buffer to the UDP writer.
+
+    let base: i32 = 2;
+    let scale: f64 = base.pow(15) as f64;
+    let sz: u32 = (common_defs::DSP_BLK_SZ * 4 * 2);
 
     let mut dest: usize = 0;
     let mut src: usize = 0;
@@ -76,8 +88,8 @@ pub fn f64le_to_i8be(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], ou
     let mut I: i16;
     let mut Q: i16;
     
-    // We get 1024 f64 samples interleaved left/right
-    // We 'will' get f64 float samples interleaved IQ output data when TX is implemented
+    // We get 1024 f64 audio interleaved left/right
+    // We 'will' get f64 samples interleaved IQ output data when TX is implemented
     // This means we have 1024*sizeof f64(8)*left/right(2) bytes of data to iterate on the input
     // However the output is 16 bit packed so we have 1024*2*2 to iterate on the output
     // Both in and out are interleaved
@@ -103,12 +115,69 @@ pub fn f64le_to_i8be(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], ou
     }
 }
 
-// Convert input buffer in f64 LE to output buffer i8 LE
-pub fn f64le_to_i8le() {
+// Convert input buffer in f64 LE to output buffer i8 LE as f32 values
+// Output side of DSP to local audio
+pub fn f64le_to_i8le(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], out_data: &mut [u8; common_defs::DSP_BLK_SZ as usize * 8]) {
+     /*
+    * The output data is structured as follows:
+    * <L0><L1><L2><L3><R0><R1><R2><R3>...
+    *
+    * The input is f64 for L and R thus the input size is sizeof f64*2
+    * The L and R samples are in f32 format LE. Thus the output sz is sizeof f32*2
+    */
 
+    // Copy and encode the samples
+    
+    let out_sz: usize = (common_defs::DSP_BLK_SZ * 4 * 2) as usize;
+    let mut dest: usize = 0;
+    let mut src: usize = 0;
+    let mut L: i32;
+    let mut R: i32;
+    let base: i32 = 2;
+    let output_scale: f64 = base.pow(15) as f64;
+
+    // We iterate on the output side starting at the MSB
+    while dest <= out_sz - 8 {
+        L = (in_data[src] * output_scale) as i32;
+        R = (in_data[src+1] * output_scale) as i32;
+        out_data[dest+3] = ((L >> 24) & 0xff) as u8;
+        out_data[dest+2] = ((L >> 16) & 0xff) as u8;
+        out_data[dest+1] = ((L >> 8) & 0xff) as u8;
+        out_data[dest] = (L & 0xff) as u8;
+        out_data[dest+7] = ((R >> 24) & 0xff) as u8;
+        out_data[dest+6] = ((R >> 16) & 0xff) as u8;
+        out_data[dest+5] = ((R >> 8) & 0xff) as u8;
+        out_data[dest+4] = (R & 0xff) as u8;
+
+        dest += 8;
+        src += 2;
+    }
 }
 
 // Convert input buffer in i8 LE to output buffer f32 LE
-pub fn i8le_to_f32le() {
+// Audio ring buffer to local audio
+pub fn i8le_to_f32le(in_data: &Vec<u8>, out_data: &mut Vec<f32>, sz: u32) {
+    // The U8 data in the ring buffer is ordered as LE f32 4 byte values 
 
+    let mut raw: u32 = 0;
+    let mut dec: u32 = 0;
+    let mut as_int_left: i32;
+    let mut as_int_right: i32;
+    while raw <= sz -8 {
+        as_int_left = (
+            in_data[(raw+3) as usize] as i32 | 
+            ((in_data[(raw+2) as usize] as i32) << 8) | 
+            ((in_data[(raw+1) as usize] as i32) << 16) | 
+            ((in_data[raw as usize] as i32) << 24));
+        as_int_right = (
+            in_data[(raw+7) as usize] as i32 | 
+            ((in_data[(raw+6) as usize] as i32) << 8) | 
+            ((in_data[(raw+5) as usize] as i32) << 16) | 
+            ((in_data[(raw+4) as usize] as i32) << 24));
+        // Scale and write to target array
+        out_data[dec as usize] = (as_int_left as f32);
+        out_data[(dec+1) as usize] = (as_int_right as f32);
+        raw += 8;
+        dec += 2;
+    }
 }
