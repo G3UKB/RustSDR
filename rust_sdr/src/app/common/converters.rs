@@ -134,12 +134,15 @@ pub fn f64le_to_i8le(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], ou
     let mut L: i32;
     let mut R: i32;
     let base: i32 = 2;
-    let output_scale: f64 = base.pow(15) as f64;
+    //let output_scale: f64 = base.pow(15) as f64;
 
     // We iterate on the output side starting at the MSB
     while dest <= out_sz - 8 {
-        L = (in_data[src] * output_scale) as i32;
-        R = (in_data[src+1] * output_scale) as i32;
+        //L = (in_data[src] * output_scale) as i32;
+        //R = (in_data[src+1] * output_scale) as i32;
+        L = in_data[src] as i32;
+        R = in_data[src+1] as i32;
+        /*
         out_data[dest+3] = ((L >> 24) & 0xff) as u8;
         out_data[dest+2] = ((L >> 16) & 0xff) as u8;
         out_data[dest+1] = ((L >> 8) & 0xff) as u8;
@@ -148,6 +151,15 @@ pub fn f64le_to_i8le(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], ou
         out_data[dest+6] = ((R >> 16) & 0xff) as u8;
         out_data[dest+5] = ((R >> 8) & 0xff) as u8;
         out_data[dest+4] = (R & 0xff) as u8;
+        */
+        out_data[dest] = (L & 0xff) as u8;
+        out_data[dest+1] = ((L >> 8) & 0xff) as u8;
+        out_data[dest+2] = ((L >> 16) & 0xff) as u8;
+        out_data[dest+3] = ((L >> 24) & 0xff) as u8;
+        out_data[dest+4] = (R & 0xff) as u8;
+        out_data[dest+5] = ((R >> 8) & 0xff) as u8;
+        out_data[dest+6] = ((R >> 16) & 0xff) as u8;
+        out_data[dest+7] = ((R >> 24) & 0xff) as u8;
 
         dest += 8;
         src += 2;
@@ -159,25 +171,40 @@ pub fn f64le_to_i8le(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], ou
 pub fn i8le_to_f32le(in_data: &Vec<u8>, out_data: &mut Vec<f32>, sz: u32) {
     // The U8 data in the ring buffer is ordered as LE f32 4 byte values 
 
-    let mut raw: u32 = 0;
-    let mut dec: u32 = 0;
+    let mut src: u32 = 0;
+    let mut dest: u32 = 0;
     let mut as_int_left: i32;
     let mut as_int_right: i32;
-    while raw <= sz -8 {
+    while src <= sz -8 {
+        
+        /*
         as_int_left = (
-            in_data[(raw+3) as usize] as i32 | 
-            ((in_data[(raw+2) as usize] as i32) << 8) | 
-            ((in_data[(raw+1) as usize] as i32) << 16) | 
-            ((in_data[raw as usize] as i32) << 24));
+            in_data[(src+3) as usize] as i32 | 
+            ((in_data[(src+2) as usize] as i32) << 8) | 
+            ((in_data[(src+1) as usize] as i32) << 16) | 
+            ((in_data[src as usize] as i32) << 24));
         as_int_right = (
-            in_data[(raw+7) as usize] as i32 | 
-            ((in_data[(raw+6) as usize] as i32) << 8) | 
-            ((in_data[(raw+5) as usize] as i32) << 16) | 
-            ((in_data[(raw+4) as usize] as i32) << 24));
+            in_data[(src+7) as usize] as i32 | 
+            ((in_data[(src+6) as usize] as i32) << 8) | 
+            ((in_data[(src+5) as usize] as i32) << 16) | 
+            ((in_data[(src+4) as usize] as i32) << 24));
+        */
+        as_int_left = (
+            in_data[(src) as usize] as i32 | 
+            ((in_data[(src+1) as usize] as i32) << 8) | 
+            ((in_data[(src+2) as usize] as i32) << 16) | 
+            ((in_data[(src+3) as usize] as i32) << 24));
+        as_int_right = (
+            in_data[(src+4) as usize] as i32 | 
+            ((in_data[(src+5) as usize] as i32) << 8) | 
+            ((in_data[(src+6) as usize] as i32) << 16) | 
+            ((in_data[(src+7) as usize] as i32) << 24));
+        
         // Scale and write to target array
-        out_data[dec as usize] = (as_int_left as f32);
-        out_data[(dec+1) as usize] = (as_int_right as f32);
-        raw += 8;
-        dec += 2;
+        out_data[dest as usize] = (as_int_left as f32);
+        out_data[(dest+1) as usize] = (as_int_right as f32);
+
+        src += 8;
+        dest += 2;
     }
 }
