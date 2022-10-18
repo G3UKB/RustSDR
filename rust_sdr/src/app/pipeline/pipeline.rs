@@ -55,7 +55,7 @@ pub struct PipelineData<'a>{
     dec_iq_data : [f64; (common_defs::DSP_BLK_SZ * 2) as usize],
     proc_iq_data : [f64; (common_defs::DSP_BLK_SZ * 2) as usize],
     output_frame : [u8; common_defs::DSP_BLK_SZ as usize * 8],
-    audio_frame : [u8; common_defs::DSP_BLK_SZ as usize * 8],
+    audio_frame : [u8; common_defs::DSP_BLK_SZ as usize * 4],
     run : bool,
     num_rx : u32,
 }
@@ -82,7 +82,7 @@ impl PipelineData<'_> {
             // Output contiguous audio and TX IQ data
             output_frame : [0; (common_defs::DSP_BLK_SZ as usize * 8) as usize],
             // Local audio out
-            audio_frame : [0; (common_defs::DSP_BLK_SZ as usize * 8) as usize],
+            audio_frame : [0; (common_defs::DSP_BLK_SZ as usize * 4) as usize],
             run: false,
             // Until we have data set to 1
             num_rx: 1,
@@ -135,8 +135,9 @@ impl PipelineData<'_> {
             }
             */
             if self.rb_iq.read().available() >= (common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) as usize {
-                let iq_data = self.rb_iq.read().read(&mut self.iq_data);
-                match iq_data {
+                let read_result = self.rb_iq.read().read(&mut self.iq_data);
+                //println!("{:?}", self.iq_data);
+                match read_result {
                     Ok(_sz) => {
                         action = ACTIONS::ActionData;
                         //println!("Read {:?} bytes from rb_iq", _sz);
@@ -167,13 +168,16 @@ impl PipelineData<'_> {
         // We just exchange for now
          // Convert and scale input to output data.
          converters::i8be_to_f64le(&self.iq_data, &mut self.dec_iq_data);
+         //println!("{:?}", self.dec_iq_data);
         let mut error: i32 = 0;
         dsp::dsp_interface::wdsp_exchange(0, &mut self.dec_iq_data,  &mut self.proc_iq_data, &mut error );
+        //println!("{:?}", self.proc_iq_data);
          if error == 0 {
             // We have output data from the DSP
             // Encode the data into a form suitable for the hardware
             // Convert and scale input to output data.
             converters::f64le_to_i8be(&self.proc_iq_data, &mut self.output_frame);
+            //println!("{:?}", self.output_frame);
             // Copy data to the output ring buffer 
             let r = self.rb_audio.write().write(&self.output_frame);
             match r {
@@ -188,6 +192,7 @@ impl PipelineData<'_> {
             // Now encode and copy data for local audio output
             // Convert and scale input to output data.
             converters::f64le_to_i8le(&self.proc_iq_data, &mut self.audio_frame);
+            //println!("{:?}", self.audio_frame);
             // Copy data to the local audio ring buffer 
             let r = self.rb_local_audio.write().write(&self.audio_frame);
             match r {
