@@ -456,7 +456,7 @@ impl CCDataMutex {
 	// Set sensible initialisation values
 	pub fn cc_init(&mut self) {
 		self.cc_mox(false);
-		self.cc_speed(CCOSpeed::S96kHz);
+		self.cc_speed(CCOSpeed::S48kHz);
 		self.cc_10_ref(CCO10MhzRef::R10MHzMerc);
 		self.cc_122_ref(CCO122MhzRef::R122MHzMerc);
 		self.cc_board_config(CCOBoardConfig::BoardBoth);

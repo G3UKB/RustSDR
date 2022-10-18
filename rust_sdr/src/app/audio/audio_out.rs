@@ -69,6 +69,7 @@ impl AudioData {
         let err_fn = |err| eprintln!("an error occurred on the output audio stream: {}", err);
         let sample_format = supported_config.sample_format();
         let config = supported_config.into();
+        //println!("{:?}", config);
         let rb_audio = self.rb_audio.clone();
         let stream = match sample_format {
             SampleFormat::F32 => device.build_output_stream(
@@ -118,6 +119,7 @@ fn write_audio<T: Sample>(data: &mut [f32], _: &cpal::OutputCallbackInfo, rb_aud
     //println!("Audio RB {:?}", rb_data);
     match audio_data {
         Ok(_sz) => {
+            //println!("Data");
             // The U8 data in the ring buffer is ordered as LE i32 values
             // Convert from 8 i8 bytes to 2 f32 samples
             converters::i8le_to_f32le(&rb_data, &mut out_data, ((data.len()/2)*4) as u32);

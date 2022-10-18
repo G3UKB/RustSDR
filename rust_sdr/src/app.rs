@@ -97,8 +97,8 @@ impl Appdata {
         // Open a DSP receiver channel
         dsp::dsp_interface::wdsp_open_ch(
             common::common_defs::CH_RX as i32, 0, common::common_defs::DSP_BLK_SZ as i32, 
-            common::common_defs::DSP_BLK_SZ as i32, common::common_defs::SMPLS_96K as i32, 
-            common::common_defs::SMPLS_96K as i32, 0.0, 0.0, 0.0, 0.0);
+            common::common_defs::DSP_BLK_SZ as i32, common::common_defs::SMPLS_48K as i32, 
+            common::common_defs::SMPLS_48K as i32, 0.0, 0.0, 0.0, 0.0);
         // and start the channel
         dsp::dsp_interface::wdsp_set_ch_state(0, 1, 0);
 
