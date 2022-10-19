@@ -99,10 +99,8 @@ pub fn encode(  i_seq: &mut protocol::seq_out::SeqData,
     // Frame data
     j = PROT_SZ as usize;
     for i in START_FRAME_2..END_FRAME_2 {
-        //println!("{}", i);
         udp_frame[i as usize] = prot_frame[j];
         j = j+1;
     }
-
 }
 

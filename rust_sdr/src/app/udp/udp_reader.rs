@@ -110,6 +110,11 @@ impl UDPRData<'_> {
             if self.listen {
                 // Wait for UDP data or timeout so we can check the channel
                 let r = self.p_sock.recv_from(self.udp_frame.as_mut());
+                //for i in 0..16 {
+                //    unsafe {
+                //        println!("{:#0x}", self.udp_frame[i].assume_init());
+                //    }
+                //}
                 match r {
                     Ok((sz,_addr)) => {
                         //println!("Received {:?} data bytes", sz);
