@@ -56,12 +56,11 @@ pub fn i8be_to_f64le(in_data: &Vec<u8>, out_data: &mut [f64; (common_defs::DSP_B
         // Big endian stores the most significant byte in the lowest address
         // Little endian stores the most significant byte in the highest address
         as_int = 
-            (
+            ( 
                 ((in_data[(in_index+2) as usize] as i32) << 8) | 
                 ((in_data[(in_index+1) as usize] as i32) << 16) | 
-                ((in_data[in_index as usize] as i32) << 24)
+                ((in_data[(in_index) as usize] as i32) << 24)
             ) >>8;
-
         // Scale and write to target array
         out_data[out_index as usize] = (as_int as f64) * scale;
 
