@@ -209,7 +209,6 @@ impl Appdata {
     //=========================================================================================
     // Initialise system to a running state
     pub fn app_init(&mut self) {
-        println!("Initialising hardware...");
         
         // Prime the hardware.
         self.w_sender.send(common::messages::WriterMsg::PrimeHardware).unwrap();
@@ -221,11 +220,11 @@ impl Appdata {
         // Then signals the pipeline
         self.r_sender.send(common::messages::ReaderMsg::StartListening).unwrap();
 
-        // Start the hardware IQ stream and optional wide band data.
-        self.i_hw_control.do_start(false);
-
-        // Start the local audio stream
         if self.run {
+            // Start the hardware IQ stream and optional wide band data.
+            self.i_hw_control.do_start(false);
+
+            // Start the local audio stream
             self.stream = Some(self.i_local_audio.run_audio());
         }
     }
@@ -240,7 +239,6 @@ impl Appdata {
 
             // Tell threads to stop
             self.r_sender.send(common::messages::ReaderMsg::StopListening).unwrap();
-            self.pipeline_sender.send(common::messages::PipelineMsg::Terminate).unwrap();
             self.w_sender.send(common::messages::WriterMsg::Terminate).unwrap();
             self.r_sender.send(common::messages::ReaderMsg::Terminate).unwrap();
 
@@ -258,7 +256,9 @@ impl Appdata {
                 println!("Reader terminated");
             }
         }
-        
+
+        // Terminate pipeline
+        self.pipeline_sender.send(common::messages::PipelineMsg::Terminate).unwrap();
         // Wait for pipeline to exit
         if let Some(h) = self.opt_pipeline_join_handle.take(){
             println!("Waiting for pipeline to terminate...");
@@ -266,9 +266,11 @@ impl Appdata {
             println!("Pipeline terminated");
         }
         
-        // Stop the hardware
-        self.i_hw_control.do_stop();
-        println!("Hardware stopped");
+        if self.run {
+            // Stop the hardware
+            self.i_hw_control.do_stop();
+            println!("Hardware stopped");
+        }
        
     }
 }
