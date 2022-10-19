@@ -119,7 +119,6 @@ impl UDPWData<'_> {
             } 
         }
         println!("Sent prime data for all cc values");
-        //println!("{:02x?}", self.udp_frame);
     }
 
     pub fn write_data(&mut self) {
@@ -140,7 +139,7 @@ impl UDPWData<'_> {
                                 //}
                                 let r = self.p_sock.send_to(&self.udp_frame, &self.p_addr);
                                 match r {
-                                    Ok(_sz) => (),
+                                    Ok(_sz) => (), //println!("{:?}", _sz),
                                     Err(e) => println!("Error sending [{}]", e),
                                 } 
                             }
