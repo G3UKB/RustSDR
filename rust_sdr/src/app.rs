@@ -209,15 +209,15 @@ impl Appdata {
     //=========================================================================================
     // Initialise system to a running state
     pub fn app_init(&mut self) {
-        
+
         // Prime the hardware.
         self.w_sender.send(common::messages::WriterMsg::PrimeHardware).unwrap();
 
         // Start the pipeline. Waits for data available signal.
         self.pipeline_sender.send(common::messages::PipelineMsg::StartPipeline).unwrap();
 
-        // Start the UDP reader. Will wait for UDP data when hardware starts.
-        // Then signals the pipeline
+        // Start the UDP reader. Will wait for UDP data when hardware starts
+        // then signals the pipeline
         self.r_sender.send(common::messages::ReaderMsg::StartListening).unwrap();
 
         if self.run {

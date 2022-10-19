@@ -136,9 +136,9 @@ impl UDPWData<'_> {
                                 protocol::encoder::encode(&mut self.i_seq, &mut self.i_cc, &mut self.udp_frame, &mut self.prot_frame);
                                 // Send to hardware
                                 //println!("**********************************");
-                                //for i in 8..16 {
+                                for i in 8..16 {
                                 //println!("{:#0x}", self.udp_frame[i]);
-                                //}
+                                }
                                 let r = self.p_sock.send_to(&self.udp_frame, &self.p_addr);
                                 match r {
                                     Ok(_sz) => (),

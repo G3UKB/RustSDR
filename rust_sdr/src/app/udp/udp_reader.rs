@@ -189,6 +189,7 @@ impl UDPRData<'_> {
             } else if self.udp_frame[3].assume_init() == common_defs::EP4 {
                 // We have wideband data
                 // TBD
+                return;
             }
         }
         

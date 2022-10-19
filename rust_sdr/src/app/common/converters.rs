@@ -42,7 +42,7 @@ pub fn i8be_to_f64le(in_data: &Vec<u8>, out_data: &mut [f64; (common_defs::DSP_B
     let base: i32 = 2;
     let scale: f64 = 1.0 /(base.pow(23)) as f64;
     // Size to iterate over
-    let sz: u32 = ((common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) - common_defs::BYTES_PER_SAMPLE);
+    let sz: u32 = ((common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) - common_defs::BYTES_PER_SAMPLE/2);
 
     let mut in_index: u32 = 0;
     let mut out_index: u32 = 0;
