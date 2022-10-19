@@ -38,7 +38,6 @@ use crate::app::common::ringb;
 // Audio output
 pub struct AudioData {
     rb_audio: Arc<ringb::SyncByteRingBuf>,
-    //stream: Option<cpal::Stream>,
 }
 
 impl AudioData {
@@ -46,13 +45,23 @@ impl AudioData {
     pub fn new(rb_audio: Arc<ringb::SyncByteRingBuf>) -> AudioData {
         AudioData {
             rb_audio: rb_audio,
-           //stream: None,
         }
+    }
+ 
+    // Run stream
+    pub fn run_audio(&mut self) -> cpal::Stream {
+        println!("Initialising local audio...");
+       return self.init_audio();
+    }
+
+    // Pause stream
+    pub fn close_audio(&mut self, stream: &cpal::Stream) {
+        stream.pause().unwrap();
+        println!("Closing audio stream");
     }
 
     // Create an audio output stream
-    pub fn init_audio(&mut self) -> cpal::Stream {
-        println!("Initialising local audio...");
+    fn init_audio(&mut self) -> cpal::Stream {
         let host = cpal::default_host();
         let device = host
             .default_output_device()
@@ -92,17 +101,8 @@ impl AudioData {
 
         println!("Starting audio stream");
         stream.play().unwrap();
-        //self.stream = Some(stream);
         return stream;
-
     } 
-    
-    // Close stream
-    pub fn close_audio(&mut self, stream: &cpal::Stream) {
-        stream.pause().unwrap();
-        println!("Closing audio stream");
-    }
-
 }
 
 // Callback when the audio output needs more data

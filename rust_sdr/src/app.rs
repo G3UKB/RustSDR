@@ -69,6 +69,10 @@ pub struct Appdata{
     pub hw_sender : crossbeam_channel::Sender<common::messages::HWMsg>,
     pub hw_receiver : crossbeam_channel::Receiver<common::messages::HWMsg>,
 
+    // Local audio
+    pub i_local_audio : audio::audio_out::AudioData,
+    pub stream : Option<cpal::Stream>,
+
     //=================================================
     // Pipeline
     // Channel
@@ -80,17 +84,18 @@ pub struct Appdata{
     pub rb_iq : Arc<common::ringb::SyncByteRingBuf>,
 
     //=================================================
-    // Local audio
-    pub i_local_audio : audio::audio_out::AudioData,
-    pub stream : Option<cpal::Stream>,
+    // State
+    pub run : bool,
 }
 
 //=========================================================================================
 // Implementation
 impl Appdata {
-
     // Instantiate the application modules
     pub fn new() -> Appdata {
+        // Local runnable
+        let mut l_run = false;
+
         // First check/create the DSP Wisdom file
         dsp::dsp_interface::wdsp_wisdom();
 
@@ -159,6 +164,10 @@ impl Appdata {
 
                 // Start the UDP reader thread
                 opt_reader_join_handle = Some(udp::udp_reader::reader_start(r_r.clone(), arc4, rb_iq.clone(), iq_cond.clone()));
+
+                // OK to run
+                l_run = true;
+
             },
             None => {
                 println!("Address invalid, UDP reader and writer will not be started! Is hardware on-line?");
@@ -193,6 +202,7 @@ impl Appdata {
             rb_iq : rb_iq,
             i_local_audio : i_local_audio,
             stream : None,
+            run : l_run,
         }
     }
     
@@ -215,37 +225,40 @@ impl Appdata {
         self.i_hw_control.do_start(false);
 
         // Start the local audio stream
-        self.stream = Some(self.i_local_audio.init_audio());
-        
+        if self.run {
+            self.stream = Some(self.i_local_audio.run_audio());
+        }
     }
 
     //=========================================================================================
     // Tidy close everything
     pub fn app_close(&mut self) { 
         
-        // Close local audio
-        self.i_local_audio.close_audio(&(self.stream.as_ref().unwrap()));
+        if self.run {
+            // Close local audio
+            self.i_local_audio.close_audio(&(self.stream.as_ref().unwrap()));
 
-        // Tell threads to stop
-        self.r_sender.send(common::messages::ReaderMsg::StopListening).unwrap();
-        self.pipeline_sender.send(common::messages::PipelineMsg::Terminate).unwrap();
-        self.w_sender.send(common::messages::WriterMsg::Terminate).unwrap();
-        self.r_sender.send(common::messages::ReaderMsg::Terminate).unwrap();
+            // Tell threads to stop
+            self.r_sender.send(common::messages::ReaderMsg::StopListening).unwrap();
+            self.pipeline_sender.send(common::messages::PipelineMsg::Terminate).unwrap();
+            self.w_sender.send(common::messages::WriterMsg::Terminate).unwrap();
+            self.r_sender.send(common::messages::ReaderMsg::Terminate).unwrap();
 
-        // Wait for UDP writer to exit
-        if let Some(h) = self.opt_writer_join_handle.take(){
-            println!("Waiting for writer to terminate...");
-            h.join().expect("Join UDP Writer failed!");
-            println!("Writer terminated");
+            // Wait for UDP writer to exit
+            if let Some(h) = self.opt_writer_join_handle.take(){
+                println!("Waiting for writer to terminate...");
+                h.join().expect("Join UDP Writer failed!");
+                println!("Writer terminated");
+            }
+
+            // Wait for UDP reader to exit
+            if let Some(h) = self.opt_reader_join_handle.take(){
+                println!("Waiting for reader to terminate...");
+                h.join().expect("Join UDP Reader failed!");
+                println!("Reader terminated");
+            }
         }
-
-        // Wait for UDP reader to exit
-        if let Some(h) = self.opt_reader_join_handle.take(){
-            println!("Waiting for reader to terminate...");
-            h.join().expect("Join UDP Reader failed!");
-            println!("Reader terminated");
-        }
-
+        
         // Wait for pipeline to exit
         if let Some(h) = self.opt_pipeline_join_handle.take(){
             println!("Waiting for pipeline to terminate...");
