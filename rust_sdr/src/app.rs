@@ -149,6 +149,9 @@ impl Appdata {
         // Revert the socket to non-broadcast and set buffer size
         i_sock.udp_revert_socket();
 
+        // Create an instance of the cc_out type
+        let mut i_cc = Arc::new(protocol::cc_out::CCDataMutex::new());
+
         // Create the UDP reader and writer if we have a valid hardware address
         let mut opt_udp_writer: option::Option<udp::udp_writer::UDPWData> = None;
         let mut opt_reader_join_handle: option::Option<thread::JoinHandle<()>> = None;
@@ -165,7 +168,7 @@ impl Appdata {
                 opt_writer_join_handle = Some(
                     udp::udp_writer::writer_start(w_r.clone(), 
                     arc3, arc5, 
-                    rb_audio.clone(), audio_cond.clone()));
+                    rb_audio.clone(), audio_cond.clone(), i_cc.clone()));
 
                 // Start the UDP reader thread
                 opt_reader_join_handle = Some(udp::udp_reader::reader_start(r_r.clone(), arc4, rb_iq.clone(), iq_cond.clone()));

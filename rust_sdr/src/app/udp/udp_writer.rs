@@ -48,6 +48,7 @@ pub struct UDPWData<'a>{
     udp_frame : [u8; common_defs::FRAME_SZ as usize],
     prot_frame : [u8; common_defs::PROT_SZ as usize*2],
     pub i_cc: protocol::cc_out::CCDataMutex,
+    pub new_i_cc : &'a protocol::cc_out::CCDataMutex,
     pub i_seq: protocol::seq_out::SeqData,
     listen : bool,
 }
@@ -59,7 +60,8 @@ impl UDPWData<'_> {
             receiver : crossbeam_channel::Receiver<messages::WriterMsg>,
             p_sock : &'a socket2::Socket, p_addr : &'a socket2::SockAddr,
             rb_audio : &'a ringb::SyncByteRingBuf,
-            audio_cond : &'a (Mutex<bool>, Condvar)) -> UDPWData<'a> {
+            audio_cond : &'a (Mutex<bool>, Condvar),
+            new_i_cc : &'a protocol::cc_out::CCDataMutex) -> UDPWData<'a> {
         // Create an instance of the cc_out type
         let mut i_cc = protocol::cc_out::CCDataMutex::new();
         i_cc.cc_init();
@@ -74,7 +76,8 @@ impl UDPWData<'_> {
             audio_cond: audio_cond,
             udp_frame: [0; common_defs::FRAME_SZ as usize],
             prot_frame: [0; common_defs::PROT_SZ as usize *2],
-            i_cc: i_cc,
+            i_cc : i_cc,
+            new_i_cc : new_i_cc,
             i_seq: i_seq,
             listen: false,
 		}
@@ -112,7 +115,7 @@ impl UDPWData<'_> {
         
         for i in 0..6 {
             // Encode the next frame
-            protocol::encoder::encode(&mut self.i_seq, &mut self.i_cc, &mut self.udp_frame, &mut self.prot_frame);
+            protocol::encoder::encode(&mut self.i_seq, self.new_i_cc, &mut self.udp_frame, &mut self.prot_frame);
             // Send to hardware
             let r = self.p_sock.send_to(&self.udp_frame, &self.p_addr);
             match r {
@@ -166,9 +169,10 @@ pub fn writer_start(
         p_sock : Arc<socket2::Socket>,
         p_addr : Arc<socket2::SockAddr>, 
         rb_audio : Arc<ringb::SyncByteRingBuf>, 
-        audio_cond : Arc<(Mutex<bool>, Condvar)>) -> thread::JoinHandle<()> {
+        audio_cond : Arc<(Mutex<bool>, Condvar)>,
+        i_cc : Arc<protocol::cc_out::CCDataMutex>) -> thread::JoinHandle<()> {
     let join_handle = thread::spawn(  move || {
-        writer_run(receiver, &p_sock, &p_addr, &rb_audio, &audio_cond);
+        writer_run(receiver, &p_sock, &p_addr, &rb_audio, &audio_cond, &i_cc);
     });
     return join_handle; //join_handle;
 }
@@ -178,11 +182,12 @@ fn writer_run(
     p_sock : &socket2::Socket,
     p_addr : &socket2::SockAddr, 
     rb_audio : &ringb::SyncByteRingBuf,
-    audio_cond : &(Mutex<bool>, Condvar)) {
+    audio_cond : &(Mutex<bool>, Condvar),
+    i_cc : &protocol::cc_out::CCDataMutex) {
     println!("UDP Writer running");
 
     // Instantiate the runtime object
-    let mut i_writer = UDPWData::new(receiver, p_sock, p_addr, rb_audio, audio_cond);
+    let mut i_writer = UDPWData::new(receiver, p_sock, p_addr, rb_audio, audio_cond, i_cc);
 
     // Exits when the reader loop exits
     i_writer.writer_run();
