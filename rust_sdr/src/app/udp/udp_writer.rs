@@ -125,41 +125,38 @@ impl UDPWData<'_> {
 
     pub fn write_data(&mut self) {
         loop {
-            //if self.rb_audio.try_read().unwrap().available() >= (common_defs::PROT_SZ * 2) as usize {
-                // Enough data available
-                let r = self.rb_audio.try_read();   
-                match r {
-                    Ok(mut m) => {
-                        let prot_frame = m.read(&mut self.prot_frame);
-                        match prot_frame {
-                            Ok(_sz) => {
-                                // Encode the next frame
-                                protocol::encoder::encode(&mut self.i_seq, &mut self.i_cc, &mut self.udp_frame, &mut self.prot_frame);
-                                // Send to hardware
-                                //for i in 0..16 {
-                                //    println!("{:#0x}", self.udp_frame[i]);
-                                //}
-                                let r = self.p_sock.send_to(&self.udp_frame, &self.p_addr);
-                                match r {
-                                    Ok(_sz) => (), //println!("{:?}", _sz),
-                                    Err(e) => println!("Error sending [{}]", e),
-                                } 
-                            }
-                            Err(e) => {
-                                // Not enough data available so try next time
-                                break;
-                            }
+            // Enough data available
+            let r = self.rb_audio.try_read();   
+            match r {
+                Ok(mut m) => {
+                    let prot_frame = m.read(&mut self.prot_frame);
+                    match prot_frame {
+                        Ok(_sz) => {
+                            // Encode the next frame
+                            protocol::encoder::encode(&mut self.i_seq, &mut self.i_cc, &mut self.udp_frame, &mut self.prot_frame);
+                            // Send to hardware
+                            //for i in 0..16 {
+                            //    println!("{:#0x}", self.udp_frame[i]);
+                            //}
+                            let r = self.p_sock.send_to(&self.udp_frame, &self.p_addr);
+                            match r {
+                                Ok(_sz) => (), //println!("{:?}", _sz),
+                                Err(e) => println!("Error sending [{}]", e),
+                            } 
+                        }
+                        Err(_e) => {
+                            // Not enough data available so try next time
+                            break;
                         }
                     }
-                    Err(e) => {
-                        // Couldn't get lock so try next time
-                        break;
-                    }
                 }
-            //}
+                Err(e) => {
+                    // Couldn't get lock so try next time
+                    break;
+                }
+            }
         }
     }
-
 }
 
 //==================================================================================
