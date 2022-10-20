@@ -110,11 +110,6 @@ impl UDPRData<'_> {
             if self.listen {
                 // Wait for UDP data or timeout so we can check the channel
                 let r = self.p_sock.recv_from(self.udp_frame.as_mut());
-                //for i in 0..16 {
-                //    unsafe {
-                //        println!("{:#0x}", self.udp_frame[i].assume_init());
-                //    }
-                //}
                 match r {
                     Ok((sz,_addr)) => {
                         //println!("Received {:?} data bytes", sz);
@@ -203,7 +198,7 @@ impl UDPRData<'_> {
         protocol::decoder::frame_decode(
                 num_smpls, num_rx, common_defs::SMPLS_48K, data_sz, 
                 self.prot_frame, &mut self.iq, &mut self.mic);
-        
+
         //================================================================================
         // At this point we have separated the IQ and Mic data into separate buffers
         // Copy the UDP frame into the rb_iq ring buffer

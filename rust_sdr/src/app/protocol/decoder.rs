@@ -139,10 +139,10 @@ pub fn frame_decode(
 				iq_index += 1;
 				total_iq_bytes_ct -= 1;
 			}
-			if iq_ct - 1 == 0 {
+			iq_ct -= 1;
+			if iq_ct == 0 {
 				// Exhausted bytes for receiver(s) sample
 				// Set the Mic count and change state
-				iq_ct -= 1;
 				mic_ct = mic_bytes;
 				state = MIC;
 			}
@@ -153,10 +153,10 @@ pub fn frame_decode(
 				mic_index += 1;
 				total_mic_bytes_ct -= 1;
 			}
-			if mic_ct - 1 == 0 {
+			mic_ct -= 1;
+			if mic_ct == 0 {
 				// Exhausted bytes for receiver(s) sample
 				// Set the Mic count and change state
-				mic_ct -= 1;
 				iq_ct = iq_bytes;
 				state = IQ;
 			}
