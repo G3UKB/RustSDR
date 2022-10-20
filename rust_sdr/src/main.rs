@@ -27,6 +27,8 @@ bob@bobcowdery.plus.com
 use std::thread;
 use std::time::Duration;
 use std::io::{stdin, stdout, Read, Write};
+use fltk::app as fltk_app;
+use fltk::{prelude::*, window::Window};
 
 pub mod app;
 
@@ -42,6 +44,12 @@ fn main() {
 
     // This will initialise all modules and run the system
     i_app.app_init();
+
+    let fltk_app = fltk_app::App::default();
+    let mut wind = Window::new(100, 100, 400, 300, "Hello from rust");
+    wind.end();
+    wind.show();
+    fltk_app.run().unwrap();
 
     // At this point e would be doing GUI stuff
     // Temporary code to wait for Rtn then close everything and exit
