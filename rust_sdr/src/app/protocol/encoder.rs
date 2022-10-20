@@ -47,7 +47,7 @@ use crate::app::protocol;
 *	Data is encoded into the packet buffer
 */
 pub fn encode(  i_seq: &mut protocol::seq_out::SeqData, 
-                i_cc: &mut protocol::cc_out::CCDataMutex, 
+                i_cc: &protocol::cc_out::CCDataMutex, 
                 udp_frame: &mut [u8; FRAME_SZ as usize], 
                 prot_frame: &mut [u8; PROT_SZ as usize *2]) {
 
@@ -71,7 +71,7 @@ pub fn encode(  i_seq: &mut protocol::seq_out::SeqData,
         udp_frame[i as usize] = 0x7f;
     }
     // Encode command and control bytes
-    let cc = i_cc.cc_out_next_seq();
+    let cc = &mut i_cc.cc_out_next_seq();
     j = 0;
     for i in FRAME_CC_1_OFFSET..FRAME_CC_1_OFFSET + 5 {
         udp_frame[i as usize] = cc[j];
@@ -90,7 +90,7 @@ pub fn encode(  i_seq: &mut protocol::seq_out::SeqData,
         udp_frame[i as usize] = 0x7f;
     }
     // Encode command and control bytes
-    let cc = i_cc.cc_out_next_seq();
+    let cc = &mut i_cc.cc_out_next_seq();
     j = 0;
     for i in FRAME_CC_2_OFFSET..FRAME_CC_2_OFFSET + 5 {
         udp_frame[i as usize] = cc[j];

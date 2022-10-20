@@ -39,6 +39,8 @@ use std::option;
 
 use socket2;
 use crossbeam_channel::unbounded;
+use fltk::app as fltk_app;
+use fltk::{prelude::*, window::Window};
 
 //=========================================================================================
 // Object store for the entire system level 1
@@ -54,6 +56,7 @@ pub struct Appdata{
     // UDP Reader and Writer
     // Writer thread join handle
     pub opt_writer_join_handle : option::Option<thread::JoinHandle<()>>,
+    pub i_cc_out : Arc<protocol::cc_out::CCDataMutex>,
     // Channel
     pub w_sender : crossbeam_channel::Sender<common::messages::WriterMsg>,
     pub w_receiver : crossbeam_channel::Receiver<common::messages::WriterMsg>,
@@ -145,6 +148,9 @@ impl Appdata {
         // Revert the socket to non-broadcast and set buffer size
         i_sock.udp_revert_socket();
 
+        // Create an instance of the cc_out type
+        let mut i_cc_out = Arc::new(protocol::cc_out::CCDataMutex::new());
+
         // Create the UDP reader and writer if we have a valid hardware address
         let mut opt_udp_writer: option::Option<udp::udp_writer::UDPWData> = None;
         let mut opt_reader_join_handle: option::Option<thread::JoinHandle<()>> = None;
@@ -156,18 +162,18 @@ impl Appdata {
             Some(addr) => { 
                 // Create UDP writer 
                 let arc5 = addr.clone();
-                //let i_udp_writer = udp::udp_writer::UDPWData::new(arc2, arc4);
-                //opt_udp_writer = Some(i_udp_writer); 
                 
                 // Start the UDP writer thread
-                opt_writer_join_handle = Some(udp::udp_writer::writer_start(w_r.clone(), arc3, arc5, rb_audio.clone(), audio_cond.clone()));
+                opt_writer_join_handle = Some(
+                    udp::udp_writer::writer_start(w_r.clone(), 
+                    arc3, arc5, 
+                    rb_audio.clone(), audio_cond.clone(), i_cc_out.clone()));
 
                 // Start the UDP reader thread
                 opt_reader_join_handle = Some(udp::udp_reader::reader_start(r_r.clone(), arc4, rb_iq.clone(), iq_cond.clone()));
 
                 // OK to run
                 l_run = true;
-
             },
             None => {
                 println!("Address invalid, UDP reader and writer will not be started! Is hardware on-line?");
@@ -188,6 +194,7 @@ impl Appdata {
             i_sock : i_sock,
             p_sock : p_sock,
             opt_writer_join_handle : opt_writer_join_handle,
+            i_cc_out : i_cc_out,
             opt_reader_join_handle : opt_reader_join_handle,
             r_sender : r_s,
             r_receiver : r_r,
@@ -227,6 +234,16 @@ impl Appdata {
             // Start the local audio stream
             self.stream = Some(self.i_local_audio.run_audio());
         }
+    }
+
+    //=========================================================================================
+    // Initialise system to a running state
+    pub fn ui_init(&mut self) {
+        let fltk_app = fltk_app::App::default();
+        let mut wind = Window::new(100, 100, 400, 300, "Hello from rust");
+        wind.end();
+        wind.show();
+        fltk_app.run().unwrap();
     }
 
     //=========================================================================================

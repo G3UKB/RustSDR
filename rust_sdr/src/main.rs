@@ -42,17 +42,14 @@ fn main() {
     // Create an instance of the Application manager type
     let mut i_app = app::Appdata::new();
 
-    // This will initialise all modules and run the system
+    // This will initialise all modules and run the back-end system
     i_app.app_init();
 
-    let fltk_app = fltk_app::App::default();
-    let mut wind = Window::new(100, 100, 400, 300, "Hello from rust");
-    wind.end();
-    wind.show();
-    fltk_app.run().unwrap();
+    // This will initialise the UI and run the front-end system
+    // This will exit when the main window is closed
+    i_app.ui_init();
 
-    // At this point e would be doing GUI stuff
-    // Temporary code to wait for Rtn then close everything and exit
+    // UI has exited but we still wait to close down
     pause();
     println!("Starting shutdown...");
     i_app.app_close();
