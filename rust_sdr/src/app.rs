@@ -150,7 +150,7 @@ impl Appdata {
         i_sock.udp_revert_socket();
 
         // Create an instance of the cc_out type
-        let mut i_cc = Arc::new(protocol::cc_out::CCDataMutex::new());
+        let mut i_cc = Arc::new(Mutex::new(protocol::cc_out::CCDataMutex::new()));
 
         // Create the UDP reader and writer if we have a valid hardware address
         let mut opt_udp_writer: option::Option<udp::udp_writer::UDPWData> = None;

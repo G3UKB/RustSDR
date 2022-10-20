@@ -469,8 +469,8 @@ impl CCDataMutex {
 		self.cc_duplex(CCODuplex::DuplexOff);
 		self.cc_num_rx(CCONumRx::NumRx1);
 		self.cc_alex_auto(CCOAlexAuto::AlexAuto);
-		self.cc_set_rx_tx_freq(7100000);
-		self.cc_set_tx_freq(7100000);
+		self.cc_set_rx_tx_freq(7150000);
+		self.cc_set_tx_freq(7150000);
 	}
 
 }
