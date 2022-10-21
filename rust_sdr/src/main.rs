@@ -27,10 +27,9 @@ bob@bobcowdery.plus.com
 use std::thread;
 use std::time::Duration;
 use std::io::{stdin, stdout, Read, Write};
-use fltk::app as fltk_app;
-use fltk::{prelude::*, window::Window};
 
 pub mod app;
+use crate::app::ui;
 
 /// Entry point for RustConsole SDR application
 ///
@@ -42,14 +41,15 @@ fn main() {
     // Create an instance of the Application manager type
     let mut i_app = app::Appdata::new();
 
-    // This will initialise all modules and run the back-end system
+    // This will initialise all modules, run the back-end system
+    // and initialise the UI
     i_app.app_init();
 
-    // This will initialise the UI and run the front-end system
-    // This will exit when the main window is closed
-    i_app.ui_init();
+    // Initialise the UI
+    // This runs the UI event loop and will return when the UI is closed
+    i_app.ui_run();
 
-    // UI has exited but we still wait to close down
+    // UI has closed but we still wait to close down so issues can be seen
     pause();
     println!("Starting shutdown...");
     i_app.app_close();

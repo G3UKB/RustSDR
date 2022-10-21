@@ -31,6 +31,7 @@ pub mod protocol;
 pub mod pipeline;
 pub mod dsp;
 pub mod audio;
+pub mod ui;
 
 use std::sync::{Arc, Mutex, Condvar};
 use std::cell::RefCell;
@@ -41,8 +42,6 @@ use std::option;
 
 use socket2;
 use crossbeam_channel::unbounded;
-use fltk::app as fltk_app;
-use fltk::{prelude::*, window::Window};
 
 //=========================================================================================
 // Object store for the entire system level 1
@@ -53,7 +52,6 @@ pub struct Appdata{
     // UDP socket
     pub i_sock : udp::udp_socket::Sockdata,
     pub p_sock : Arc<socket2::Socket>,
-    //pub p_addr: option::Option<Arc<socket2::SockAddr>>,
 
     // UDP Reader and Writer
     // Writer thread join handle
@@ -90,6 +88,10 @@ pub struct Appdata{
     //=================================================
     // State
     pub run : bool,
+
+    //=================================================
+    // User interface object
+    pub i_ui : ui::main_window::UIState,
 }
 
 //=========================================================================================
@@ -188,7 +190,9 @@ impl Appdata {
 
         // Create the local audio
         let mut i_local_audio = audio::audio_out::AudioData::new(rb_local_audio.clone());
-        
+
+        // Create the UI instance
+        let mut i_ui: ui::main_window::UIState = ui::main_window::UIState::new(i_cc.clone());
 
         // Initialise the application data
         Appdata { 
@@ -210,6 +214,7 @@ impl Appdata {
             i_local_audio : i_local_audio,
             stream : None,
             run : l_run,
+            i_ui : i_ui,
         }
     }
     
@@ -238,12 +243,9 @@ impl Appdata {
 
     //=========================================================================================
     // Initialise system to a running state
-    pub fn ui_init(&mut self) {
-        let fltk_app = fltk_app::App::default();
-        let mut wind = Window::new(100, 100, 400, 300, "Hello from rust");
-        wind.end();
-        wind.show();
-        fltk_app.run().unwrap();
+    pub fn ui_run(&mut self) {
+        self.i_ui.init_main_window();
+        self.i_ui.run_event_loop();
     }
 
     //=========================================================================================
