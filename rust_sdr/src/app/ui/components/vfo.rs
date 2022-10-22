@@ -1,8 +1,8 @@
 /*
-main_window.rs
+vfo.rs
 
-Module - main_window
-User interface main window
+Module - vfo
+User interface VFO control
 
 Copyright (C) 2022 by G3UKB Bob Cowdery
 
@@ -31,21 +31,21 @@ use fltk::app as fltk_app;
 use fltk::{prelude::*, window::Window};
 
 use crate::app::protocol;
-use crate::app::ui::components::vfo;
+
 
 //==================================================================================
 // UI State
-pub struct UIState{
+pub struct VFOState{
     i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
 }
 
 
 // Implementation methods on UDPRData
-impl UIState {
+impl VFOState {
 	// Create a new instance and initialise the default arrays
-    pub fn new(i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> UIState {
+    pub fn new(i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> VFOState {
 
-        UIState {
+        VFOState {
             i_cc : i_cc,
         }
     }
@@ -53,21 +53,11 @@ impl UIState {
 
     //=========================================================================================
     // Create main application window
-    pub fn init_main_window(&mut self) {
-        let fltk_app = fltk_app::App::default();
-        let mut wind = Window::new(100, 100, 400, 300, "RustSDR");
-        wind.end();
-        wind.show();
+    pub fn init_vfo(&mut self) {
         
     }
 
-    pub fn run_event_loop(&mut self) {
-        fltk_app::run().unwrap();
-    }
-
-    pub fn set_freq(&mut self, freq: u32) {
-        self.i_cc.lock().unwrap().cc_set_rx_tx_freq(freq);
-    }
+    
 
 }
 
