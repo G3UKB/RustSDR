@@ -29,6 +29,7 @@ use std::sync::{Arc, Mutex};
 
 use fltk::app as fltk_app;
 use fltk::{prelude::*, window::Window};
+use fltk_grid::Grid;
 
 use crate::app::protocol;
 use crate::app::ui::components::vfo;
@@ -53,9 +54,25 @@ impl UIState {
 
     //=========================================================================================
     // Create main application window
-    pub fn init_main_window(&mut self) {
+    pub fn init_ui(&mut self) {
+        // The one and only fltk app
         let fltk_app = fltk_app::App::default();
+
+        // We create all components in-line
+        // The main window
         let mut wind = Window::new(100, 100, 400, 300, "RustSDR");
+
+        // The main window is split into areas using a grid layout
+        let mut grid = Grid::default_fill();
+        grid.set_layout(2, 1);
+
+        // Create the VFO
+        let mut vfo = vfo::VFOState::new(self.i_cc.clone());
+        vfo.init_vfo();
+        // Put the VFO in the top grid section
+        grid.insert(&mut vfo.frame, 0, 0);
+        
+        // Assembly end
         wind.end();
         wind.show();
         

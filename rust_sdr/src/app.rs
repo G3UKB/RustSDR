@@ -244,7 +244,7 @@ impl Appdata {
     //=========================================================================================
     // Initialise system to a running state
     pub fn ui_run(&mut self) {
-        self.i_ui.init_main_window();
+        self.i_ui.init_ui();
         self.i_ui.run_event_loop();
     }
 

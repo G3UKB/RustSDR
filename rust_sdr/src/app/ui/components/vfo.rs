@@ -26,17 +26,24 @@ bob@bobcowdery.plus.com
 */
 
 use std::sync::{Arc, Mutex};
+use std::collections::HashMap;
 
 use fltk::app as fltk_app;
-use fltk::{prelude::*, window::Window};
+use fltk::{prelude::*, window::Window, frame::Frame};
+use fltk::enums::Font;
+use fltk::enums::Color;
+use fltk_grid::Grid;
 
 use crate::app::protocol;
 
 
 //==================================================================================
-// UI State
+// VFO State
 pub struct VFOState{
     i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
+    freq_inc_map : HashMap<i32, i32>,
+    pub frame : Frame,
+    pub grid : Grid,
 }
 
 
@@ -45,20 +52,97 @@ impl VFOState {
 	// Create a new instance and initialise the default arrays
     pub fn new(i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> VFOState {
 
+        // Lookup for digit number to frequency increment 100MHz to 1Hz
+        let freq_inc_map = HashMap::from([
+            (1, 100000000),
+            (2, 10000000),
+            (3, 1000000),
+            (4, 100000),
+            (5, 10000),
+            (6, 1000),
+            (7, 100),
+            (8, 10),
+            (9, 1),
+        ]);
+
+        // Somewhere to create the widgets
+        let mut frame = Frame::default();
+        let mut grid = Grid::default_fill();
+
+        // Object state
         VFOState {
             i_cc : i_cc,
+            freq_inc_map : freq_inc_map,
+            frame : frame,
+            grid : grid,
         }
     }
 
+    //=========================================================================================
+    // Create the set of 9 digits
+    pub fn init_vfo(&mut self) {
+
+        // Initialise the grid
+        // Accomodate 9 digits and 2 separators
+        self.grid.set_layout(1, 11);
+        // Create our set of digits
+        self.create_digits();
+    }
+
+    // Initial freq setting
+    pub fn set_freq(&mut self, freq: u32) {
+        let new_freq : String = freq.to_string();
+        // Need to make this a 9 digit string with leading zeros
+        let num_zeros = 9 - new_freq.len();
+        let mut zeros_str = String::from("");
+
+        for _i in 0..num_zeros {
+            zeros_str += "0";
+        }
+        let mut freq_str = String::from(zeros_str + &new_freq);
+
+
+    }
 
     //=========================================================================================
-    // Create main application window
-    pub fn init_vfo(&mut self) {
+    // Create the set of 9 digits
+    fn create_digits(&mut self) {
+        self.grid.insert(&mut Self::new_digit(), 0, 0);
+        self.grid.insert(&mut Self::new_digit(), 0, 1);
+        self.grid.insert(&mut Self::new_digit(), 0, 2);
+        self.grid.insert(&mut Self::new_sep(), 0, 3);
+        self.grid.insert(&mut Self::new_digit(), 0, 4);
+        self.grid.insert(&mut Self::new_digit(), 0,5);
+        self.grid.insert(&mut Self::new_digit(), 0, 6);
+        self.grid.insert(&mut Self::new_sep(), 0, 7);
+        self.grid.insert(&mut Self::new_digit(), 0, 8);
+        self.grid.insert(&mut Self::new_digit(), 0, 9);
+        self.grid.insert(&mut Self::new_digit(), 0, 10);
         
     }
 
-    
+    // Create a new digit 
+    fn new_digit() -> Frame {
+        let mut frame = Frame::default().with_label("0");
+        frame.set_label_color(Color::DarkRed);
+        frame.set_label_font(Font::CourierBold);
+        frame.set_label_size(20);
+        return frame;
+    }
+
+    // Create a new separator 
+    fn new_sep() -> Frame {
+        let mut frame = Frame::default().with_label("_");
+        frame.set_label_color(Color::DarkBlue);
+        frame.set_label_font(Font::CourierBold);
+        frame.set_label_size(20);
+        return frame;
+    }
+
+    // Set display frequency
+    fn set_display_freq(freq : &String) {
+
+    }
 
 }
-
 
