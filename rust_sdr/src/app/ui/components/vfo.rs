@@ -36,7 +36,6 @@ use fltk_grid::Grid;
 
 use crate::app::protocol;
 
-
 //==================================================================================
 // VFO State
 pub struct VFOState{
@@ -66,7 +65,7 @@ impl VFOState {
             (9, 1),
         ]);
 
-        let digit_map = HashMap::new();
+        let mut digit_map = HashMap::new();
 
         // Somewhere to create the widgets
         let mut frame = Frame::default();
@@ -111,22 +110,17 @@ impl VFOState {
     //=========================================================================================
     // Create the set of 9 digits
     fn create_digits(&mut self) {
-        self.grid.insert(&mut Self::new_digit(), 0, 0);
-        self.grid.insert(&mut Self::new_digit(), 0, 1);
-        self.grid.insert(&mut Self::new_digit(), 0, 2);
-        self.grid.insert(&mut Self::new_sep(), 0, 3);
-        self.grid.insert(&mut Self::new_digit(), 0, 4);
-        self.grid.insert(&mut Self::new_digit(), 0,5);
-        self.grid.insert(&mut Self::new_digit(), 0, 6);
-        self.grid.insert(&mut Self::new_sep(), 0, 7);
-        self.grid.insert(&mut Self::new_digit(), 0, 8);
-        self.grid.insert(&mut Self::new_digit(), 0, 9);
-        self.grid.insert(&mut Self::new_digit(), 0, 10);
+
+        for i in 0..11 {
+            let mut f = VFODigit::new(1, &String::from("0"), Font::Times, 20, Color::DarkCyan, self.i_cc.clone());
+            self.grid.insert(&mut f.frame, 0, i);
+            self.digit_map.insert(i as i32, f);
+        }
         
     }
 
     // Create a new separator 
-    fn new_sep() -> Frame {
+    fn new_sep(&mut self) -> Frame {
         let mut frame = Frame::default().with_label("_");
         frame.set_label_color(Color::DarkBlue);
         frame.set_label_font(Font::CourierBold);
@@ -143,6 +137,7 @@ impl VFOState {
 
 //==================================================================================
 // VFO Digit
+#[derive(Clone)]
 pub struct VFODigit{
     id : i32,
     pub frame : Frame,
