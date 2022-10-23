@@ -42,6 +42,7 @@ use crate::app::protocol;
 pub struct VFOState{
     i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
     freq_inc_map : HashMap<i32, i32>,
+    digit_map : HashMap<i32, VFODigit>,
     pub frame : Frame,
     pub grid : Grid,
 }
@@ -65,6 +66,8 @@ impl VFOState {
             (9, 1),
         ]);
 
+        let digit_map = HashMap::new();
+
         // Somewhere to create the widgets
         let mut frame = Frame::default();
         let mut grid = Grid::default_fill();
@@ -73,6 +76,7 @@ impl VFOState {
         VFOState {
             i_cc : i_cc,
             freq_inc_map : freq_inc_map,
+            digit_map : digit_map,
             frame : frame,
             grid : grid,
         }
@@ -121,6 +125,15 @@ impl VFOState {
         
     }
 
+    // Create a new separator 
+    fn new_sep() -> Frame {
+        let mut frame = Frame::default().with_label("_");
+        frame.set_label_color(Color::DarkBlue);
+        frame.set_label_font(Font::CourierBold);
+        frame.set_label_size(20);
+        return frame;
+    }
+
     // Set display frequency
     fn set_display_freq(freq : &String) {
 
@@ -131,36 +144,34 @@ impl VFOState {
 //==================================================================================
 // VFO Digit
 pub struct VFODigit{
-    i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
+    id : i32,
     pub frame : Frame,
+    i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
 }
 
 // Implementation methods on UDPRData
 impl VFODigit {
 	// Create a new instance and initialise the default arrays
-    pub fn new(i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> VFODigit {
+    pub fn new( id : i32, label : &String, font : Font, size : i32, color : Color, i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> VFODigit {
+
+        let mut frame = Frame::default().with_label(label);
+        frame.set_label_color(color);
+        frame.set_label_font(font);
+        frame.set_label_size(size);
+
         // Object state
         VFODigit {
-            i_cc : i_cc,
+            id : id,
             frame : frame,
+            i_cc : i_cc,
         }
     }
 
-    // Create a new digit 
-    fn new_digit() -> Frame {
-        let mut frame = Frame::default().with_label("0");
-        frame.set_label_color(Color::DarkRed);
-        frame.set_label_font(Font::CourierBold);
-        frame.set_label_size(20);
-        return frame;
+    pub fn get_id(&self) -> i32 {
+        return self.id;
     }
 
-    // Create a new separator 
-    fn new_sep() -> Frame {
-        let mut frame = Frame::default().with_label("_");
-        frame.set_label_color(Color::DarkBlue);
-        frame.set_label_font(Font::CourierBold);
-        frame.set_label_size(20);
-        return frame;
+    pub fn set_label(&mut self, label : &String) {
+        self.frame.set_label(label);
     }
 }
