@@ -121,6 +121,31 @@ impl VFOState {
         
     }
 
+    // Set display frequency
+    fn set_display_freq(freq : &String) {
+
+    }
+
+}
+
+//==================================================================================
+// VFO Digit
+pub struct VFODigit{
+    i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
+    pub frame : Frame,
+}
+
+// Implementation methods on UDPRData
+impl VFODigit {
+	// Create a new instance and initialise the default arrays
+    pub fn new(i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> VFODigit {
+        // Object state
+        VFODigit {
+            i_cc : i_cc,
+            frame : frame,
+        }
+    }
+
     // Create a new digit 
     fn new_digit() -> Frame {
         let mut frame = Frame::default().with_label("0");
@@ -138,11 +163,4 @@ impl VFOState {
         frame.set_label_size(20);
         return frame;
     }
-
-    // Set display frequency
-    fn set_display_freq(freq : &String) {
-
-    }
-
 }
-
