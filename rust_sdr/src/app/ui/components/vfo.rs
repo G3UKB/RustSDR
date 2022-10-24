@@ -120,6 +120,7 @@ impl VFOState {
                 // Add the next digit
                 let mut digit = VFODigit::new(index, &String::from("0"), Font::Times, 20, Color::DarkCyan, self.i_cc.clone());
                 self.grid.insert(&mut digit.frame, 0, i);
+                //digit.frame.set_callback()
                 self.digit_map.insert(index as i32, digit);
                 index += 1;
             }
