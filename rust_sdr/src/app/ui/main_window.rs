@@ -69,6 +69,7 @@ impl UIState {
         // Create the VFO
         let mut vfo = vfo::VFOState::new(self.i_cc.clone());
         vfo.init_vfo();
+        vfo.set_freq(7300000);
         // Put the VFO in the top grid section
         grid.insert(&mut vfo.frame, 0, 0);
         

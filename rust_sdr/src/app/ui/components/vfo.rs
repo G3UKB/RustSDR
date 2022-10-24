@@ -103,14 +103,14 @@ impl VFOState {
             zeros_str += "0";
         }
         let mut freq_str = String::from(zeros_str + &new_freq);
-
-
+        self.set_display_freq(&freq_str);
     }
 
     //=========================================================================================
     // Create the set of 9 digits
     fn create_digits(&mut self) {
 
+        let mut index = 0;
         for i in 0..11 {
             if (i == 3) || (i == 7) {
                 // Add a separator
@@ -118,9 +118,10 @@ impl VFOState {
                 self.grid.insert(&mut sep, 0, i);
             } else {
                 // Add the next digit
-                let mut digit = VFODigit::new(1, &String::from("0"), Font::Times, 20, Color::DarkCyan, self.i_cc.clone());
+                let mut digit = VFODigit::new(index, &String::from("0"), Font::Times, 20, Color::DarkCyan, self.i_cc.clone());
                 self.grid.insert(&mut digit.frame, 0, i);
-                self.digit_map.insert(i as i32, digit);
+                self.digit_map.insert(index as i32, digit);
+                index += 1;
             }
         }
     }
@@ -135,7 +136,11 @@ impl VFOState {
     }
 
     // Set display frequency
-    fn set_display_freq(freq : &String) {
+    fn set_display_freq(&mut self, freq : &String) {
+        for i in 0..freq.len() {
+            let mut digit = self.digit_map.get_mut(&(i as i32)).unwrap();
+            digit.set_label(&freq.chars().nth(i).unwrap().to_string());
+        }
 
     }
 
