@@ -122,7 +122,7 @@ impl VFOState {
                 let mut digit = VFODigit::new(index, &String::from("0"), Font::Times, 20, Color::DarkCyan, self.i_cc.clone());
                 self.grid.insert(&mut digit.frame, 0, i);
                 self.digit_map.insert(index as i32, digit);
-                digit.frame.handle(move |f, e| self.digit_handler(f, e));
+                //digit.frame.handle(move |f, e| self.digit_handler(f, e));
                 index += 1;
             }
         }
@@ -177,6 +177,19 @@ impl VFODigit {
         frame.set_label_color(color);
         frame.set_label_font(font);
         frame.set_label_size(size);
+        frame.handle(move |f, e| digit_handler(f, e));
+
+        
+        fn digit_handler(f: &mut Frame, e: Event) -> bool {
+            if e == Event::Enter {
+                println!("Enter");
+            } else if e == Event::Leave {
+                println!("Leave");
+            } else if e == Event::MouseWheel {
+                println!("Wheel");
+            }
+            return true;
+        }
 
         // Object state
         VFODigit {
@@ -184,6 +197,7 @@ impl VFODigit {
             frame : frame,
             i_cc : i_cc,
         }
+
     }
 
     pub fn get_id(&self) -> i32 {
@@ -193,4 +207,5 @@ impl VFODigit {
     pub fn set_label(&mut self, label : &String) {
         self.frame.set_label(label);
     }
+
 }
