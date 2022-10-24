@@ -112,11 +112,17 @@ impl VFOState {
     fn create_digits(&mut self) {
 
         for i in 0..11 {
-            let mut f = VFODigit::new(1, &String::from("0"), Font::Times, 20, Color::DarkCyan, self.i_cc.clone());
-            self.grid.insert(&mut f.frame, 0, i);
-            self.digit_map.insert(i as i32, f);
+            if (i == 3) || (i == 7) {
+                // Add a separator
+                let mut sep = self.new_sep();
+                self.grid.insert(&mut sep, 0, i);
+            } else {
+                // Add the next digit
+                let mut digit = VFODigit::new(1, &String::from("0"), Font::Times, 20, Color::DarkCyan, self.i_cc.clone());
+                self.grid.insert(&mut digit.frame, 0, i);
+                self.digit_map.insert(i as i32, digit);
+            }
         }
-        
     }
 
     // Create a new separator 
