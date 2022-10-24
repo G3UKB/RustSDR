@@ -32,6 +32,7 @@ use fltk::app as fltk_app;
 use fltk::{prelude::*, window::Window, frame::Frame};
 use fltk::enums::Font;
 use fltk::enums::Color;
+use fltk::enums::Event;
 use fltk_grid::Grid;
 
 use crate::app::protocol;
@@ -120,8 +121,8 @@ impl VFOState {
                 // Add the next digit
                 let mut digit = VFODigit::new(index, &String::from("0"), Font::Times, 20, Color::DarkCyan, self.i_cc.clone());
                 self.grid.insert(&mut digit.frame, 0, i);
-                //digit.frame.set_callback()
                 self.digit_map.insert(index as i32, digit);
+                digit.frame.handle(move |f, e| self.digit_handler(f, e));
                 index += 1;
             }
         }
@@ -143,6 +144,17 @@ impl VFOState {
             digit.set_label(&freq.chars().nth(i).unwrap().to_string());
         }
 
+    }
+
+    fn digit_handler(&mut self, f: &mut Frame, e: Event) -> bool {
+        if e == Event::Enter {
+            println!("Enter");
+        } else if e == Event::Leave {
+            println!("Leave");
+        } else if e == Event::MouseWheel {
+            println!("Wheel");
+        }
+        return true;
     }
 
 }
