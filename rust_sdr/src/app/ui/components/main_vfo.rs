@@ -167,8 +167,6 @@ impl VFOState {
             let freq_inc: u32 = self.freq_inc_map[&id];
             move |f, ev| match ev {
                 Event::Enter => {
-                    // Test we can call cc module
-                    cc.lock().unwrap().cc_set_rx_tx_freq(3600000);
                     // Grow the label when we mouse over
                     f.set_label_size(30);
                     f.redraw_label();
@@ -184,6 +182,8 @@ impl VFOState {
                     // Here we need to increment/decrement the frequency
                     // Update the display
                     // Send new frequency to cc
+                    // Test we can call cc module
+                    cc.lock().unwrap().cc_set_rx_tx_freq(3600000);
                     true
                 }
                 _ => true
