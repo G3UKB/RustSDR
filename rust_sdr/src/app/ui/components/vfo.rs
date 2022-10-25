@@ -86,7 +86,7 @@ impl VFOState {
     }
 
     //=========================================================================================
-    // Create the set of 9 digits
+    // Initialise and create widgets
     pub fn init_vfo(&mut self) {
 
         // Initialise the grid
@@ -96,7 +96,7 @@ impl VFOState {
         self.create_digits();
     }
 
-    // Initial freq setting
+    // Set frequency
     pub fn set_freq(&mut self, freq: u32) {
         let new_freq : String = freq.to_string();
         // Need to make this a 9 digit string with leading zeros
@@ -129,6 +129,7 @@ impl VFOState {
                         20, 
                         Color::DarkCyan, 
                         self.i_cc.clone());
+                digit.init();
                 self.grid.insert(&mut digit.frame, 0, i);
                 self.digit_map.insert(index as i32, digit);
                 index += 1;
@@ -180,6 +181,7 @@ impl VFODigit {
         frame.set_label_color(color);
         frame.set_label_font(font);
         frame.set_label_size(size);
+        /* 
         frame.handle({
             let cc = i_cc.clone();
             move |f, ev| match ev {
@@ -199,7 +201,8 @@ impl VFODigit {
                 _ => true
             }
         });
-        
+        */
+
         // Object state
         VFODigit {
             id : id,
@@ -207,6 +210,28 @@ impl VFODigit {
             i_cc : i_cc,
         }
 
+    }
+
+    fn init(&mut self) {
+        self.frame.handle({
+            let cc = self.i_cc.clone();
+            move |f, ev| match ev {
+                Event::Enter => {
+                    println!("Enter");
+                    cc.lock().unwrap().cc_set_rx_tx_freq(3600000);
+                    true
+                }
+                Event::Leave => {
+                    println!("Leave");
+                    true
+                }
+                Event::MouseWheel => {
+                    println!("Wheel");
+                    true
+                }
+                _ => true
+            }
+        });
     }
 
     pub fn get_id(&self) -> i32 {
