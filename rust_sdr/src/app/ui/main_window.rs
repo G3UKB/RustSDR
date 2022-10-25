@@ -32,7 +32,7 @@ use fltk::{prelude::*, window::Window};
 use fltk_grid::Grid;
 
 use crate::app::protocol;
-use crate::app::ui::components::vfo;
+use crate::app::ui::components::main_vfo;
 
 //==================================================================================
 // UI State
@@ -67,7 +67,7 @@ impl UIState {
         grid.set_layout(2, 1);
 
         // Create the VFO
-        let mut vfo = vfo::VFOState::new(self.i_cc.clone());
+        let mut vfo = main_vfo::VFOState::new(self.i_cc.clone());
         vfo.init_vfo();
         vfo.set_freq(7300000);
         // Put the VFO in the top grid section
