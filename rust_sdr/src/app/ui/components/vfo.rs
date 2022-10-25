@@ -181,27 +181,6 @@ impl VFODigit {
         frame.set_label_color(color);
         frame.set_label_font(font);
         frame.set_label_size(size);
-        /* 
-        frame.handle({
-            let cc = i_cc.clone();
-            move |f, ev| match ev {
-                Event::Enter => {
-                    println!("Enter");
-                    cc.lock().unwrap().cc_set_rx_tx_freq(3600000);
-                    true
-                }
-                Event::Leave => {
-                    println!("Leave");
-                    true
-                }
-                Event::MouseWheel => {
-                    println!("Wheel");
-                    true
-                }
-                _ => true
-            }
-        });
-        */
 
         // Object state
         VFODigit {
