@@ -25,7 +25,10 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
+use std::borrow::BorrowMut;
 use std::sync::{Arc, Mutex};
+use std::cell::RefCell;
+use std::rc::{Rc, Weak};
 use std::collections::HashMap;
 
 use fltk::app as fltk_app;
@@ -119,10 +122,15 @@ impl VFOState {
                 self.grid.insert(&mut sep, 0, i);
             } else {
                 // Add the next digit
-                let mut digit = VFODigit::new(index, &String::from("0"), Font::Times, 20, Color::DarkCyan, self.i_cc.clone());
+                let mut digit = VFODigit::new(
+                        index, 
+                        &String::from("0"), 
+                        Font::Times, 
+                        20, 
+                        Color::DarkCyan, 
+                        self.i_cc.clone());
                 self.grid.insert(&mut digit.frame, 0, i);
                 self.digit_map.insert(index as i32, digit);
-                //digit.frame.handle(move |f, e| self.digit_handler(f, e));
                 index += 1;
             }
         }
@@ -146,17 +154,6 @@ impl VFOState {
 
     }
 
-    fn digit_handler(&mut self, f: &mut Frame, e: Event) -> bool {
-        if e == Event::Enter {
-            println!("Enter");
-        } else if e == Event::Leave {
-            println!("Leave");
-        } else if e == Event::MouseWheel {
-            println!("Wheel");
-        }
-        return true;
-    }
-
 }
 
 //==================================================================================
@@ -171,26 +168,38 @@ pub struct VFODigit{
 // Implementation methods on UDPRData
 impl VFODigit {
 	// Create a new instance and initialise the default arrays
-    pub fn new( id : i32, label : &String, font : Font, size : i32, color : Color, i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> VFODigit {
+    pub fn new( 
+            id : i32, 
+            label : &String, 
+            font : Font, 
+            size : i32, 
+            color : Color, 
+            i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> VFODigit {
 
         let mut frame = Frame::default().with_label(label);
         frame.set_label_color(color);
         frame.set_label_font(font);
         frame.set_label_size(size);
-        frame.handle(move |f, e| digit_handler(f, e));
-
-        
-        fn digit_handler(f: &mut Frame, e: Event) -> bool {
-            if e == Event::Enter {
-                println!("Enter");
-            } else if e == Event::Leave {
-                println!("Leave");
-            } else if e == Event::MouseWheel {
-                println!("Wheel");
+        frame.handle({
+            let cc = i_cc.clone();
+            move |f, ev| match ev {
+                Event::Enter => {
+                    println!("Enter");
+                    cc.lock().unwrap().cc_set_rx_tx_freq(3600000);
+                    true
+                }
+                Event::Leave => {
+                    println!("Leave");
+                    true
+                }
+                Event::MouseWheel => {
+                    println!("Wheel");
+                    true
+                }
+                _ => true
             }
-            return true;
-        }
-
+        });
+        
         // Object state
         VFODigit {
             id : id,
