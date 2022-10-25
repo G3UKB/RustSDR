@@ -156,22 +156,20 @@ impl VFOState {
         frame.set_label_size(size);
         frame.handle({
             let cc = self.i_cc.clone();
+            let mut id = 0;
             move |f, ev| match ev {
                 Event::Enter => {
-                    //println!("Enter {:?}", f.label_size());
-                    //cc.lock().unwrap().cc_set_rx_tx_freq(3600000);
+                    cc.lock().unwrap().cc_set_rx_tx_freq(3600000);
                     f.set_label_size(30);
                     f.redraw_label();
                     true
                 }
                 Event::Leave => {
-                    println!("Leave");
                     f.set_label_size(20);
                     f.redraw_label();
                     true
                 }
                 Event::MouseWheel => {
-                    //println!("Wheel");
                     true
                 }
                 _ => true
