@@ -44,7 +44,8 @@ use crate::app::protocol;
 // VFO State
 pub struct VFOState{
     i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
-    freq_inc_map : HashMap<i32, i32>,
+    freq_inc_map : HashMap<u32, u32>,
+    current_freq_in_hz : u32,
     digit_map : HashMap<i32, Frame>,
     pub frame : Frame,
     pub grid : Grid,
@@ -58,15 +59,15 @@ impl VFOState {
 
         // Lookup for digit number to frequency increment 100MHz to 1Hz
         let freq_inc_map = HashMap::from([
-            (1, 100000000),
-            (2, 10000000),
-            (3, 1000000),
-            (4, 100000),
-            (5, 10000),
-            (6, 1000),
-            (7, 100),
-            (8, 10),
-            (9, 1),
+            (0, 100000000),
+            (1, 10000000),
+            (2, 1000000),
+            (3, 100000),
+            (4, 10000),
+            (5, 1000),
+            (6, 100),
+            (7, 10),
+            (8, 1),
         ]);
 
         let mut digit_map = HashMap::new();
@@ -79,6 +80,7 @@ impl VFOState {
         VFOState {
             i_cc : i_cc,
             freq_inc_map : freq_inc_map,
+            current_freq_in_hz : 0,
             digit_map : digit_map,
             frame : frame,
             grid : grid,
@@ -98,6 +100,7 @@ impl VFOState {
 
     // Set frequency
     pub fn set_freq(&mut self, freq: u32) {
+        self.current_freq_in_hz = freq;
         let new_freq : String = freq.to_string();
         // Need to make this a 9 digit string with leading zeros
         let num_zeros = 9 - new_freq.len();
@@ -155,21 +158,32 @@ impl VFOState {
         frame.set_label_font(font);
         frame.set_label_size(size);
         frame.handle({
+            // Bring variables into closure
+            // CC_out instance
             let cc = self.i_cc.clone();
-            let mut id = 0;
+            // id for this digit
+            let id: u32 = id as u32;
+            // freq increment for this digit
+            let freq_inc: u32 = self.freq_inc_map[&id];
             move |f, ev| match ev {
                 Event::Enter => {
+                    // Test we can call cc module
                     cc.lock().unwrap().cc_set_rx_tx_freq(3600000);
+                    // Grow the label when we mouse over
                     f.set_label_size(30);
                     f.redraw_label();
                     true
                 }
                 Event::Leave => {
+                    // Shrink the label back again
                     f.set_label_size(20);
                     f.redraw_label();
                     true
                 }
                 Event::MouseWheel => {
+                    // Here we need to increment/decrement the frequency
+                    // Update the display
+                    // Send new frequency to cc
                     true
                 }
                 _ => true
