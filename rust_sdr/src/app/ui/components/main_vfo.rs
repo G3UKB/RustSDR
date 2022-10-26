@@ -26,16 +26,19 @@ bob@bobcowdery.plus.com
 */
 
 use std::borrow::BorrowMut;
+use std::ops::Neg;
 use std::sync::{Arc, Mutex};
 use std::cell::RefCell;
 use std::rc::{Rc, Weak};
 use std::collections::HashMap;
+use std::num;
 
 use fltk::app as fltk_app;
 use fltk::{prelude::*, window::Window, frame::Frame};
 use fltk::enums::Font;
 use fltk::enums::Color;
 use fltk::enums::Event;
+use fltk::app::MouseWheel;
 use fltk_grid::Grid;
 
 use crate::app::protocol;
@@ -114,7 +117,7 @@ impl VFOState {
     }
 
     //=========================================================================================
-    // Create the set of 9 digits
+    // Create the set of 9 digits in 3 sets with separators
     fn create_digits(&mut self) {
 
         let mut index = 0;
@@ -147,6 +150,7 @@ impl VFOState {
         return frame;
     }
 
+    // Create a new digit
     fn create_digit(&mut self,
             id : i32, 
             label : &String, 
@@ -157,14 +161,16 @@ impl VFOState {
         frame.set_label_color(color);
         frame.set_label_font(font);
         frame.set_label_size(size);
+        // Handle mouse events
         frame.handle({
             // Bring variables into closure
             // CC_out instance
             let cc = self.i_cc.clone();
             // id for this digit
-            let id: u32 = id as u32;
+            let w_id: i32 = id;
             // freq increment for this digit
-            let freq_inc: u32 = self.freq_inc_map[&id];
+            let freq_inc = (self.freq_inc_map[&(w_id as u32)]) as i32;
+            let freq_dec = freq_inc.neg();
             move |f, ev| match ev {
                 Event::Enter => {
                     // Grow the label when we mouse over
@@ -180,16 +186,48 @@ impl VFOState {
                 }
                 Event::MouseWheel => {
                     // Here we need to increment/decrement the frequency
-                    // Update the display
-                    // Send new frequency to cc
-                    // Test we can call cc module
-                    cc.lock().unwrap().cc_set_rx_tx_freq(3600000);
+                    // This will also reset the display and update the radio
+                    let mut inc_or_dec: i32 = 0;
+                    match fltk::app::event_dy() {
+                        MouseWheel::None => (),
+                        MouseWheel::Up => inc_or_dec = freq_inc,
+                        MouseWheel::Down => inc_or_dec = freq_dec,
+                        MouseWheel::Right => (),
+                        MouseWheel::Left => (),
+                    }
+
+/* 
+                    if fltk::app::event_dy() == MouseWheel::Up {
+                        println!("Up");
+                        freq_inc_or_dec = -freq_inc_or_dec;
+                    } else if fltk::app::event_dy() == MouseWheel::Down {
+                        println!("Down");
+                    } else if fltk::app::event_dy() == MouseWheel::Down {
+                        println!("Down");
+                    }
+                    } else if fltk::app::event_dy() == MouseWheel::Down {
+                        println!("Down");
+                    }
+                    */
+                    println!("Scroll {}", inc_or_dec);
+                    // How do I call this methos?
+                    // self.inc_dec_freq(freq_inc_or_dec);
                     true
                 }
-                _ => true
+                _ => false
             }
         });
         return frame;
+    }
+
+    // Increment or Decrement frequency by the amount of the digit weight
+    fn inc_dec_freq(&mut self, inc_or_dec: u32) {
+        // Update current freq holder
+        self.current_freq_in_hz = self.current_freq_in_hz + inc_or_dec;
+        // Update the display
+        self.set_freq(self.current_freq_in_hz);
+        // Update the radio
+        self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.current_freq_in_hz);
     }
 
     // Set display frequency
