@@ -195,23 +195,9 @@ impl VFOState {
                         MouseWheel::Right => (),
                         MouseWheel::Left => (),
                     }
-
-/* 
-                    if fltk::app::event_dy() == MouseWheel::Up {
-                        println!("Up");
-                        freq_inc_or_dec = -freq_inc_or_dec;
-                    } else if fltk::app::event_dy() == MouseWheel::Down {
-                        println!("Down");
-                    } else if fltk::app::event_dy() == MouseWheel::Down {
-                        println!("Down");
-                    }
-                    } else if fltk::app::event_dy() == MouseWheel::Down {
-                        println!("Down");
-                    }
-                    */
                     println!("Scroll {}", inc_or_dec);
-                    // How do I call this methos?
-                    // self.inc_dec_freq(freq_inc_or_dec);
+                    // How do I call this method?
+                    // self.inc_dec_freq(inc_or_dec);
                     true
                 }
                 _ => false
