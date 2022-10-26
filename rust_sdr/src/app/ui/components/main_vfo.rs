@@ -25,19 +25,12 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use std::borrow::BorrowMut;
 use std::ops::Neg;
 use std::sync::{Arc, Mutex};
-use std::cell::RefCell;
-use std::rc::{Rc, Weak};
 use std::collections::HashMap;
-use std::num;
 
-use fltk::app as fltk_app;
-use fltk::{prelude::*, window::Window, frame::Frame};
-use fltk::enums::Font;
-use fltk::enums::Color;
-use fltk::enums::Event;
+use fltk::{prelude::*, frame::Frame};
+use fltk::enums::{Font, Color, Event};
 use fltk::app::MouseWheel;
 use fltk_grid::Grid;
 
@@ -54,8 +47,7 @@ pub struct VFOState{
     pub grid : Grid,
 }
 
-
-// Implementation methods on UDPRData
+// Implementation methods on VFOState
 impl VFOState {
 	// Create a new instance and initialise the default arrays
     pub fn new(i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> VFOState {
@@ -73,6 +65,7 @@ impl VFOState {
             (8, 1),
         ]);
 
+        // Hold refs to all digits
         let mut digit_map = HashMap::new();
 
         // Somewhere to create the widgets
