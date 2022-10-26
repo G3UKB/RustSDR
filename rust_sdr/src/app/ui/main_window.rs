@@ -81,6 +81,9 @@ impl UIState {
 
     pub fn run_event_loop(&mut self) {
         fltk_app::run().unwrap();
+        //while fltk_app::wait() {
+
+        //}
     }
 
     pub fn set_freq(&mut self, freq: u32) {
