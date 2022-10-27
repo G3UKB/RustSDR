@@ -169,7 +169,7 @@ impl VFOState {
             // freq increment for this digit
             let freq_inc = (self.freq_inc_map[&(w_id as u32)]) as i32;
             let freq_dec = freq_inc.neg();
-            let ch_s = self.ch_s.clone();
+            let ch_s = self.ch_s;
             move |f, ev| match ev {
                 Event::Enter => {
                     // Grow the label when we mouse over
@@ -197,7 +197,7 @@ impl VFOState {
                     println!("Scroll {}", inc_or_dec);
                     // How do I call this method?
                     // self.inc_dec_freq(inc_or_dec);
-                    f.emit(ch_s.to_owned(), messages::UIMsg::FreqUpdate(inc_or_dec));
+                    f.emit(ch_s, messages::UIMsg::FreqUpdate(inc_or_dec));
                     true
                 }
                 _ => false

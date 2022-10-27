@@ -88,6 +88,7 @@ impl UIState {
     pub fn run_event_loop(&mut self) {
         //fltk_app::run().unwrap();
         while fltk_app::wait() {
+            //println!("{:?}", self.ch_r.recv());
             if let Some(val) = self.ch_r.recv() {
                 match val {
                     messages::UIMsg::FreqUpdate(inc_or_dec) => {
