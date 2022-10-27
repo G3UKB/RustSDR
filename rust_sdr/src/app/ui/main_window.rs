@@ -38,6 +38,7 @@ use crate::app::ui::components::main_vfo;
 //==================================================================================
 // UI State
 pub struct UIState{
+    app : fltk_app::App,
     i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
     vfo : main_vfo::VFOState,
     pub ch_r : fltk_app::Receiver<messages::UIMsg>,
@@ -77,6 +78,7 @@ impl UIState {
     
         // Object state
         UIState {
+            app : fltk_app,
             i_cc : i_cc,
             vfo : vfo,
             ch_r : r,
@@ -87,7 +89,7 @@ impl UIState {
     // Run the UI event loop
     pub fn run_event_loop(&mut self) {
         //fltk_app::run().unwrap();
-        while fltk_app::wait() {
+        while self.app.wait() {
             //println!("{:?}", self.ch_r.recv());
             if let Some(val) = self.ch_r.recv() {
                 match val {

@@ -194,7 +194,7 @@ impl VFOState {
                         MouseWheel::Right => (),
                         MouseWheel::Left => (),
                     }
-                    println!("Scroll {}", inc_or_dec);
+                    //println!("Scroll {}", inc_or_dec);
                     // How do I call this method?
                     // self.inc_dec_freq(inc_or_dec);
                     f.emit(ch_s, messages::UIMsg::FreqUpdate(inc_or_dec));
