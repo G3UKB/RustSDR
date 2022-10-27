@@ -27,13 +27,16 @@ bob@bobcowdery.plus.com
 
 use std::ops::Neg;
 use std::sync::{Arc, Mutex};
+use std::cell::RefCell;
 use std::collections::HashMap;
 
+use fltk::app as fltk_app;
 use fltk::{prelude::*, frame::Frame};
 use fltk::enums::{Font, Color, Event};
 use fltk::app::MouseWheel;
 use fltk_grid::Grid;
 
+use crate::app::common::messages;
 use crate::app::protocol;
 
 //==================================================================================
@@ -45,12 +48,13 @@ pub struct VFOState{
     digit_map : HashMap<i32, Frame>,
     pub frame : Frame,
     pub grid : Grid,
+    pub ch_s : fltk_app::Sender<messages::UIMsg>,
 }
 
 // Implementation methods on VFOState
 impl VFOState {
 	// Create a new instance and initialise the default arrays
-    pub fn new(i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> VFOState {
+    pub fn new(i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>, ch_s : fltk_app::Sender<messages::UIMsg>) -> VFOState {
 
         // Lookup for digit number to frequency increment 100MHz to 1Hz
         let freq_inc_map = HashMap::from([
@@ -80,6 +84,7 @@ impl VFOState {
             digit_map : digit_map,
             frame : frame,
             grid : grid,
+            ch_s : ch_s,
         }
     }
 
@@ -164,6 +169,7 @@ impl VFOState {
             // freq increment for this digit
             let freq_inc = (self.freq_inc_map[&(w_id as u32)]) as i32;
             let freq_dec = freq_inc.neg();
+            let ch_s = self.ch_s.clone();
             move |f, ev| match ev {
                 Event::Enter => {
                     // Grow the label when we mouse over
@@ -191,7 +197,7 @@ impl VFOState {
                     println!("Scroll {}", inc_or_dec);
                     // How do I call this method?
                     // self.inc_dec_freq(inc_or_dec);
-                    //f.emit(sender, msg);
+                    f.emit(ch_s.to_owned(), messages::UIMsg::FreqUpdate(inc_or_dec));
                     true
                 }
                 _ => false

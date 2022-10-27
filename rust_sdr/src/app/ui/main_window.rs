@@ -39,8 +39,7 @@ use crate::app::ui::components::main_vfo;
 // UI State
 pub struct UIState{
     i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
-    vfo : Option<main_vfo::VFOState>,
-    pub ch_s : fltk_app::Sender<messages::UIMsg>,
+    vfo : main_vfo::VFOState,
     pub ch_r : fltk_app::Receiver<messages::UIMsg>,
 }
 
@@ -49,23 +48,12 @@ pub struct UIState{
 impl UIState {
 	// Create a new instance and initialise the default arrays
     pub fn new(i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> UIState {
+        
+        // The one and only fltk app
+        let fltk_app = fltk_app::App::default();
 
         // Create a message channel
         let (s, r) = fltk_app::channel::<messages::UIMsg>();
-        UIState {
-            i_cc : i_cc,
-            vfo : None,
-            ch_s : s,
-            ch_r : r,
-        }
-    }
-
-
-    //=========================================================================================
-    // Create main application window
-    pub fn init_ui(&mut self) {
-        // The one and only fltk app
-        let fltk_app = fltk_app::App::default();
 
         // We create all components in-line
         // The main window
@@ -76,27 +64,37 @@ impl UIState {
         grid.set_layout(2, 1);
 
         // Create the VFO
-        let mut vfo = main_vfo::VFOState::new(self.i_cc.clone());
+        let mut vfo = main_vfo::VFOState::new(i_cc.clone(),  s);
+        // Initialise and set initial freq
         vfo.init_vfo();
         vfo.set_freq(7300000);
         // Put the VFO in the top grid section
         grid.insert(&mut vfo.frame, 0, 0);
-        self.vfo = Some(vfo);
         
         // Assembly end
         wind.end();
         wind.show();
-        
+    
+        // Object state
+        UIState {
+            i_cc : i_cc,
+            vfo : vfo,
+            ch_r : r,
+        }
+
     }
 
+    // Run the UI event loop
     pub fn run_event_loop(&mut self) {
         //fltk_app::run().unwrap();
         while fltk_app::wait() {
             if let Some(val) = self.ch_r.recv() {
                 match val {
                     messages::UIMsg::FreqUpdate(inc_or_dec) => {
-                        self.vfo.as_ref().inc_dec_freq(inc_or_dec);
+                        println!("Val {:?}", inc_or_dec);
+                        self.vfo.inc_dec_freq(inc_or_dec);
                     }
+                    _ => println!("No match"),
                 }
             }
         }
