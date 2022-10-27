@@ -191,6 +191,7 @@ impl VFOState {
                     println!("Scroll {}", inc_or_dec);
                     // How do I call this method?
                     // self.inc_dec_freq(inc_or_dec);
+                    //f.emit(sender, msg);
                     true
                 }
                 _ => false
@@ -200,9 +201,9 @@ impl VFOState {
     }
 
     // Increment or Decrement frequency by the amount of the digit weight
-    fn inc_dec_freq(&mut self, inc_or_dec: u32) {
+    pub fn inc_dec_freq(&mut self, inc_or_dec: i32) {
         // Update current freq holder
-        self.current_freq_in_hz = self.current_freq_in_hz + inc_or_dec;
+        self.current_freq_in_hz = (self.current_freq_in_hz as i32 + inc_or_dec) as u32;
         // Update the display
         self.set_freq(self.current_freq_in_hz);
         // Update the radio

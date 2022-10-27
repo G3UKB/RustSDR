@@ -31,6 +31,7 @@ use fltk::app as fltk_app;
 use fltk::{prelude::*, window::Window};
 use fltk_grid::Grid;
 
+use crate::app::common::messages;
 use crate::app::protocol;
 use crate::app::ui::components::main_vfo;
 
@@ -38,6 +39,9 @@ use crate::app::ui::components::main_vfo;
 // UI State
 pub struct UIState{
     i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
+    vfo : Option<main_vfo::VFOState>,
+    pub ch_s : fltk_app::Sender<messages::UIMsg>,
+    pub ch_r : fltk_app::Receiver<messages::UIMsg>,
 }
 
 
@@ -46,8 +50,13 @@ impl UIState {
 	// Create a new instance and initialise the default arrays
     pub fn new(i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> UIState {
 
+        // Create a message channel
+        let (s, r) = fltk_app::channel::<messages::UIMsg>();
         UIState {
             i_cc : i_cc,
+            vfo : None,
+            ch_s : s,
+            ch_r : r,
         }
     }
 
@@ -72,6 +81,7 @@ impl UIState {
         vfo.set_freq(7300000);
         // Put the VFO in the top grid section
         grid.insert(&mut vfo.frame, 0, 0);
+        self.vfo = Some(vfo);
         
         // Assembly end
         wind.end();
@@ -80,16 +90,15 @@ impl UIState {
     }
 
     pub fn run_event_loop(&mut self) {
-        fltk_app::run().unwrap();
-        //while fltk_app::wait() {
-
-        //}
+        //fltk_app::run().unwrap();
+        while fltk_app::wait() {
+            if let Some(val) = self.ch_r.recv() {
+                match val {
+                    messages::UIMsg::FreqUpdate(inc_or_dec) => {
+                        self.vfo.as_ref().inc_dec_freq(inc_or_dec);
+                    }
+                }
+            }
+        }
     }
-
-    pub fn set_freq(&mut self, freq: u32) {
-        self.i_cc.lock().unwrap().cc_set_rx_tx_freq(freq);
-    }
-
 }
-
-

@@ -48,3 +48,7 @@ pub enum PipelineMsg {
     StartPipeline,
     StopPipeline,
 }
+
+pub enum UIMsg {
+    FreqUpdate(i32),
+}
