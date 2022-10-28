@@ -73,9 +73,9 @@ impl VFOState {
         let mut digit_map = HashMap::new();
 
         // Somewhere to create the widgets
-        let mut frame = Frame::default();
         let mut grid = Grid::default_fill();
-
+        let mut frame = Frame::default();
+        
         // Object state
         VFOState {
             i_cc : i_cc,

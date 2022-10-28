@@ -57,28 +57,29 @@ impl UIState {
         // Create a message channel
         let (s, r) = fltk_app::channel::<messages::UIMsg>();
 
-        // We create all components in-line
+        //========================================================================
+        // Assemble the UI
         // The main window
         let mut wind = Window::new(100, 100, 400, 300, "RustSDR");
 
         // The main window is split into areas using a grid layout
         let mut grid = Grid::default_fill();
-        grid.set_layout(3, 1);
-
+        grid.set_layout(2, 1);
+        
+        // Put the VFO in the top grid section
         // Create the VFO
         let mut vfo = main_vfo::VFOState::new(i_cc.clone(),  s);
         // Initialise and set initial freq
         vfo.init_vfo();
         vfo.set_freq(7300000);
-        // Put the VFO in the top grid section
         grid.insert(&mut vfo.frame, 0, 0);
         
+        // Put the modes in the bottom grid section
         // Create the modes
         let mut modes = modes::ModesState::new();
         // Initialise
         modes.init_modes();
-        // Put the modes in the bottom grid section
-        grid.insert(&mut modes.frame, 2, 0);
+        grid.insert(&mut modes.frame, 1, 0);
 
         // Assembly end
         wind.end();
