@@ -34,6 +34,7 @@ use fltk_grid::Grid;
 use crate::app::common::messages;
 use crate::app::protocol;
 use crate::app::ui::components::main_vfo;
+use crate::app::ui::components::modes;
 
 //==================================================================================
 // UI State
@@ -62,7 +63,7 @@ impl UIState {
 
         // The main window is split into areas using a grid layout
         let mut grid = Grid::default_fill();
-        grid.set_layout(2, 1);
+        grid.set_layout(3, 1);
 
         // Create the VFO
         let mut vfo = main_vfo::VFOState::new(i_cc.clone(),  s);
@@ -72,6 +73,13 @@ impl UIState {
         // Put the VFO in the top grid section
         grid.insert(&mut vfo.frame, 0, 0);
         
+        // Create the modes
+        let mut modes = modes::ModesState::new();
+        // Initialise
+        modes.init_modes();
+        // Put the modes in the bottom grid section
+        grid.insert(&mut modes.frame, 2, 0);
+
         // Assembly end
         wind.end();
         wind.show();
