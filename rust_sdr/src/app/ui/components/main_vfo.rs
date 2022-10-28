@@ -46,7 +46,7 @@ pub struct VFOState{
     freq_inc_map : HashMap<u32, u32>,
     current_freq_in_hz : u32,
     digit_map : HashMap<i32, Frame>,
-    pub frame : Frame,
+    //pub frame : Frame,
     pub grid : Grid,
     pub ch_s : fltk_app::Sender<messages::UIMsg>,
 }
@@ -73,7 +73,7 @@ impl VFOState {
         let mut digit_map = HashMap::new();
 
         // Somewhere to create the widgets
-        let mut frame = Frame::default();
+        //let mut frame = Frame::default();
         let mut grid = Grid::default_fill();
         
         // Object state
@@ -82,7 +82,7 @@ impl VFOState {
             freq_inc_map : freq_inc_map,
             current_freq_in_hz : 0,
             digit_map : digit_map,
-            frame : frame,
+            //frame : frame,
             grid : grid,
             ch_s : ch_s,
         }

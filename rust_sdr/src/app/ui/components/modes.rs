@@ -38,7 +38,7 @@ use crate::app::common::messages;
 // Modes State
 
 pub struct ModesState<'a>{
-    pub frame : Frame,
+    //pub frame : Frame,
     pub grid : Grid,
     mode_names : [&'a str; 12],
     button_map : HashMap<i32, Button>,
@@ -69,12 +69,12 @@ impl ModesState<'_> {
         let mut button_map = HashMap::new();
 
         // Somewhere to create the widgets
-        let mut frame = Frame::default();
+        //let mut frame = Frame::default();
         let mut grid = Grid::default_fill();
 
         // Object state
         ModesState {
-            frame : frame,
+            //frame : frame,
             grid : grid,
             mode_names : mode_names,
             button_map : button_map,

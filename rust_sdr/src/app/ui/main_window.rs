@@ -28,7 +28,7 @@ bob@bobcowdery.plus.com
 use std::sync::{Arc, Mutex};
 
 use fltk::app as fltk_app;
-use fltk::{prelude::*, window::Window};
+use fltk::{prelude::*, group::Group, window::Window, frame::Frame};
 use fltk_grid::Grid;
 
 use crate::app::common::messages;
@@ -57,6 +57,7 @@ impl UIState {
         // Create a message channel
         let (s, r) = fltk_app::channel::<messages::UIMsg>();
 
+
         //========================================================================
         // Assemble the UI
         // The main window
@@ -65,21 +66,23 @@ impl UIState {
         // The main window is split into areas using a grid layout
         let mut grid = Grid::default_fill();
         grid.set_layout(2, 1);
-        grid.debug(true);
         
         // Put the VFO in the top grid section
         // Initialise and set initial freq
         let mut vfo = main_vfo::VFOState::new(i_cc.clone(),  s);
+        // Somewhere to create the widgets
+        let mut vfo_frame = Frame::default();
         vfo.init_vfo();
         vfo.set_freq(7300000);
-        grid.insert(&mut vfo.frame, 0, 0);
+        grid.insert(&mut vfo_frame, 0, 0);
         
         // Put the modes in the bottom grid section
         // Create the modes
         let mut modes = modes::ModesState::new();
         // Initialise
+        let mut modes_frame = Frame::default();
         modes.init_modes();
-        grid.insert(&mut modes.frame, 1, 0);
+        grid.insert(&mut modes_frame, 1, 0);
 
         // Assembly end
         wind.end();
