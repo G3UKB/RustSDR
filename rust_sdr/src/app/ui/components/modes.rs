@@ -69,8 +69,8 @@ impl ModesState<'_> {
         let mut button_map = HashMap::new();
 
         // Somewhere to create the widgets
-        let mut grid = Grid::default_fill();
         let mut frame = Frame::default();
+        let mut grid = Grid::default_fill();
 
         // Object state
         ModesState {

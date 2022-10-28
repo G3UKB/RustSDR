@@ -65,11 +65,11 @@ impl UIState {
         // The main window is split into areas using a grid layout
         let mut grid = Grid::default_fill();
         grid.set_layout(2, 1);
+        grid.debug(true);
         
         // Put the VFO in the top grid section
-        // Create the VFO
-        let mut vfo = main_vfo::VFOState::new(i_cc.clone(),  s);
         // Initialise and set initial freq
+        let mut vfo = main_vfo::VFOState::new(i_cc.clone(),  s);
         vfo.init_vfo();
         vfo.set_freq(7300000);
         grid.insert(&mut vfo.frame, 0, 0);
