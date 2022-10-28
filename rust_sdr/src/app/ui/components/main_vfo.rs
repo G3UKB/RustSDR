@@ -189,15 +189,15 @@ impl VFOState {
                     let mut inc_or_dec: i32 = 0;
                     match fltk::app::event_dy() {
                         MouseWheel::None => (),
-                        MouseWheel::Up => inc_or_dec = freq_inc,
-                        MouseWheel::Down => inc_or_dec = freq_dec,
+                        MouseWheel::Up => inc_or_dec = freq_dec,
+                        MouseWheel::Down => inc_or_dec = freq_inc,
                         MouseWheel::Right => (),
                         MouseWheel::Left => (),
                     }
-                    //println!("Scroll {}", inc_or_dec);
-                    // How do I call this method?
-                    // self.inc_dec_freq(inc_or_dec);
-                    f.emit(ch_s, messages::UIMsg::FreqUpdate(inc_or_dec));
+                    // Message to event loop
+                    // Note .emit does not work for some reason
+                    //f.emit(ch_s, messages::UIMsg::FreqUpdate(inc_or_dec));
+                    ch_s.send(messages::UIMsg::FreqUpdate(inc_or_dec));
                     true
                 }
                 _ => false

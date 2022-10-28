@@ -90,11 +90,10 @@ impl UIState {
     pub fn run_event_loop(&mut self) {
         //fltk_app::run().unwrap();
         while self.app.wait() {
-            //println!("{:?}", self.ch_r.recv());
+            // Pick up any of our messages
             if let Some(val) = self.ch_r.recv() {
                 match val {
                     messages::UIMsg::FreqUpdate(inc_or_dec) => {
-                        println!("Val {:?}", inc_or_dec);
                         self.vfo.inc_dec_freq(inc_or_dec);
                     }
                     _ => println!("No match"),
