@@ -46,7 +46,7 @@ extern "C" {
 	fn fexchange0(ch_id: i32, in_buf: *mut f64, out_buf: *mut f64, error: *mut i32);
 	fn SetRXAMode(ch_id: i32, mode: i32);
 	fn SetRXABandpassRun(ch_id: i32, run: i32);
-	fn SetRXABandpassFreqs(ch_id: i32, low: i32, high: i32);
+	fn SetRXABandpassFreqs(ch_id: i32, low: f64, high: f64);
 }
 
 // Run WDSP wisdom to optimise the FFT sizes
@@ -173,6 +173,6 @@ fn set_mode_filter(ch_id: i32) {
 	
 		SetRXAMode(ch_id, mode);
 		SetRXABandpassRun(ch_id, 1);
-		SetRXABandpassFreqs(ch_id, new_low, new_high);
+		SetRXABandpassFreqs(ch_id, new_low as f64, new_high as f64);
 	}
 }
