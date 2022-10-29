@@ -130,7 +130,7 @@ impl VFOState {
                         index, 
                         &String::from("0"), 
                         Font::Times, 
-                        20, 
+                        30, 
                         Color::DarkCyan);
                 self.grid.insert(&mut digit, 0, i);
                 self.digit_map.insert(index as i32, digit);
@@ -173,13 +173,13 @@ impl VFOState {
             move |f, ev| match ev {
                 Event::Enter => {
                     // Grow the label when we mouse over
-                    f.set_label_size(30);
+                    f.set_label_size(35);
                     f.redraw_label();
                     true
                 }
                 Event::Leave => {
                     // Shrink the label back again
-                    f.set_label_size(20);
+                    f.set_label_size(30);
                     f.redraw_label();
                     true
                 }

@@ -61,28 +61,28 @@ impl UIState {
         //========================================================================
         // Assemble the UI
         // The main window
-        let mut wind = Window::new(100, 100, 400, 300, "RustSDR");
+        let mut wind = Window::new(100, 100, 400, 140, "RustSDR");
 
         // The main window is split into areas using a grid layout
         let mut grid = Grid::default_fill();
         grid.set_layout(2, 1);
         
         // Put the VFO in the top grid section
+        let mut vfo_group = Group::new(0,0,400,60, "");
         // Initialise and set initial freq
         let mut vfo = main_vfo::VFOState::new(i_cc.clone(),  s);
-        // Somewhere to create the widgets
-        let mut vfo_frame = Frame::default();
         vfo.init_vfo();
         vfo.set_freq(7300000);
-        grid.insert(&mut vfo_frame, 0, 0);
+        grid.insert(&mut vfo_group, 0, 0);
+        vfo_group.end();
         
         // Put the modes in the bottom grid section
-        // Create the modes
+        let mut modes_group = Group::new(0,0,200,60, "");
         let mut modes = modes::ModesState::new();
         // Initialise
-        let mut modes_frame = Frame::default();
         modes.init_modes();
-        grid.insert(&mut modes_frame, 1, 0);
+        grid.insert(&mut modes_group, 1, 0);
+        modes_group.end();
 
         // Assembly end
         wind.end();

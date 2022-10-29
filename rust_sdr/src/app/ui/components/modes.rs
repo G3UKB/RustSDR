@@ -104,7 +104,7 @@ impl ModesState<'_> {
                     i, 
                     &String::from(self.mode_names[i as usize]), 
                     Font::Times, 
-                    16, 
+                    14, 
                     Color::DarkCyan);
             
 
@@ -122,8 +122,11 @@ impl ModesState<'_> {
             font : Font, 
             size : i32, 
             color : Color) -> Button {
-        let mut button = Button::default()
-            .with_label(label);
+        let mut button = Button::default();
+        button.set_label(label);
+        button.set_color(color);
+        button.set_label_font(font);
+        button.set_label_size(size);
         return button;
     }
 }
