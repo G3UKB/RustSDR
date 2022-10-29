@@ -33,6 +33,7 @@ use fltk::enums::{Font, Color, Event};
 use fltk_grid::{Grid, GridRange};
 
 use crate::app::common::messages;
+use crate::app::dsp;
 
 //==================================================================================
 // Modes State
@@ -127,6 +128,10 @@ impl ModesState<'_> {
         button.set_color(color);
         button.set_label_font(font);
         button.set_label_size(size);
+        button.set_callback ({
+            let mode: i32 = id + 1;
+            move |b| dsp::dsp_interface::wdsp_set_rx_mode(0, mode)
+        });
         return button;
     }
 }
