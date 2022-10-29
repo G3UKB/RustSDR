@@ -35,6 +35,7 @@ use crate::app::common::messages;
 use crate::app::protocol;
 use crate::app::ui::components::main_vfo;
 use crate::app::ui::components::modes;
+use crate::app::ui::components::filters;
 
 //==================================================================================
 // UI State
@@ -65,24 +66,32 @@ impl UIState {
 
         // The main window is split into areas using a grid layout
         let mut grid = Grid::default_fill();
-        grid.set_layout(2, 1);
+        grid.set_layout(2, 2);
         
         // Put the VFO in the top grid section
-        let mut vfo_group = Group::new(0,0,400,60, "");
+        let mut vfo_group = Group::new(0,0,200,60, "");
         // Initialise and set initial freq
         let mut vfo = main_vfo::VFOState::new(i_cc.clone(),  s);
         vfo.init_vfo();
         vfo.set_freq(7300000);
-        grid.insert(&mut vfo_group, 0, 0);
+        grid.insert(&mut vfo_group, 0, 0..1);
         vfo_group.end();
         
-        // Put the modes in the bottom grid section
+        // Put the modes in the bottom grid left section
         let mut modes_group = Group::new(0,0,200,60, "");
         let mut modes = modes::ModesState::new();
         // Initialise
         modes.init_modes();
         grid.insert(&mut modes_group, 1, 0);
         modes_group.end();
+
+        // Put the filters in the bottom grid right section
+        let mut filters_group = Group::new(200,0,200,60, "");
+        let mut filters = filters::FiltersState::new();
+        // Initialise
+        filters.init_filters();
+        grid.insert(&mut filters_group, 1, 1);
+        filters_group.end();
 
         // Assembly end
         wind.end();

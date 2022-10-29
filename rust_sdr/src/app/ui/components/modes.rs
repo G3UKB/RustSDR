@@ -39,7 +39,6 @@ use crate::app::dsp;
 // Modes State
 
 pub struct ModesState<'a>{
-    //pub frame : Frame,
     pub grid : Grid,
     mode_names : [&'a str; 12],
     button_map : HashMap<i32, Button>,
@@ -70,7 +69,6 @@ impl ModesState<'_> {
         let mut button_map = HashMap::new();
 
         // Somewhere to create the widgets
-        //let mut frame = Frame::default();
         let mut grid = Grid::default_fill();
 
         // Object state
@@ -129,7 +127,7 @@ impl ModesState<'_> {
         button.set_label_font(font);
         button.set_label_size(size);
         button.set_callback ({
-            let mode: i32 = id + 1;
+            let mode: i32 = id;
             move |b| dsp::dsp_interface::wdsp_set_rx_mode(0, mode)
         });
         return button;

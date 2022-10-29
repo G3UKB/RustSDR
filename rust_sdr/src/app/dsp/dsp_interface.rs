@@ -26,8 +26,12 @@ bob@bobcowdery.plus.com
 
 use std::ffi:: {CString, c_int, c_double, c_long};
 use std::os::raw::c_char;
+use std::ops::Neg;
 
 use crate::app::common::common_defs;
+
+static mut g_mode: i32 = 0;
+static mut g_filter: i32 = 0;
 
 // External interfaces exposed through the WDSP library
 #[link(name = "wdsp_win")]
@@ -41,6 +45,8 @@ extern "C" {
 	fn SetChannelState (ch_id: i32, state: i32, dmode: i32) -> i32;
 	fn fexchange0(ch_id: i32, in_buf: *mut f64, out_buf: *mut f64, error: *mut i32);
 	fn SetRXAMode(ch_id: i32, mode: i32);
+	fn SetRXABandpassRun(ch_id: i32, run: i32);
+	fn SetRXABandpassFreqs(ch_id: i32, low: i32, high: i32);
 }
 
 // Run WDSP wisdom to optimise the FFT sizes
@@ -119,6 +125,54 @@ pub fn wdsp_exchange(ch_id: i32, in_buf: &mut [f64; (common_defs::DSP_BLK_SZ * 2
 	unsafe{fexchange0(ch_id,  in_buf.as_mut_ptr(),  out_buf.as_mut_ptr(),  error)}	
 }
 
+// Modes and filters
 pub fn wdsp_set_rx_mode(ch_id: i32, mode: i32) {
-	unsafe{SetRXAMode(ch_id, mode)}
+	unsafe{g_mode = mode;}
+	set_mode_filter(ch_id);
+}
+
+pub fn wdsp_set_rx_filter(ch_id: i32, filter: i32) {
+	// Filters are 0-7 in order
+	// 6K 4K 2.7K 2.4K 1.0K 500Hz 250Hz 100Hz
+	unsafe{g_filter = filter;}
+	set_mode_filter(ch_id);
+}
+
+fn set_mode_filter(ch_id: i32) {
+	let mut low: i32 = 0;
+	let mut high: i32 = 0;
+	unsafe{
+		let filter = g_filter;
+		let mode = g_mode;
+		let mut new_low = 0;
+		let mut new_high = 0;
+		match filter {
+			0 => {low = 100; high = 6100},
+			1 => {low = 100; high = 4100},
+			2 => {low = 300; high = 3000},
+			3 => {low = 300; high = 2700},
+			4 => {low = 300; high = 1300},
+			5 => {low = 500; high = 1000},
+			6 => {low = 600; high = 850},
+			7 => {low = 700; high = 800},
+			_ => (),
+		}
+		if mode == 0 || mode == 3 || mode == 9 {
+			// Low sideband so move filter to low side
+			new_low = high.neg();
+			new_high = low.neg();
+		} else if mode == 1 || mode == 4 || mode == 7 {
+			// High sideband so leave
+			new_low = low;
+			new_high = high;
+		} else {
+			// Both sidebands required
+			new_low = high.neg();
+			new_high = high;
+		}
+	
+		SetRXAMode(ch_id, mode);
+		SetRXABandpassRun(ch_id, 1);
+		SetRXABandpassFreqs(ch_id, new_low, new_high);
+	}
 }
