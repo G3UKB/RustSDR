@@ -30,6 +30,7 @@ use std::sync::{Arc, Mutex};
 use fltk::app as fltk_app;
 use fltk::{prelude::*, group::Group, window::Window, frame::Frame};
 use fltk_grid::Grid;
+use fltk_grid::GridRange;
 
 use crate::app::common::messages;
 use crate::app::protocol;
@@ -69,12 +70,12 @@ impl UIState {
         grid.set_layout(2, 2);
         
         // Put the VFO in the top grid section
-        let mut vfo_group = Group::new(0,0,200,60, "");
+        let mut vfo_group = Group::new(0,0,400,60, "");
         // Initialise and set initial freq
         let mut vfo = main_vfo::VFOState::new(i_cc.clone(),  s);
         vfo.init_vfo();
         vfo.set_freq(7300000);
-        grid.insert(&mut vfo_group, 0, 0..1);
+        grid.insert_ext(&mut vfo_group, 0, 0, 2, 1);
         vfo_group.end();
         
         // Put the modes in the bottom grid left section
