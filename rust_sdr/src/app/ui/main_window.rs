@@ -37,6 +37,7 @@ use crate::app::protocol;
 use crate::app::ui::components::main_vfo;
 use crate::app::ui::components::modes;
 use crate::app::ui::components::filters;
+use crate::app::ui::components::drawing;
 
 //==================================================================================
 // UI State
@@ -93,6 +94,14 @@ impl UIState {
         filters.init_filters();
         grid.insert(&mut filters_group, 1, 1);
         filters_group.end();
+
+        // Add drawing area
+        //let mut drawing_group = Group::new(0,0,400,200, "");
+        //let mut drawing_canvas = drawing::DrawingState::new();
+        //drawing_canvas.init();
+        //drawing_group.add(&drawing_canvas.frame);
+        //grid.insert_ext(&mut drawing_group, 2, 0, 2, 1);
+        //drawing_group.end();
 
         // Assembly end
         wind.end();
