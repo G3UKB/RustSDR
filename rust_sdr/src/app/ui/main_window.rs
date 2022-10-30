@@ -64,11 +64,11 @@ impl UIState {
         //========================================================================
         // Assemble the UI
         // The main window
-        let mut wind = Window::new(100, 100, 400, 140, "RustSDR");
+        let mut wind = Window::new(100, 100, 400, 340, "RustSDR");
 
         // The main window is split into areas using a grid layout
-        let mut grid = Grid::default_fill();
-        grid.set_layout(2, 2);
+        //let mut grid = Grid::default_fill();
+        //grid.set_layout(2, 2);
         
         // Put the VFO in the top grid section
         let mut vfo_group = Group::new(0,0,400,60, "");
@@ -76,32 +76,32 @@ impl UIState {
         let mut vfo = main_vfo::VFOState::new(i_cc.clone(),  s);
         vfo.init_vfo();
         vfo.set_freq(7300000);
-        grid.insert_ext(&mut vfo_group, 0, 0, 2, 1);
+        //grid.insert_ext(&mut vfo_group, 0, 0, 2, 1);
         vfo_group.end();
         
         // Put the modes in the bottom grid left section
-        let mut modes_group = Group::new(0,0,200,60, "");
+        let mut modes_group = Group::new(0,60,200,60, "");
         let mut modes = modes::ModesState::new();
         // Initialise
         modes.init_modes();
-        grid.insert(&mut modes_group, 1, 0);
+        //grid.insert(&mut modes_group, 1, 0);
         modes_group.end();
 
         // Put the filters in the bottom grid right section
-        let mut filters_group = Group::new(200,0,200,60, "");
+        let mut filters_group = Group::new(200,60,200,60, "");
         let mut filters = filters::FiltersState::new();
         // Initialise
         filters.init_filters();
-        grid.insert(&mut filters_group, 1, 1);
+        //grid.insert(&mut filters_group, 1, 1);
         filters_group.end();
 
         // Add drawing area
-        //let mut drawing_group = Group::new(0,0,400,200, "");
-        //let mut drawing_canvas = drawing::DrawingState::new();
-        //drawing_canvas.init();
-        //drawing_group.add(&drawing_canvas.frame);
+        let mut drawing_group = Group::new(0,120,400,200, "");
+        let mut drawing_canvas = drawing::DrawingState::new();
+        drawing_canvas.init();
+        drawing_group.add(&drawing_canvas.frame);
         //grid.insert_ext(&mut drawing_group, 2, 0, 2, 1);
-        //drawing_group.end();
+        drawing_group.end();
 
         // Assembly end
         wind.end();

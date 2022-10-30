@@ -69,7 +69,7 @@ impl DrawingState {
         let offs = Offscreen::new(self.frame.width(), self.frame.height()).unwrap();
         {
             offs.begin();
-            draw_rect_fill(0, 0, WIDTH - 10, HEIGHT - 10, Color::Black);
+            draw_rect_fill(0, 120, WIDTH - 10, HEIGHT - 10, Color::Black);
             offs.end();
         }
 
@@ -80,11 +80,11 @@ impl DrawingState {
                 let mut offs = offs.borrow_mut();
                 if offs.is_valid() {
                     offs.rescale();
-                    offs.copy(5, 5, WIDTH - 10, HEIGHT - 10, 0, 0);
+                    offs.copy(5, 125, WIDTH - 10, HEIGHT - 10, 0, 0);
                 } else {
                     offs.begin();
-                    draw_rect_fill(0, 0, WIDTH - 10, HEIGHT - 10, Color::Black);
-                    offs.copy(5, 5, WIDTH - 10, HEIGHT - 10, 0, 0);
+                    draw_rect_fill(0, 120, WIDTH - 10, HEIGHT - 10, Color::Black);
+                    offs.copy(5, 125, WIDTH - 10, HEIGHT - 10, 0, 0);
                     offs.end();
                 }
             }
