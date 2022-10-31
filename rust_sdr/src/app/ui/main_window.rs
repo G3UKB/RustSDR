@@ -66,17 +66,13 @@ impl UIState {
         // The main window
         let mut wind = Window::new(100, 100, 400, 340, "RustSDR");
 
-        // The main window is split into areas using a grid layout
-        //let mut grid = Grid::default_fill();
-        //grid.set_layout(2, 2);
-        
+        // Absolute positioning is used for the window as drawing is relative to the window.
         // Put the VFO in the top grid section
         let mut vfo_group = Group::new(0,0,400,60, "");
         // Initialise and set initial freq
         let mut vfo = main_vfo::VFOState::new(i_cc.clone(),  s);
         vfo.init_vfo();
         vfo.set_freq(7300000);
-        //grid.insert_ext(&mut vfo_group, 0, 0, 2, 1);
         vfo_group.end();
         
         // Put the modes in the bottom grid left section
@@ -84,7 +80,6 @@ impl UIState {
         let mut modes = modes::ModesState::new();
         // Initialise
         modes.init_modes();
-        //grid.insert(&mut modes_group, 1, 0);
         modes_group.end();
 
         // Put the filters in the bottom grid right section
@@ -92,18 +87,12 @@ impl UIState {
         let mut filters = filters::FiltersState::new();
         // Initialise
         filters.init_filters();
-        //grid.insert(&mut filters_group, 1, 1);
         filters_group.end();
 
         // Add drawing area
-        //let mut drawing_group = Group::new(0,120,400,200, "");
         let mut drawing_canvas = drawing::DrawingState::new();
+        // Initialise
         drawing_canvas.init();
-        let mut f = drawing_canvas.frame;
-
-        //drawing_group.add(&drawing_canvas.frame);
-        //grid.insert_ext(&mut drawing_group, 2, 0, 2, 1);
-        //drawing_group.end();
 
         // Assembly end
         wind.end();
@@ -116,14 +105,13 @@ impl UIState {
             vfo : vfo,
             ch_r : r,
         }
-
     }
 
     // Run the UI event loop
     pub fn run_event_loop(&mut self) {
         //fltk_app::run().unwrap();
         while self.app.wait() {
-            // Pick up any of our messages
+            // Pick up our messages
             if let Some(val) = self.ch_r.recv() {
                 match val {
                     messages::UIMsg::FreqUpdate(inc_or_dec) => {

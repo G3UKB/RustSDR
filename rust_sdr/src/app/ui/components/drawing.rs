@@ -36,6 +36,7 @@ use fltk::{
 };
 use std::cell::RefCell;
 use std::rc::Rc;
+use core::cell::RefMut;
 
 use crate::app::common::messages;
 
@@ -78,16 +79,7 @@ impl DrawingState {
         self.frame.draw({
             let offs = offs.clone();
             move |_| {
-                let mut offs = offs.borrow_mut();
-                if offs.is_valid() {
-                    offs.rescale();
-                    offs.copy(5, 125, WIDTH - 10, HEIGHT - 10, 0, 0);
-                } else {
-                    offs.begin();
-                    draw_rect_fill(0, 0, WIDTH - 10, HEIGHT - 10, Color::Black);
-                    offs.copy(5, 125, WIDTH - 10, HEIGHT - 10, 0, 0);
-                    offs.end();
-                }
+                DrawingState::draw_static(offs.borrow_mut());
             }
         });
 
@@ -95,9 +87,9 @@ impl DrawingState {
             let mut x = 0;
             let mut y = 0;
             move |f, ev| {
-                 println!("{}", ev);
-                 println!("coords {:?}", app::event_coords());
-                 println!("get mouse {:?}", app::get_mouse());
+                 //println!("{}", ev);
+                 //println!("coords {:?}", app::event_coords());
+                 //println!("get mouse {:?}", app::get_mouse());
                 let offs = offs.borrow_mut();
                 match ev {
                     Event::Push => {
@@ -106,7 +98,7 @@ impl DrawingState {
                         set_line_style(LineStyle::Solid, 3);
                         let coords = app::event_coords();
                         x = coords.0;
-                        y = coords.1;
+                        y = coords.1 - 125;
                         draw_point(x, y);
                         offs.end();
                         f.redraw();
@@ -118,9 +110,9 @@ impl DrawingState {
                         set_draw_color(Color::Red);
                         set_line_style(LineStyle::Solid, 3);
                         let coords = app::event_coords();
-                        draw_line(x, y, coords.0, coords.1);
+                        draw_line(x, y, coords.0, coords.1-125);
                         x = coords.0;
-                        y = coords.1;
+                        y = coords.1-125;
                         offs.end();
                         f.redraw();
                         set_line_style(LineStyle::Solid, 0);
@@ -131,4 +123,18 @@ impl DrawingState {
             }
         });
     }
+
+    // Static drawing of grid and labels
+    fn draw_static(mut offs: RefMut<Offscreen> ) {
+        if offs.is_valid() {
+            offs.rescale();
+            offs.copy(5, 125, WIDTH - 10, HEIGHT - 10, 0, 0);
+        } else {
+            offs.begin();
+            draw_rect_fill(0, 0, WIDTH - 10, HEIGHT - 10, Color::Black);
+            offs.copy(5, 125, WIDTH - 10, HEIGHT - 10, 0, 0);
+            offs.end();
+        }
+    }
+
 }
