@@ -28,9 +28,9 @@ bob@bobcowdery.plus.com
 use fltk::{
     app,
     draw::{
-        draw_line, draw_point, draw_rect_fill, set_draw_color, set_line_style, LineStyle, Offscreen,
+        draw_text, draw_line, draw_point, draw_rect_fill, set_draw_color, set_line_style, LineStyle, Offscreen, draw_text2,
     },
-    enums::{Color, Event, FrameType},
+    enums::{Color, Event, FrameType, Align},
     frame::Frame,
     prelude::*,
 };
@@ -48,6 +48,15 @@ pub struct DrawingState{
 
 const WIDTH: i32 = 400;
 const HEIGHT: i32 = 200;
+const LOW_DB: i32 = -140;
+const HIGH_DB: i32 = -20;
+const Y_V_LABEL_ADJ: i32 = -3;
+const L_MARGIN: i32 = 35;
+const R_MARGIN: i32 = 15;
+const T_MARGIN: i32 = 10;
+const B_MARGIN: i32 = 10;
+const TEXT_COLOR: Color = Color::Red;
+const GRID_COLOR: Color = Color::Yellow;
 
 // Implementation methods on VFOState
 impl DrawingState {
@@ -78,11 +87,12 @@ impl DrawingState {
         let offs = Rc::from(RefCell::from(offs));
         self.frame.draw({
             let offs = offs.clone();
-            move |_| {
+            move |f| {
                 DrawingState::draw_static(offs.borrow_mut());
+                f.redraw();
             }
         });
-
+/* 
         self.frame.handle({
             let mut x = 0;
             let mut y = 0;
@@ -122,19 +132,37 @@ impl DrawingState {
                 }
             }
         });
+        */
     }
 
+    
     // Static drawing of grid and labels
     fn draw_static(mut offs: RefMut<Offscreen> ) {
         if offs.is_valid() {
             offs.rescale();
             offs.copy(5, 125, WIDTH - 10, HEIGHT - 10, 0, 0);
         } else {
-            offs.begin();
             draw_rect_fill(0, 0, WIDTH - 10, HEIGHT - 10, Color::Black);
             offs.copy(5, 125, WIDTH - 10, HEIGHT - 10, 0, 0);
-            offs.end();
+        }
+        offs.begin();
+        DrawingState::draw_horizontal();
+        offs.end();
+        offs.copy(5, 125, WIDTH - 10, HEIGHT - 10, 0, 0);
+    }
+    
+    // Draw horizontal lines at 20 db intervals
+    fn draw_horizontal() {
+        let db_divs = (LOW_DB.abs() - HIGH_DB.abs()) / 20;
+        let db_pixels_per_div: f32 = ((HEIGHT - T_MARGIN - B_MARGIN) as f32 / db_divs as f32);
+        let mut j = HIGH_DB;
+        for i in 0..db_divs {
+            set_draw_color(TEXT_COLOR);
+            set_line_style(LineStyle::Solid, 1);
+            draw_text2(&String::from(j.to_string()), 5, Y_V_LABEL_ADJ + (i*db_pixels_per_div as i32), 40, 20, Align::Left);
+            set_draw_color(GRID_COLOR);
+            draw_line(L_MARGIN, T_MARGIN + (i*db_pixels_per_div as i32), WIDTH-R_MARGIN, T_MARGIN + (i*db_pixels_per_div as i32));
+            j -= 20;
         }
     }
-
 }
