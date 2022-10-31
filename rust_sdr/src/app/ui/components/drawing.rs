@@ -57,6 +57,11 @@ const T_MARGIN: i32 = 10;
 const B_MARGIN: i32 = 10;
 const TEXT_COLOR: Color = Color::Red;
 const GRID_COLOR: Color = Color::Yellow;
+const CENTRE_COLOR: Color = Color::Red;
+const SPAN_FREQ: i32 = 48000;
+const DIVS: i32 = 6;
+const X_H_LABEL_ADJ: i32 = 5;
+
 
 // Implementation methods on VFOState
 impl DrawingState {
@@ -147,6 +152,7 @@ impl DrawingState {
         }
         offs.begin();
         DrawingState::draw_horizontal();
+        DrawingState::draw_vertical();
         offs.end();
         offs.copy(5, 125, WIDTH - 10, HEIGHT - 10, 0, 0);
     }
@@ -163,6 +169,23 @@ impl DrawingState {
             set_draw_color(GRID_COLOR);
             draw_line(L_MARGIN, T_MARGIN + (i*db_pixels_per_div as i32), WIDTH-R_MARGIN, T_MARGIN + (i*db_pixels_per_div as i32));
             j -= 20;
+        }
+    }
+
+    // Draw vertical lines and the frequency scale
+    fn draw_vertical() {
+        // Need to get this dynamically
+        let freq = 7100000;
+        let start_freq: i32 = freq - (SPAN_FREQ / 2);
+	    let freq_inc = SPAN_FREQ as f32 / DIVS as f32;
+        let pixels_per_div: f32 = (WIDTH - L_MARGIN - R_MARGIN) as f32 / DIVS as f32;
+        let j = start_freq;
+        for i in 0..DIVS {
+            if i == DIVS / 2 {
+                set_draw_color(CENTRE_COLOR);
+             } else {
+                set_draw_color(GRID_COLOR);
+             }
         }
     }
 }
