@@ -55,7 +55,8 @@ impl DrawingState {
 
         // Somewhere to create the widgets
         let mut frame = Frame::default();
-        frame.set_size(400, 200);
+        frame.set_size(WIDTH, HEIGHT);
+        frame.set_pos(0,120);
         frame.set_color(Color::Black);
 
         // Object state
@@ -69,7 +70,7 @@ impl DrawingState {
         let offs = Offscreen::new(self.frame.width(), self.frame.height()).unwrap();
         {
             offs.begin();
-            draw_rect_fill(0, 120, WIDTH - 10, HEIGHT - 10, Color::Black);
+            draw_rect_fill(0, 0, WIDTH - 10, HEIGHT - 10, Color::Black);
             offs.end();
         }
 
@@ -83,7 +84,7 @@ impl DrawingState {
                     offs.copy(5, 125, WIDTH - 10, HEIGHT - 10, 0, 0);
                 } else {
                     offs.begin();
-                    draw_rect_fill(0, 120, WIDTH - 10, HEIGHT - 10, Color::Black);
+                    draw_rect_fill(0, 0, WIDTH - 10, HEIGHT - 10, Color::Black);
                     offs.copy(5, 125, WIDTH - 10, HEIGHT - 10, 0, 0);
                     offs.end();
                 }
@@ -94,9 +95,9 @@ impl DrawingState {
             let mut x = 0;
             let mut y = 0;
             move |f, ev| {
-                // println!("{}", ev);
-                // println!("coords {:?}", app::event_coords());
-                // println!("get mouse {:?}", app::get_mouse());
+                 println!("{}", ev);
+                 println!("coords {:?}", app::event_coords());
+                 println!("get mouse {:?}", app::get_mouse());
                 let offs = offs.borrow_mut();
                 match ev {
                     Event::Push => {

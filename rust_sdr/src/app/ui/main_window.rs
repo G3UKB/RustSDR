@@ -96,12 +96,14 @@ impl UIState {
         filters_group.end();
 
         // Add drawing area
-        let mut drawing_group = Group::new(0,120,400,200, "");
+        //let mut drawing_group = Group::new(0,120,400,200, "");
         let mut drawing_canvas = drawing::DrawingState::new();
         drawing_canvas.init();
-        drawing_group.add(&drawing_canvas.frame);
+        let mut f = drawing_canvas.frame;
+
+        //drawing_group.add(&drawing_canvas.frame);
         //grid.insert_ext(&mut drawing_group, 2, 0, 2, 1);
-        drawing_group.end();
+        //drawing_group.end();
 
         // Assembly end
         wind.end();
