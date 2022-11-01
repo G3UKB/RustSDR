@@ -64,7 +64,7 @@ impl UIState {
         //========================================================================
         // Assemble the UI
         // The main window
-        let mut wind = Window::new(100, 100, 400, 340, "RustSDR");
+        let mut wind = Window::new(100, 100, 400, 320, "RustSDR");
 
         // Absolute positioning is used for the window as drawing is relative to the window.
         // Put the VFO in the top grid section

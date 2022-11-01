@@ -48,15 +48,18 @@ pub struct DrawingState{
 
 const WIDTH: i32 = 400;
 const HEIGHT: i32 = 200;
+const D_WIDTH: i32 = 380;
+const D_HEIGHT: i32 = 160;
+
 const LOW_DB: i32 = -140;
 const HIGH_DB: i32 = -20;
-const Y_V_LABEL_ADJ: i32 = -3;
+const Y_V_LABEL_ADJ: i32 = 4;
 const L_MARGIN: i32 = 35;
 const R_MARGIN: i32 = 15;
-const T_MARGIN: i32 = 10;
-const B_MARGIN: i32 = 10;
+const T_MARGIN: i32 = 14;
+const B_MARGIN: i32 = 6;
 const TEXT_COLOR: Color = Color::Red;
-const GRID_COLOR: Color = Color::Yellow;
+const GRID_COLOR: Color = Color::Light1;
 const CENTRE_COLOR: Color = Color::Red;
 const SPAN_FREQ: i32 = 48000;
 const DIVS: i32 = 6;
@@ -140,7 +143,6 @@ impl DrawingState {
         */
     }
 
-    
     // Static drawing of grid and labels
     fn draw_static(mut offs: RefMut<Offscreen> ) {
         if offs.is_valid() {
@@ -160,14 +162,14 @@ impl DrawingState {
     // Draw horizontal lines at 20 db intervals
     fn draw_horizontal() {
         let db_divs = (LOW_DB.abs() - HIGH_DB.abs()) / 20;
-        let db_pixels_per_div: f32 = ((HEIGHT - T_MARGIN - B_MARGIN) as f32 / db_divs as f32);
+        let db_pixels_per_div: f32 = ((D_HEIGHT - T_MARGIN - B_MARGIN) as f32 / db_divs as f32);
         let mut j = HIGH_DB;
-        for i in 0..db_divs {
+        for i in 0..=db_divs {
             set_draw_color(TEXT_COLOR);
             set_line_style(LineStyle::Solid, 1);
             draw_text2(&String::from(j.to_string()), 5, Y_V_LABEL_ADJ + (i*db_pixels_per_div as i32), 40, 20, Align::Left);
             set_draw_color(GRID_COLOR);
-            draw_line(L_MARGIN, T_MARGIN + (i*db_pixels_per_div as i32), WIDTH-R_MARGIN, T_MARGIN + (i*db_pixels_per_div as i32));
+            draw_line(L_MARGIN, T_MARGIN + (i*db_pixels_per_div as i32), D_WIDTH - R_MARGIN, T_MARGIN + (i*db_pixels_per_div as i32));
             j -= 20;
         }
     }
@@ -176,16 +178,23 @@ impl DrawingState {
     fn draw_vertical() {
         // Need to get this dynamically
         let freq = 7100000;
+
         let start_freq: i32 = freq - (SPAN_FREQ / 2);
-	    let freq_inc = SPAN_FREQ as f32 / DIVS as f32;
-        let pixels_per_div: f32 = (WIDTH - L_MARGIN - R_MARGIN) as f32 / DIVS as f32;
-        let j = start_freq;
-        for i in 0..DIVS {
+	    let freq_inc = SPAN_FREQ / DIVS;
+        let pixels_per_div: f32 = (D_WIDTH - L_MARGIN - R_MARGIN) as f32 / DIVS as f32;
+        let mut j = start_freq;
+        for i in 0..=DIVS {
             if i == DIVS / 2 {
                 set_draw_color(CENTRE_COLOR);
-             } else {
+            } else {
                 set_draw_color(GRID_COLOR);
-             }
+            }
+            let sfreq: String = String::from((j as f32/1000000.0).to_string());
+            set_draw_color(TEXT_COLOR);
+            draw_text2(&sfreq, 10 + (i*pixels_per_div as i32), D_HEIGHT - B_MARGIN + X_H_LABEL_ADJ, 40, 20, Align::Left);
+            set_draw_color(GRID_COLOR);
+            draw_line(L_MARGIN + (i*pixels_per_div as i32), T_MARGIN, L_MARGIN + (i*pixels_per_div as i32), D_HEIGHT - B_MARGIN);
+            j += freq_inc;
         }
     }
 }
