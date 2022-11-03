@@ -58,13 +58,12 @@ const L_MARGIN: i32 = 35;
 const R_MARGIN: i32 = 15;
 const T_MARGIN: i32 = 14;
 const B_MARGIN: i32 = 6;
-const TEXT_COLOR: Color = Color::Red;
-const GRID_COLOR: Color = Color::Light1;
+const TEXT_COLOR: Color = Color::from_rgb(77, 77, 77);
+const GRID_COLOR: Color = Color::from_rgb(27, 27, 27);
 const CENTRE_COLOR: Color = Color::Red;
 const SPAN_FREQ: i32 = 48000;
 const DIVS: i32 = 6;
 const X_H_LABEL_ADJ: i32 = 5;
-
 
 // Implementation methods on VFOState
 impl DrawingState {
