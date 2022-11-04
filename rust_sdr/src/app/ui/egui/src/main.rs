@@ -32,7 +32,9 @@ fn configure_text_styles(ctx: &egui::Context) {
 }
 
 struct MyApp {
-    scalar: f32,
+    position: f32,
+    last_position: f32,
+    frequency: u32,
     freq_inc: i32,
     f_100M: String,
     f_10M: String,
@@ -49,7 +51,9 @@ impl MyApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
         configure_text_styles(&cc.egui_ctx);
         Self {
-            scalar: 50.0,
+            position: 50.0,
+            last_position: 50.0,
+            frequency: 7100000,
             freq_inc: 0,
             f_100M: String::from("0"),
             f_10M: String::from("0"),
@@ -195,9 +199,18 @@ impl MyApp {
             };
         });
         ui.style_mut().spacing.slider_width = 300.0;
-        ui.add(egui::Slider::new(&mut self.scalar, 0.0..=100.0)
-            .show_value(false)
+        self.last_position = self.position;
+        ui.add(egui::Slider::new(&mut self.position, -100.0..=100.0)
+            .show_value(true)
         );
+        let mut inc_or_dec: f32 = 0.0;
+        if self.position > self.last_position {
+            inc_or_dec = (self.position - self.last_position)*self.freq_inc as f32;
+            self.frequency = self.frequency + inc_or_dec as u32;
+        } else {
+            inc_or_dec = (self.last_position - self.position)*self.freq_inc as f32;
+            self.frequency = self.frequency - inc_or_dec as u32;
+        }
     }
 }
 
