@@ -33,6 +33,15 @@ fn configure_text_styles(ctx: &egui::Context) {
 
 struct MyApp {
     scalar: f32,
+    f_100M: bool,
+    f_10M: bool,
+    f_1M: bool,
+    f_100K: bool,
+    f_10K: bool,
+    f_1K: bool,
+    f_100H: bool,
+    f_10H: bool,
+    f_1H: bool,
 }
 
 impl MyApp {
@@ -40,6 +49,15 @@ impl MyApp {
         configure_text_styles(&cc.egui_ctx);
         Self {
             scalar: 50.0,
+            f_100M: false,
+            f_10M: false,
+            f_1M: false,
+            f_100K: false,
+            f_10K: false,
+            f_1K: false,
+            f_100H: false,
+            f_10H: false,
+            f_1H: false,
         }
     }
 
@@ -145,22 +163,61 @@ impl MyApp {
         });
         ui.horizontal(|ui| {
             ui.style_mut().spacing.button_padding = egui::vec2(6.0, 5.0);
-            ui.button("^");
-            ui.button("^");
-            ui.button("^");
+            if ui.button("^").clicked() {
+                self.clear_buttons();
+                self.f_100M = true;
+            };
+            if ui.button("^").clicked() {
+                self.clear_buttons();
+                self.f_10M = true;
+            };
+            if ui.button("^").clicked() {
+                self.clear_buttons();
+                self.f_1M = true;
+            };
             ui.add_space(30.0);
-            ui.button("^");
-            ui.button("^");
-            ui.button("^");
+            if ui.button("^").clicked() {
+                self.clear_buttons();
+                self.f_100K = true;
+            };
+            if ui.button("^").clicked() {
+                self.clear_buttons();
+                self.f_10K = true;
+            };
+            if ui.button("^").clicked() {
+                self.clear_buttons();
+                self.f_1K = true;
+            };
             ui.add_space(30.0);
-            ui.button("^");
-            ui.button("^");
-            ui.button("^");
+            if ui.button("^").clicked() {
+                self.clear_buttons();
+                self.f_100H = true;
+            };
+            if ui.button("^").clicked() {
+                self.clear_buttons();
+                self.f_10H = true;
+            };
+            if ui.button("^").clicked() {
+                self.clear_buttons();
+                self.f_1H = true;
+            };
         });
         ui.style_mut().spacing.slider_width = 300.0;
         ui.add(egui::Slider::new(&mut self.scalar, 0.0..=100.0)
             .show_value(false)
         );
+    }
+
+    fn clear_buttons(&mut self) {
+        self.f_100M = false;
+        self.f_10M= false;
+        self.f_1M = false;
+        self.f_100K = false;
+        self.f_10K = false;
+        self.f_1K = false;
+        self.f_100H = false;
+        self.f_10H = false;
+        self.f_1H = false;
     }
     
 }
