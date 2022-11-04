@@ -31,12 +31,16 @@ fn configure_text_styles(ctx: &egui::Context) {
     ctx.set_style(style);
 }
 
-struct MyApp;
+struct MyApp {
+    scalar: f32,
+}
 
 impl MyApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
         configure_text_styles(&cc.egui_ctx);
-        Self
+        Self {
+            scalar: 50.0,
+        }
     }
 
     fn modes(&mut self, ui: &mut egui::Ui) {
@@ -154,7 +158,7 @@ impl MyApp {
             ui.button("^");
         });
         ui.style_mut().spacing.slider_width = 300.0;
-        ui.add(egui::Slider::new(&mut 0.0, 0.0..=100.0)
+        ui.add(egui::Slider::new(&mut self.scalar, 0.0..=100.0)
             .show_value(false)
         );
     }
@@ -163,8 +167,6 @@ impl MyApp {
 
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        //egui::CentralPanel::default().show(ctx, content);
-        //egui::CentralPanel::default().show(ctx, modes);
         egui::Window::new("Modes").show(ctx, |ui| {
             self.modes(ui);
         });
@@ -186,5 +188,3 @@ fn main() {
         Box::new(|cc| Box::new(MyApp::new(cc))),
     );
 }
-
-pub const LOREM_IPSUM: &str = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
