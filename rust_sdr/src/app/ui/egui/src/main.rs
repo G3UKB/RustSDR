@@ -33,15 +33,16 @@ fn configure_text_styles(ctx: &egui::Context) {
 
 struct MyApp {
     scalar: f32,
-    f_100M: bool,
-    f_10M: bool,
-    f_1M: bool,
-    f_100K: bool,
-    f_10K: bool,
-    f_1K: bool,
-    f_100H: bool,
-    f_10H: bool,
-    f_1H: bool,
+    freq_inc: i32,
+    f_100M: String,
+    f_10M: String,
+    f_1M: String,
+    f_100K: String,
+    f_10K: String,
+    f_1K: String,
+    f_100H: String,
+    f_10H: String,
+    f_1H: String,
 }
 
 impl MyApp {
@@ -49,15 +50,16 @@ impl MyApp {
         configure_text_styles(&cc.egui_ctx);
         Self {
             scalar: 50.0,
-            f_100M: false,
-            f_10M: false,
-            f_1M: false,
-            f_100K: false,
-            f_10K: false,
-            f_1K: false,
-            f_100H: false,
-            f_10H: false,
-            f_1H: false,
+            freq_inc: 0,
+            f_100M: String::from("0"),
+            f_10M: String::from("0"),
+            f_1M: String::from("7"),
+            f_100K: String::from("1"),
+            f_10K: String::from("0"),
+            f_1K: String::from("0"),
+            f_100H: String::from("0"),
+            f_10H: String::from("0"),
+            f_1H: String::from("0"),
         }
     }
 
@@ -105,37 +107,16 @@ impl MyApp {
         ui.horizontal(|ui| {
             ui.style_mut().spacing.item_spacing = egui::vec2(14.0,5.0);
 
-            ui.label(RichText::new("0")
+            ui.label(RichText::new(&self.f_100M).text_style(heading2())
+            .strong()
+            .size(30.0)
+            .strong());
+            ui.label(RichText::new(&self.f_10M).text_style(heading2()).strong()
             .text_style(heading2())
             .strong()
             .size(30.0)
             .strong());
-            ui.label(RichText::new("0").text_style(heading2()).strong()
-            .text_style(heading2())
-            .strong()
-            .size(30.0)
-            .strong());
-            ui.label(RichText::new("0").text_style(heading2()).strong()
-            .text_style(heading2())
-            .strong()
-            .size(30.0)
-            .strong());
-            ui.label(RichText::new("-").text_style(heading2()).strong()
-            .text_style(heading2())
-            .strong()
-            .size(30.0)
-            .strong());
-            ui.label(RichText::new("0").text_style(heading2()).strong()
-            .text_style(heading2())
-            .strong()
-            .size(30.0)
-            .strong());
-            ui.label(RichText::new("0").text_style(heading2()).strong()
-            .text_style(heading2())
-            .strong()
-            .size(30.0)
-            .strong());
-            ui.label(RichText::new("0").text_style(heading2()).strong()
+            ui.label(RichText::new(&self.f_1M).text_style(heading2()).strong()
             .text_style(heading2())
             .strong()
             .size(30.0)
@@ -145,17 +126,37 @@ impl MyApp {
             .strong()
             .size(30.0)
             .strong());
-            ui.label(RichText::new("0").text_style(heading2()).strong()
+            ui.label(RichText::new(&self.f_100K).text_style(heading2()).strong()
             .text_style(heading2())
             .strong()
             .size(30.0)
             .strong());
-            ui.label(RichText::new("0").text_style(heading2()).strong()
+            ui.label(RichText::new(&self.f_10K).text_style(heading2()).strong()
             .text_style(heading2())
             .strong()
             .size(30.0)
             .strong());
-            ui.label(RichText::new("0").text_style(heading2()).strong()
+            ui.label(RichText::new(&self.f_1K).text_style(heading2()).strong()
+            .text_style(heading2())
+            .strong()
+            .size(30.0)
+            .strong());
+            ui.label(RichText::new("-").text_style(heading2()).strong()
+            .text_style(heading2())
+            .strong()
+            .size(30.0)
+            .strong());
+            ui.label(RichText::new(&self.f_100H).text_style(heading2()).strong()
+            .text_style(heading2())
+            .strong()
+            .size(30.0)
+            .strong());
+            ui.label(RichText::new(&self.f_10H).text_style(heading2()).strong()
+            .text_style(heading2())
+            .strong()
+            .size(30.0)
+            .strong());
+            ui.label(RichText::new(&self.f_1H).text_style(heading2()).strong()
             .text_style(heading2())
             .strong()
             .size(30.0)
@@ -164,42 +165,33 @@ impl MyApp {
         ui.horizontal(|ui| {
             ui.style_mut().spacing.button_padding = egui::vec2(6.0, 5.0);
             if ui.button("^").clicked() {
-                self.clear_buttons();
-                self.f_100M = true;
+                self.freq_inc = 100000000;
             };
             if ui.button("^").clicked() {
-                self.clear_buttons();
-                self.f_10M = true;
+                self.freq_inc = 10000000;
             };
             if ui.button("^").clicked() {
-                self.clear_buttons();
-                self.f_1M = true;
+                self.freq_inc = 1000000;
             };
             ui.add_space(30.0);
             if ui.button("^").clicked() {
-                self.clear_buttons();
-                self.f_100K = true;
+                self.freq_inc = 100000;
             };
             if ui.button("^").clicked() {
-                self.clear_buttons();
-                self.f_10K = true;
+                self.freq_inc = 10000;
             };
             if ui.button("^").clicked() {
-                self.clear_buttons();
-                self.f_1K = true;
+                self.freq_inc = 1000;
             };
             ui.add_space(30.0);
             if ui.button("^").clicked() {
-                self.clear_buttons();
-                self.f_100H = true;
+                self.freq_inc = 100;
             };
             if ui.button("^").clicked() {
-                self.clear_buttons();
-                self.f_10H = true;
+                self.freq_inc = 10;
             };
             if ui.button("^").clicked() {
-                self.clear_buttons();
-                self.f_1H = true;
+                self.freq_inc = 1;
             };
         });
         ui.style_mut().spacing.slider_width = 300.0;
@@ -207,19 +199,6 @@ impl MyApp {
             .show_value(false)
         );
     }
-
-    fn clear_buttons(&mut self) {
-        self.f_100M = false;
-        self.f_10M= false;
-        self.f_1M = false;
-        self.f_100K = false;
-        self.f_10K = false;
-        self.f_1K = false;
-        self.f_100H = false;
-        self.f_10H = false;
-        self.f_1H = false;
-    }
-    
 }
 
 impl eframe::App for MyApp {
