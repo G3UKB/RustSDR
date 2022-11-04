@@ -51,8 +51,8 @@ impl MyApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
         configure_text_styles(&cc.egui_ctx);
         Self {
-            position: 50.0,
-            last_position: 50.0,
+            position: 0.0,
+            last_position: 0.0,
             frequency: 7100000,
             freq_inc: 0,
             f_100M: String::from("0"),
