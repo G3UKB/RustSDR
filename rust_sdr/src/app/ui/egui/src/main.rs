@@ -81,14 +81,11 @@ impl MyApp {
 
     fn vfo(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
-            let l = ui.label(RichText::new("0")
+            ui.label(RichText::new("0")
             .text_style(heading2())
             .strong()
             .size(30.0)
             .strong());
-            if l.sense.click {
-                println!("Over");
-            }
             ui.label(RichText::new("0").text_style(heading2()).strong()
             .text_style(heading2())
             .strong()
@@ -141,6 +138,7 @@ impl MyApp {
             .strong());
         });
         ui.horizontal(|ui| {
+            ui.style_mut().spacing.button_padding = egui::vec2(6.0, 5.0);
             ui.button("^");
             ui.button("^");
             ui.button("^");
@@ -151,6 +149,7 @@ impl MyApp {
             ui.button("^");
             ui.button("^");
         });
+        ui.style_mut().spacing.slider_width = 300.0;
         ui.add(egui::Slider::new(&mut 0.0, 0.0..=100.0)
             .show_value(false)
         );
