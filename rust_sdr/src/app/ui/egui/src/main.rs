@@ -81,6 +81,8 @@ impl MyApp {
 
     fn vfo(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
+            ui.style_mut().spacing.item_spacing = egui::vec2(14.0,5.0);
+
             ui.label(RichText::new("0")
             .text_style(heading2())
             .strong()
@@ -142,9 +144,11 @@ impl MyApp {
             ui.button("^");
             ui.button("^");
             ui.button("^");
+            ui.add_space(30.0);
             ui.button("^");
             ui.button("^");
             ui.button("^");
+            ui.add_space(30.0);
             ui.button("^");
             ui.button("^");
             ui.button("^");
