@@ -3,6 +3,7 @@
 use std::sync::{Arc, Mutex};
 
 use crate::app::protocol;
+use crate::app::common::messages;
 
 use eframe::egui;
 use egui::{FontFamily, FontId, RichText, TextStyle};
@@ -35,7 +36,7 @@ fn configure_text_styles(ctx: &egui::Context) {
 }
 
 pub struct MyApp {
-    i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
+    cc_ch : crossbeam_channel::Receiver<messages::HWMsg>,
     position: f32,
     last_position: f32,
     frequency: u32,
@@ -52,7 +53,7 @@ pub struct MyApp {
 }
 
 impl MyApp {
-    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> Self{
+    pub fn new(cc: &eframe::CreationContext<'_>, ch : crossbeam_channel::Receiver<messages::HWMsg>) -> Self{
         configure_text_styles(&cc.egui_ctx);
         Self {
             position: 50.0,
@@ -68,7 +69,7 @@ impl MyApp {
             f_100H: String::from("0"),
             f_10H: String::from("0"),
             f_1H: String::from("0"),
-            i_cc: i_cc,
+            cc_ch: ch,
         }
     }
 
@@ -213,12 +214,12 @@ impl MyApp {
             inc_or_dec = (self.position - self.last_position)*self.freq_inc as f32;
             self.frequency = self.frequency + inc_or_dec as u32;
             self.set_freq();
-            self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
+            //self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
         } else if self.position < self.last_position{
             inc_or_dec = (self.last_position - self.position)*self.freq_inc as f32;
             self.frequency = self.frequency - inc_or_dec as u32;
             self.set_freq();
-            self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
+            //self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
         }
     }
 
