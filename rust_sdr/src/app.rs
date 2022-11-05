@@ -39,6 +39,7 @@ use std::rc::{Rc, Weak};
 use std::thread;
 use std::time::Duration;
 use std::option;
+use eframe::egui;
 
 use socket2;
 use crossbeam_channel::unbounded;
@@ -85,13 +86,16 @@ pub struct Appdata{
     // Ring buffer Reader thread <-> pipeline thread
     pub rb_iq : Arc<common::ringb::SyncByteRingBuf>,
 
+    // Command and Control out
+    pub i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
+
     //=================================================
     // State
     pub run : bool,
 
     //=================================================
     // User interface object
-    pub i_ui : ui::main_window::UIState,
+    //pub i_ui : ui::main_window::UIState,
 }
 
 //=========================================================================================
@@ -192,7 +196,7 @@ impl Appdata {
         let mut i_local_audio = audio::audio_out::AudioData::new(rb_local_audio.clone());
 
         // Create the UI instance
-        let mut i_ui: ui::main_window::UIState = ui::main_window::UIState::new(i_cc.clone());
+        //let mut i_ui: ui::main_window::UIState = ui::main_window::UIState::new(i_cc.clone());
 
         // Initialise the application data
         Appdata { 
@@ -214,7 +218,8 @@ impl Appdata {
             i_local_audio : i_local_audio,
             stream : None,
             run : l_run,
-            i_ui : i_ui,
+            i_cc : i_cc,
+            //i_ui : i_ui,
         }
     }
     
@@ -244,8 +249,14 @@ impl Appdata {
     //=========================================================================================
     // Initialise system to a running state
     pub fn ui_run(&mut self) {
-        //self.i_ui.init_ui();
-        self.i_ui.run_event_loop();
+        //self.i_ui.run_event_loop();
+        let options = eframe::NativeOptions::default();
+
+        eframe::run_native(
+            "Rust SDR",
+            options,
+            Box::new(|cc| Box::new(ui::egui_ui::MyApp::new(cc, self.i_cc.clone()))),
+        );
     }
 
     //=========================================================================================
