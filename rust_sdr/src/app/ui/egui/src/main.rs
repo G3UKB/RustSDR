@@ -51,8 +51,8 @@ impl MyApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
         configure_text_styles(&cc.egui_ctx);
         Self {
-            position: 0.0,
-            last_position: 0.0,
+            position: 50.0,
+            last_position: 50.0,
             frequency: 7100000,
             freq_inc: 0,
             f_100M: String::from("0"),
@@ -200,17 +200,43 @@ impl MyApp {
         });
         ui.style_mut().spacing.slider_width = 300.0;
         self.last_position = self.position;
-        ui.add(egui::Slider::new(&mut self.position, -100.0..=100.0)
+        ui.add(egui::Slider::new(&mut self.position, 0.0..=100.0)
             .show_value(true)
         );
         let mut inc_or_dec: f32 = 0.0;
         if self.position > self.last_position {
             inc_or_dec = (self.position - self.last_position)*self.freq_inc as f32;
             self.frequency = self.frequency + inc_or_dec as u32;
-        } else {
+            self.set_freq();
+        } else if self.position < self.last_position{
             inc_or_dec = (self.last_position - self.position)*self.freq_inc as f32;
             self.frequency = self.frequency - inc_or_dec as u32;
+            self.set_freq();
         }
+    }
+
+    fn set_freq(&mut self) {
+        // Set the digits to the new frequency
+        let new_freq : String = self.frequency.to_string();
+        // Need to make this a 9 digit string with leading zeros
+        let num_zeros = 9 - new_freq.len();
+        let mut zeros_str = String::from("");
+
+        for _i in 0..num_zeros {
+            zeros_str += "0";
+        }
+        let mut freq_str = String::from(zeros_str + &new_freq);
+        // We now have a 9 digit string
+        // Set each digit from the string
+        self.f_100M = freq_str.chars().nth(0).unwrap().to_string();
+        self.f_10M = freq_str.chars().nth(1).unwrap().to_string();
+        self.f_1M = freq_str.chars().nth(2).unwrap().to_string();
+        self.f_100K = freq_str.chars().nth(3).unwrap().to_string();
+        self.f_10K = freq_str.chars().nth(4).unwrap().to_string();
+        self.f_1K = freq_str.chars().nth(5).unwrap().to_string();
+        self.f_100H = freq_str.chars().nth(6).unwrap().to_string();
+        self.f_10H = freq_str.chars().nth(7).unwrap().to_string();
+        self.f_1H = freq_str.chars().nth(8).unwrap().to_string();
     }
 }
 
