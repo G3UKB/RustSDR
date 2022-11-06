@@ -4,9 +4,36 @@ use std::sync::{Arc, Mutex};
 
 use crate::app::protocol;
 use crate::app::common::messages;
+use crate::app::dsp;
 
 use eframe::egui;
 use egui::{FontFamily, FontId, RichText, TextStyle};
+
+enum mode_id {
+    LSB, 
+    USB,
+    DSB,
+    CW_L,
+    CW_U,
+    FM,
+    AM,
+    DIG_U,
+    SPEC,
+    DIG_L,
+    SAM,
+    DRM,
+}
+
+enum filter_id {
+    F6_0KHz,
+    F4_0KHz,
+    F2_7KHz,
+    F2_4KHz,
+    F1_0KHz,
+    F500Hz,
+    F250Hz,
+    F100Hz,
+}
 
 #[inline]
 fn heading2() -> TextStyle {
@@ -36,7 +63,7 @@ fn configure_text_styles(ctx: &egui::Context) {
 }
 
 pub struct MyApp {
-    cc_ch : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
+    i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
     position: f32,
     last_position: f32,
     frequency: u32,
@@ -53,7 +80,7 @@ pub struct MyApp {
 }
 
 impl MyApp {
-    pub fn new(cc: &eframe::CreationContext<'_>, ch : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> Self{
+    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> Self{
         configure_text_styles(&cc.egui_ctx);
         Self {
             position: 50.0,
@@ -69,26 +96,26 @@ impl MyApp {
             f_100H: String::from("0"),
             f_10H: String::from("0"),
             f_1H: String::from("0"),
-            cc_ch: ch,
+            i_cc: i_cc,
         }
     }
 
     fn modes(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             if ui.button("LSB").clicked() {
-                println!("LSB");
+                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::LSB as i32);
             }
             if ui.button("USB").clicked() {
-                println!("USB");
+                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::USB as i32);
             }
             if ui.button("AM").clicked() {
-                println!("AM");
+                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::AM as i32);
             }
             if ui.button("FM").clicked() {
-                println!("FM");
+                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::FM as i32);
             }
-            if ui.button("DIG").clicked() {
-                println!("DIG");
+            if ui.button("DIG_L").clicked() {
+                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DIG_L as i32);
             }
         });
     }
@@ -96,19 +123,19 @@ impl MyApp {
     fn filters(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             if ui.button("6K0").clicked() {
-                println!("6K0");
+                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F6_0KHz as i32);
             }
             if ui.button("4K0").clicked() {
-                println!("4K0");
+                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F4_0KHz as i32);
             }
             if ui.button("1K0").clicked() {
-                println!("1K0");
+                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F1_0KHz as i32);
             }
             if ui.button("500H").clicked() {
-                println!("500H");
+                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F500Hz as i32);
             }
             if ui.button("100H").clicked() {
-                println!("100H");
+                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F100Hz as i32);
             }
         });
     }
@@ -214,12 +241,12 @@ impl MyApp {
             inc_or_dec = (self.position - self.last_position)*self.freq_inc as f32;
             self.frequency = self.frequency + inc_or_dec as u32;
             self.set_freq();
-            //self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
+            self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
         } else if self.position < self.last_position{
             inc_or_dec = (self.last_position - self.position)*self.freq_inc as f32;
             self.frequency = self.frequency - inc_or_dec as u32;
             self.set_freq();
-            //self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
+            self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
         }
     }
 
