@@ -36,7 +36,7 @@ fn configure_text_styles(ctx: &egui::Context) {
 }
 
 pub struct MyApp {
-    cc_ch : crossbeam_channel::Receiver<messages::HWMsg>,
+    cc_ch : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
     position: f32,
     last_position: f32,
     frequency: u32,
@@ -53,7 +53,7 @@ pub struct MyApp {
 }
 
 impl MyApp {
-    pub fn new(cc: &eframe::CreationContext<'_>, ch : crossbeam_channel::Receiver<messages::HWMsg>) -> Self{
+    pub fn new(cc: &eframe::CreationContext<'_>, ch : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> Self{
         configure_text_styles(&cc.egui_ctx);
         Self {
             position: 50.0,

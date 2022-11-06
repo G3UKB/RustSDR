@@ -88,9 +88,6 @@ pub struct Appdata{
 
     // Command and Control out
     pub i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
-    // Channel
-    pub cc_sender : crossbeam_channel::Sender<common::messages::HWMsg>,
-    pub cc_receiver : crossbeam_channel::Receiver<common::messages::HWMsg>,
 
     //=================================================
     // State
@@ -127,7 +124,6 @@ impl Appdata {
         let (w_s, w_r) = unbounded();
         let (hw_s, hw_r) = unbounded();
         let (pipeline_s, pipeline_r) = unbounded();
-        let (cc_s, cc_r) = unbounded();
 
         // Create ring buffers 
         // Buffer for read IQ data to DSP
@@ -223,8 +219,6 @@ impl Appdata {
             stream : None,
             run : l_run,
             i_cc : i_cc,
-            cc_sender : cc_s,
-            cc_receiver : cc_r,
             //i_ui : i_ui,
         }
     }
@@ -253,15 +247,15 @@ impl Appdata {
     }
 
     //=========================================================================================
-    // Initialise system to a running state
+    // Run the UI event loop. Only returns when the UI is closed.
     pub fn ui_run(&mut self) {
         //self.i_ui.run_event_loop();
         let options = eframe::NativeOptions::default();
-
+        let i_cc = self.i_cc.clone();
         eframe::run_native(
             "Rust SDR",
             options,
-            Box::new(|cc| Box::new(ui::egui_ui::MyApp::new(cc, self.cc_receiver.clone()))),
+            Box::new(|cc| Box::new(ui::egui_ui::MyApp::new(cc, i_cc))),
         );
     }
 
