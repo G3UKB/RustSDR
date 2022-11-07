@@ -85,6 +85,8 @@ const HzSz: f32 = 25.0;
 const MHzSzGrow: f32 = 40.0;
 const KHzSzGrow: f32 = 40.0;
 const HzSzGrow: f32 = 30.0;
+const NormalColor: egui::Color32 = egui::Color32::TRANSPARENT;
+const HighlightColor: egui::Color32 = egui::Color32::DARK_GRAY;
 
 #[inline]
 fn heading2() -> TextStyle {
@@ -122,7 +124,7 @@ pub struct UIApp {
     frequency: u32,
     freq_inc: i32,
 
-    f_array: [(String, f32); 9],
+    f_array: [(String, f32, egui::Color32); 9],
 }
 
 // Implementation for UIApp
@@ -132,15 +134,15 @@ impl UIApp {
 
         // Create array of strings and size for VFO digits
         let f_array = [
-           (String::from("0"), MHzSz),
-           (String::from("0"), MHzSz),
-           (String::from("7"), MHzSz),
-           (String::from("1"), KHzSz),
-           (String::from("0"), KHzSz),
-           (String::from("0"), KHzSz),
-           (String::from("0"), HzSz),
-           (String::from("0"), HzSz),
-           (String::from("0"), HzSz), 
+           (String::from("0"), MHzSz, egui::Color32::TRANSPARENT),
+           (String::from("0"), MHzSz, egui::Color32::TRANSPARENT),
+           (String::from("7"), MHzSz, egui::Color32::TRANSPARENT),
+           (String::from("1"), KHzSz, egui::Color32::TRANSPARENT),
+           (String::from("0"), KHzSz, egui::Color32::TRANSPARENT),
+           (String::from("0"), KHzSz, egui::Color32::TRANSPARENT),
+           (String::from("0"), HzSz, egui::Color32::TRANSPARENT),
+           (String::from("0"), HzSz, egui::Color32::TRANSPARENT),
+           (String::from("0"), HzSz, egui::Color32::TRANSPARENT), 
         ];
 
         Self {
@@ -162,18 +164,39 @@ impl UIApp {
             if ui.button("USB").clicked() {
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::USB as i32);
             }
-            if ui.button("AM").clicked() {
-                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::AM as i32);
+            if ui.button("DSB").clicked() {
+                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DSB as i32);
+            }
+            if ui.button("CW-L").clicked() {
+                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::CW_L as i32);
+            }
+            if ui.button("CW-U").clicked() {
+                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::CW_U as i32);
             }
             if ui.button("FM").clicked() {
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::FM as i32);
             }
-            if ui.button("DIG_L").clicked() {
+            if ui.button("AM").clicked() {
+                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::AM as i32);
+            }
+            if ui.button("DIG-L").clicked() {
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DIG_L as i32);
+            }
+            if ui.button("DIG-U").clicked() {
+                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DIG_U as i32);
+            }
+            if ui.button("SPEC").clicked() {
+                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::SPEC as i32);
+            }
+            if ui.button("SAM").clicked() {
+                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::SAM as i32);
+            }
+            if ui.button("DRM").clicked() {
+                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DRM as i32);
             }
         });
     }
-
+   
     // Populate filters window
     fn filters(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
@@ -182,6 +205,12 @@ impl UIApp {
             }
             if ui.button("4K0").clicked() {
                 dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F4_0KHz as i32);
+            }
+            if ui.button("2K7").clicked() {
+                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F2_7KHz as i32);
+            }
+            if ui.button("2K4").clicked() {
+                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F2_4KHz as i32);
             }
             if ui.button("1K0").clicked() {
                 dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F1_0KHz as i32);
@@ -202,17 +231,19 @@ impl UIApp {
             
             let f_100M = ui.label(RichText::new(&self.f_array[vfo_id::f_100M as usize].0).text_style(heading2())
             .size(self.f_array[vfo_id::f_100M as usize].1)
-            //.background_color(egui::Color32::DARK_BLUE)
+            .background_color(self.f_array[vfo_id::f_100M as usize].2)
             .strong());
             self.scroll_if(ui, vfo_id::f_100M, f_100M.rect, 100000000, MHzSz, MHzSzGrow);
 
             let f_10M = ui.label(RichText::new(&self.f_array[vfo_id::f_10M as usize].0).text_style(heading2())
             .size(self.f_array[vfo_id::f_10M as usize].1)
+            .background_color(self.f_array[vfo_id::f_10M as usize].2)
             .strong());
             self.scroll_if(ui, vfo_id::f_10M ,f_10M.rect, 10000000, MHzSz, MHzSzGrow);
 
             let f_1M = ui.label(RichText::new(&self.f_array[vfo_id::f_1M as usize].0).text_style(heading2())
             .size(self.f_array[vfo_id::f_1M as usize].1)
+            .background_color(self.f_array[vfo_id::f_1M as usize].2)
             .strong());
             self.scroll_if(ui, vfo_id::f_1M, f_1M.rect, 1000000, MHzSz, MHzSzGrow);
 
@@ -221,16 +252,19 @@ impl UIApp {
 
             let f_100K = ui.label(RichText::new(&self.f_array[vfo_id::f_100K as usize].0).text_style(heading2())
             .size(self.f_array[vfo_id::f_100K as usize].1)
+            .background_color(self.f_array[vfo_id::f_100K as usize].2)
             .strong());
             self.scroll_if(ui, vfo_id::f_100K, f_100K.rect, 100000, KHzSz, KHzSzGrow);
 
             let f_10K = ui.label(RichText::new(&self.f_array[vfo_id::f_10K as usize].0).text_style(heading2())
             .size(self.f_array[vfo_id::f_10K as usize].1)
+            .background_color(self.f_array[vfo_id::f_10K as usize].2)
             .strong());
             self.scroll_if(ui, vfo_id::f_10K, f_10K.rect, 10000, KHzSz, KHzSzGrow);
 
             let f_1K = ui.label(RichText::new(&self.f_array[vfo_id::f_1K as usize].0).text_style(heading2())
             .size(self.f_array[vfo_id::f_1K as usize].1)
+            .background_color(self.f_array[vfo_id::f_1K as usize].2)
             .strong());
             self.scroll_if(ui,vfo_id::f_1K, f_1K.rect, 1000, KHzSz, KHzSzGrow);
 
@@ -239,16 +273,19 @@ impl UIApp {
 
             let f_100H = ui.label(RichText::new(&self.f_array[vfo_id::f_100H as usize].0).text_style(heading2())
             .size(self.f_array[vfo_id::f_100H as usize].1)
+            .background_color(self.f_array[vfo_id::f_100H as usize].2)
             .strong());
             self.scroll_if(ui, vfo_id::f_100H, f_100H.rect, 100, HzSz, HzSzGrow);
 
             let f_10H = ui.label(RichText::new(&self.f_array[vfo_id::f_10H as usize].0).text_style(heading2())
             .size(self.f_array[vfo_id::f_10H as usize].1)
+            .background_color(self.f_array[vfo_id::f_10H as usize].2)
             .strong());
             self.scroll_if(ui, vfo_id::f_10H,f_10H.rect, 10, HzSz, HzSzGrow);
 
             let f_1H = ui.label(RichText::new(&self.f_array[vfo_id::f_1H as usize].0).text_style(heading2())
             .size(self.f_array[vfo_id::f_1H as usize].1)
+            .background_color(self.f_array[vfo_id::f_1H as usize].2)
             .strong());
             self.scroll_if(ui, vfo_id::f_1H, f_1H.rect, 1, HzSz, HzSzGrow);
         });
@@ -258,7 +295,8 @@ impl UIApp {
     // If the mouse wheel is being scrolled then scroll the digit up or down.
     fn scroll_if(&mut self, ui: &mut egui::Ui, id: vfo_id, r: egui::Rect, inc_or_dec: i32, normal: f32, grow: f32) {
         if ui.rect_contains_pointer(r) {
-            self.f_array[id as usize].1 = grow;
+            //self.f_array[id as usize].1 = grow;
+            self.f_array[id as usize].2 = HighlightColor; 
             let e = &ui.ctx().input().events;
             if e.len() > 0 {
                 match &e[0] {
@@ -275,7 +313,8 @@ impl UIApp {
                 }
             }
         } else {
-            self.f_array[id as usize].1 = normal;
+            //self.f_array[id as usize].1 = normal;
+            self.f_array[id as usize].2 = NormalColor; 
         }
     }
 
