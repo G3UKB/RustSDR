@@ -202,6 +202,7 @@ impl UIApp {
             
             let f_100M = ui.label(RichText::new(&self.f_array[vfo_id::f_100M as usize].0).text_style(heading2())
             .size(self.f_array[vfo_id::f_100M as usize].1)
+            //.background_color(egui::Color32::DARK_BLUE)
             .strong());
             self.scroll_if(ui, vfo_id::f_100M, f_100M.rect, 100000000, MHzSz, MHzSzGrow);
 
