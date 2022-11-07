@@ -255,7 +255,7 @@ impl Appdata {
         eframe::run_native(
             "Rust SDR",
             options,
-            Box::new(|cc| Box::new(ui::egui_ui::MyApp::new(cc, i_cc))),
+            Box::new(|cc| Box::new(ui::egui_ui::UIApp::new(cc, i_cc))),
         );
     }
 

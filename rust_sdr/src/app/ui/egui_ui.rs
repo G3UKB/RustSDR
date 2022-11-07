@@ -1,6 +1,34 @@
+/*
+egui_ui.rs
+
+Module - egui_ui
+User interface
+
+Copyright (C) 2022 by G3UKB Bob Cowdery
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+The authors can be reached by email at:
+
+bob@bobcowdery.plus.com
+*/
+
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
 use std::sync::{Arc, Mutex};
+use std::ops::Neg;
 
 use crate::app::protocol;
 use crate::app::common::messages;
@@ -9,6 +37,7 @@ use crate::app::dsp;
 use eframe::egui;
 use egui::{FontFamily, FontId, RichText, TextStyle};
 
+// Mode enumerations
 enum mode_id {
     LSB, 
     USB,
@@ -24,6 +53,7 @@ enum mode_id {
     DRM,
 }
 
+// Filter enumerations
 enum filter_id {
     F6_0KHz,
     F4_0KHz,
@@ -45,6 +75,7 @@ fn heading3() -> TextStyle {
     TextStyle::Name("ContextHeading".into())
 }
 
+// Styles
 fn configure_text_styles(ctx: &egui::Context) {
     use FontFamily::Proportional;
 
@@ -62,7 +93,8 @@ fn configure_text_styles(ctx: &egui::Context) {
     ctx.set_style(style);
 }
 
-pub struct MyApp {
+// State for UIApp
+pub struct UIApp {
     i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
     position: f32,
     last_position: f32,
@@ -79,7 +111,8 @@ pub struct MyApp {
     f_1H: String,
 }
 
-impl MyApp {
+// Implementation for UIApp
+impl UIApp {
     pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> Self{
         configure_text_styles(&cc.egui_ctx);
         Self {
@@ -100,6 +133,7 @@ impl MyApp {
         }
     }
 
+    // Populate modes window
     fn modes(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             if ui.button("LSB").clicked() {
@@ -120,6 +154,7 @@ impl MyApp {
         });
     }
 
+    // Populate filters window
     fn filters(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             if ui.button("6K0").clicked() {
@@ -140,6 +175,7 @@ impl MyApp {
         });
     }
 
+    // Populate VFO window
     fn vfo(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             ui.style_mut().spacing.item_spacing = egui::vec2(14.0,5.0);
@@ -147,121 +183,82 @@ impl MyApp {
             let f_100M = ui.label(RichText::new(&self.f_100M).text_style(heading2())
             .size(30.0)
             .strong());
-            if ui.rect_contains_pointer(f_100M.rect) {
-                let e = &ui.ctx().input().events;
-                if e.len() > 0 {
-                    match &e[0] {
-                        egui::Event::Scroll(v) => {
-                            self.frequency = self.frequency + 1000000;
-                            self.set_freq();
-                            self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
-                        }
-                        _ => (),
-                    }
-                }
-            } 
-            ui.label(RichText::new(&self.f_10M).text_style(heading2()).strong()
+            self.scroll_if(ui, f_100M.rect, 100000000);
+            let f_10M = ui.label(RichText::new(&self.f_10M).text_style(heading2()).strong()
             .text_style(heading2())
-            .strong()
             .size(30.0)
             .strong());
-            ui.label(RichText::new(&self.f_1M).text_style(heading2()).strong()
+            self.scroll_if(ui, f_10M.rect, 10000000);
+            let f_1M = ui.label(RichText::new(&self.f_1M).text_style(heading2()).strong()
             .text_style(heading2())
-            .strong()
             .size(30.0)
             .strong());
+            self.scroll_if(ui, f_1M.rect, 1000000);
+            ui.label(RichText::new("-").text_style(heading2()).strong()
+            .text_style(heading2())
+            .size(30.0)
+            .strong());
+            let f_100K = ui.label(RichText::new(&self.f_100K).text_style(heading2()).strong()
+            .text_style(heading2())
+            .size(30.0)
+            .strong());
+            self.scroll_if(ui, f_100K.rect, 100000);
+            let f_10K = ui.label(RichText::new(&self.f_10K).text_style(heading2()).strong()
+            .text_style(heading2())
+            .size(30.0)
+            .strong());
+            self.scroll_if(ui, f_10K.rect, 10000);
+            let f_1K = ui.label(RichText::new(&self.f_1K).text_style(heading2()).strong()
+            .text_style(heading2())
+            .size(30.0)
+            .strong());
+            self.scroll_if(ui, f_1K.rect, 1000);
             ui.label(RichText::new("-").text_style(heading2()).strong()
             .text_style(heading2())
             .strong()
             .size(30.0)
             .strong());
-            ui.label(RichText::new(&self.f_100K).text_style(heading2()).strong()
+            let f_100H = ui.label(RichText::new(&self.f_100H).text_style(heading2()).strong()
+            .text_style(heading2())
+            .size(30.0)
+            .strong());
+            self.scroll_if(ui, f_100H.rect, 100);
+            let f_10H = ui.label(RichText::new(&self.f_10H).text_style(heading2()).strong()
             .text_style(heading2())
             .strong()
             .size(30.0)
             .strong());
-            ui.label(RichText::new(&self.f_10K).text_style(heading2()).strong()
+            self.scroll_if(ui, f_10H.rect, 10);
+            let f_1H = ui.label(RichText::new(&self.f_1H).text_style(heading2()).strong()
             .text_style(heading2())
-            .strong()
             .size(30.0)
             .strong());
-            ui.label(RichText::new(&self.f_1K).text_style(heading2()).strong()
-            .text_style(heading2())
-            .strong()
-            .size(30.0)
-            .strong());
-            ui.label(RichText::new("-").text_style(heading2()).strong()
-            .text_style(heading2())
-            .strong()
-            .size(30.0)
-            .strong());
-            ui.label(RichText::new(&self.f_100H).text_style(heading2()).strong()
-            .text_style(heading2())
-            .strong()
-            .size(30.0)
-            .strong());
-            ui.label(RichText::new(&self.f_10H).text_style(heading2()).strong()
-            .text_style(heading2())
-            .strong()
-            .size(30.0)
-            .strong());
-            ui.label(RichText::new(&self.f_1H).text_style(heading2()).strong()
-            .text_style(heading2())
-            .strong()
-            .size(30.0)
-            .strong());
+            self.scroll_if(ui, f_1H.rect, 1);
         });
-        ui.horizontal(|ui| {
-            ui.style_mut().spacing.button_padding = egui::vec2(6.0, 5.0);
-            if ui.button("^").clicked() {
-                self.freq_inc = 100000000;
-            };
-            if ui.button("^").clicked() {
-                self.freq_inc = 10000000;
-            };
-            if ui.button("^").clicked() {
-                self.freq_inc = 1000000;
-            };
-            ui.add_space(30.0);
-            if ui.button("^").clicked() {
-                self.freq_inc = 100000;
-            };
-            if ui.button("^").clicked() {
-                self.freq_inc = 10000;
-            };
-            if ui.button("^").clicked() {
-                self.freq_inc = 1000;
-            };
-            ui.add_space(30.0);
-            if ui.button("^").clicked() {
-                self.freq_inc = 100;
-            };
-            if ui.button("^").clicked() {
-                self.freq_inc = 10;
-            };
-            if ui.button("^").clicked() {
-                self.freq_inc = 1;
-            };
-        });
-        ui.style_mut().spacing.slider_width = 300.0;
-        self.last_position = self.position;
-        ui.add(egui::Slider::new(&mut self.position, 0.0..=100.0)
-            .show_value(true)
-        );
-        let mut inc_or_dec: f32 = 0.0;
-        if self.position > self.last_position {
-            inc_or_dec = (self.position - self.last_position)*self.freq_inc as f32;
-            self.frequency = self.frequency + inc_or_dec as u32;
-            self.set_freq();
-            self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
-        } else if self.position < self.last_position{
-            inc_or_dec = (self.last_position - self.position)*self.freq_inc as f32;
-            self.frequency = self.frequency - inc_or_dec as u32;
-            self.set_freq();
-            self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
-        }
     }
 
+    // If within the rectangle of a digit and the mouse wheel is being scrolled
+    fn scroll_if(&mut self, ui: &mut egui::Ui, rect: egui::Rect, inc_or_dec: i32) {
+        if ui.rect_contains_pointer(rect) {
+            let e = &ui.ctx().input().events;
+            if e.len() > 0 {
+                match &e[0] {
+                    egui::Event::Scroll(v) => {
+                        let mut dir = inc_or_dec;
+                        if v[1] < 0.0 {
+                            dir = dir.neg();
+                        }
+                        self.frequency = (self.frequency as i32 + dir) as u32;
+                        self.set_freq();
+                        self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
+                    }
+                    _ => (),
+                }
+            }
+        } 
+    }
+
+    // Set the display frequency
     fn set_freq(&mut self) {
         // Set the digits to the new frequency
         let new_freq : String = self.frequency.to_string();
@@ -288,7 +285,7 @@ impl MyApp {
 }
 
 // Create a window for each element in the UI.
-impl eframe::App for MyApp {
+impl eframe::App for UIApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::Window::new("Modes").show(ctx, |ui| {
             self.modes(ui);
@@ -301,14 +298,3 @@ impl eframe::App for MyApp {
         });
     }
 }
-
-/*
-fn main() {
-    let options = eframe::NativeOptions::default();
-
-    eframe::run_native(
-        "egui example: global font style",
-        options,
-        Box::new(|cc| Box::new(MyApp::new(cc))),
-    );
-*/
