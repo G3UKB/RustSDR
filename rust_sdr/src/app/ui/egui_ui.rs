@@ -65,6 +65,27 @@ enum filter_id {
     F100Hz,
 }
 
+// VFO enumeration
+enum vfo_id {
+    f_100M,
+    f_10M,
+    f_1M,
+    f_100K,
+    f_10K,
+    f_1K,
+    f_100H,
+    f_10H,
+    f_1H,
+}
+
+// Digit sizes
+const MHzSz: f32 = 35.0;
+const KHzSz: f32 = 35.0;
+const HzSz: f32 = 25.0;
+const MHzSzGrow: f32 = 40.0;
+const KHzSzGrow: f32 = 40.0;
+const HzSzGrow: f32 = 30.0;
+
 #[inline]
 fn heading2() -> TextStyle {
     TextStyle::Name("Heading2".into())
@@ -100,36 +121,35 @@ pub struct UIApp {
     last_position: f32,
     frequency: u32,
     freq_inc: i32,
-    f_100M: String,
-    f_10M: String,
-    f_1M: String,
-    f_100K: String,
-    f_10K: String,
-    f_1K: String,
-    f_100H: String,
-    f_10H: String,
-    f_1H: String,
+
+    f_array: [(String, f32); 9],
 }
 
 // Implementation for UIApp
 impl UIApp {
     pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> Self{
         configure_text_styles(&cc.egui_ctx);
+
+        // Create array of strings and size for VFO digits
+        let f_array = [
+           (String::from("0"), MHzSz),
+           (String::from("0"), MHzSz),
+           (String::from("7"), MHzSz),
+           (String::from("1"), KHzSz),
+           (String::from("0"), KHzSz),
+           (String::from("0"), KHzSz),
+           (String::from("0"), HzSz),
+           (String::from("0"), HzSz),
+           (String::from("0"), HzSz), 
+        ];
+
         Self {
             position: 50.0,
             last_position: 50.0,
             frequency: 7100000,
             freq_inc: 0,
-            f_100M: String::from("0"),
-            f_10M: String::from("0"),
-            f_1M: String::from("7"),
-            f_100K: String::from("1"),
-            f_10K: String::from("0"),
-            f_1K: String::from("0"),
-            f_100H: String::from("0"),
-            f_10H: String::from("0"),
-            f_1H: String::from("0"),
             i_cc: i_cc,
+            f_array: f_array,
         }
     }
 
@@ -180,66 +200,63 @@ impl UIApp {
         ui.horizontal(|ui| {
             ui.style_mut().spacing.item_spacing = egui::vec2(14.0,5.0);
             
-            let f_100M = ui.label(RichText::new(&self.f_100M).text_style(heading2())
-            .size(30.0)
+            let f_100M = ui.label(RichText::new(&self.f_array[vfo_id::f_100M as usize].0).text_style(heading2())
+            .size(self.f_array[vfo_id::f_100M as usize].1)
             .strong());
-            self.scroll_if(ui, f_100M.rect, 100000000);
-            let f_10M = ui.label(RichText::new(&self.f_10M).text_style(heading2()).strong()
-            .text_style(heading2())
-            .size(30.0)
+            self.scroll_if(ui, vfo_id::f_100M, f_100M.rect, 100000000, MHzSz, MHzSzGrow);
+
+            let f_10M = ui.label(RichText::new(&self.f_array[vfo_id::f_10M as usize].0).text_style(heading2())
+            .size(self.f_array[vfo_id::f_10M as usize].1)
             .strong());
-            self.scroll_if(ui, f_10M.rect, 10000000);
-            let f_1M = ui.label(RichText::new(&self.f_1M).text_style(heading2()).strong()
-            .text_style(heading2())
-            .size(30.0)
+            self.scroll_if(ui, vfo_id::f_10M ,f_10M.rect, 10000000, MHzSz, MHzSzGrow);
+
+            let f_1M = ui.label(RichText::new(&self.f_array[vfo_id::f_1M as usize].0).text_style(heading2())
+            .size(self.f_array[vfo_id::f_1M as usize].1)
             .strong());
-            self.scroll_if(ui, f_1M.rect, 1000000);
+            self.scroll_if(ui, vfo_id::f_1M, f_1M.rect, 1000000, MHzSz, MHzSzGrow);
+
             ui.label(RichText::new("-").text_style(heading2()).strong()
-            .text_style(heading2())
-            .size(30.0)
+            .size(30.0));
+
+            let f_100K = ui.label(RichText::new(&self.f_array[vfo_id::f_100K as usize].0).text_style(heading2())
+            .size(self.f_array[vfo_id::f_100K as usize].1)
             .strong());
-            let f_100K = ui.label(RichText::new(&self.f_100K).text_style(heading2()).strong()
-            .text_style(heading2())
-            .size(30.0)
+            self.scroll_if(ui, vfo_id::f_100K, f_100K.rect, 100000, KHzSz, KHzSzGrow);
+
+            let f_10K = ui.label(RichText::new(&self.f_array[vfo_id::f_10K as usize].0).text_style(heading2())
+            .size(self.f_array[vfo_id::f_10K as usize].1)
             .strong());
-            self.scroll_if(ui, f_100K.rect, 100000);
-            let f_10K = ui.label(RichText::new(&self.f_10K).text_style(heading2()).strong()
-            .text_style(heading2())
-            .size(30.0)
+            self.scroll_if(ui, vfo_id::f_10K, f_10K.rect, 10000, KHzSz, KHzSzGrow);
+
+            let f_1K = ui.label(RichText::new(&self.f_array[vfo_id::f_1K as usize].0).text_style(heading2())
+            .size(self.f_array[vfo_id::f_1K as usize].1)
             .strong());
-            self.scroll_if(ui, f_10K.rect, 10000);
-            let f_1K = ui.label(RichText::new(&self.f_1K).text_style(heading2()).strong()
-            .text_style(heading2())
-            .size(30.0)
-            .strong());
-            self.scroll_if(ui, f_1K.rect, 1000);
+            self.scroll_if(ui,vfo_id::f_1K, f_1K.rect, 1000, KHzSz, KHzSzGrow);
+
             ui.label(RichText::new("-").text_style(heading2()).strong()
-            .text_style(heading2())
-            .strong()
-            .size(30.0)
+            .size(30.0));
+
+            let f_100H = ui.label(RichText::new(&self.f_array[vfo_id::f_100H as usize].0).text_style(heading2())
+            .size(self.f_array[vfo_id::f_100H as usize].1)
             .strong());
-            let f_100H = ui.label(RichText::new(&self.f_100H).text_style(heading2()).strong()
-            .text_style(heading2())
-            .size(30.0)
+            self.scroll_if(ui, vfo_id::f_100H, f_100H.rect, 100, HzSz, HzSzGrow);
+
+            let f_10H = ui.label(RichText::new(&self.f_array[vfo_id::f_10H as usize].0).text_style(heading2())
+            .size(self.f_array[vfo_id::f_10H as usize].1)
             .strong());
-            self.scroll_if(ui, f_100H.rect, 100);
-            let f_10H = ui.label(RichText::new(&self.f_10H).text_style(heading2()).strong()
-            .text_style(heading2())
-            .strong()
-            .size(30.0)
+            self.scroll_if(ui, vfo_id::f_10H,f_10H.rect, 10, HzSz, HzSzGrow);
+
+            let f_1H = ui.label(RichText::new(&self.f_array[vfo_id::f_1H as usize].0).text_style(heading2())
+            .size(self.f_array[vfo_id::f_1H as usize].1)
             .strong());
-            self.scroll_if(ui, f_10H.rect, 10);
-            let f_1H = ui.label(RichText::new(&self.f_1H).text_style(heading2()).strong()
-            .text_style(heading2())
-            .size(30.0)
-            .strong());
-            self.scroll_if(ui, f_1H.rect, 1);
+            self.scroll_if(ui, vfo_id::f_1H, f_1H.rect, 1, HzSz, HzSzGrow);
         });
     }
 
     // If within the rectangle of a digit and the mouse wheel is being scrolled
-    fn scroll_if(&mut self, ui: &mut egui::Ui, rect: egui::Rect, inc_or_dec: i32) {
-        if ui.rect_contains_pointer(rect) {
+    fn scroll_if(&mut self, ui: &mut egui::Ui, id: vfo_id, r: egui::Rect, inc_or_dec: i32, normal: f32, grow: f32) {
+        if ui.rect_contains_pointer(r) {
+            self.f_array[id as usize].1 = grow;
             let e = &ui.ctx().input().events;
             if e.len() > 0 {
                 match &e[0] {
@@ -255,7 +272,9 @@ impl UIApp {
                     _ => (),
                 }
             }
-        } 
+        } else {
+            self.f_array[id as usize].1 = normal;
+        }
     }
 
     // Set the display frequency
@@ -272,15 +291,16 @@ impl UIApp {
         let mut freq_str = String::from(zeros_str + &new_freq);
         // We now have a 9 digit string
         // Set each digit from the string
-        self.f_100M = freq_str.chars().nth(0).unwrap().to_string();
-        self.f_10M = freq_str.chars().nth(1).unwrap().to_string();
-        self.f_1M = freq_str.chars().nth(2).unwrap().to_string();
-        self.f_100K = freq_str.chars().nth(3).unwrap().to_string();
-        self.f_10K = freq_str.chars().nth(4).unwrap().to_string();
-        self.f_1K = freq_str.chars().nth(5).unwrap().to_string();
-        self.f_100H = freq_str.chars().nth(6).unwrap().to_string();
-        self.f_10H = freq_str.chars().nth(7).unwrap().to_string();
-        self.f_1H = freq_str.chars().nth(8).unwrap().to_string();
+        self.f_array[vfo_id::f_100M as usize].0 = freq_str.chars().nth(0).unwrap().to_string();
+        self.f_array[vfo_id::f_10M as usize].0 = freq_str.chars().nth(1).unwrap().to_string();
+        self.f_array[vfo_id::f_1M as usize].0 = freq_str.chars().nth(2).unwrap().to_string();
+        self.f_array[vfo_id::f_100K as usize].0 = freq_str.chars().nth(3).unwrap().to_string();
+        self.f_array[vfo_id::f_10K as usize].0 = freq_str.chars().nth(4).unwrap().to_string();
+        self.f_array[vfo_id::f_1K as usize].0 = freq_str.chars().nth(5).unwrap().to_string();
+        self.f_array[vfo_id::f_100H as usize].0 = freq_str.chars().nth(6).unwrap().to_string();
+        self.f_array[vfo_id::f_10H as usize].0 = freq_str.chars().nth(7).unwrap().to_string();
+        self.f_array[vfo_id::f_1H as usize].0 = freq_str.chars().nth(8).unwrap().to_string();
+
     }
 }
 
