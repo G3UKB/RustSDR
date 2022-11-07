@@ -253,7 +253,8 @@ impl UIApp {
         });
     }
 
-    // If within the rectangle of a digit and the mouse wheel is being scrolled
+    // If within the rectangle of a digit then grow the digit, else shrink to normal.
+    // If the mouse wheel is being scrolled then scroll the digit up or down.
     fn scroll_if(&mut self, ui: &mut egui::Ui, id: vfo_id, r: egui::Rect, inc_or_dec: i32, normal: f32, grow: f32) {
         if ui.rect_contains_pointer(r) {
             self.f_array[id as usize].1 = grow;
@@ -307,13 +308,16 @@ impl UIApp {
 // Create a window for each element in the UI.
 impl eframe::App for UIApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::Window::new("Modes").show(ctx, |ui| {
+        egui::Window::new("Modes")
+        .show(ctx, |ui| {
             self.modes(ui);
         });
-        egui::Window::new("Filters").show(ctx, |ui| {
+        egui::Window::new("Filters")
+        .show(ctx, |ui| {
             self.filters(ui);
         });
-        egui::Window::new("VFO").show(ctx, |ui| {
+        egui::Window::new("VFO")
+        .show(ctx, |ui| {
             self.vfo(ui);
         });
     }
