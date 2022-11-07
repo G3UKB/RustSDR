@@ -143,11 +143,23 @@ impl MyApp {
     fn vfo(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             ui.style_mut().spacing.item_spacing = egui::vec2(14.0,5.0);
-
-            ui.label(RichText::new(&self.f_100M).text_style(heading2())
-            .strong()
+            
+            let f_100M = ui.label(RichText::new(&self.f_100M).text_style(heading2())
             .size(30.0)
             .strong());
+            if ui.rect_contains_pointer(f_100M.rect) {
+                let e = &ui.ctx().input().events;
+                if e.len() > 0 {
+                    match &e[0] {
+                        egui::Event::Scroll(v) => {
+                            self.frequency = self.frequency + 1000000;
+                            self.set_freq();
+                            self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
+                        }
+                        _ => (),
+                    }
+                }
+            } 
             ui.label(RichText::new(&self.f_10M).text_style(heading2()).strong()
             .text_style(heading2())
             .strong()
@@ -275,6 +287,7 @@ impl MyApp {
     }
 }
 
+// Create a window for each element in the UI.
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::Window::new("Modes").show(ctx, |ui| {
