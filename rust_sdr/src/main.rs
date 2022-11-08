@@ -47,18 +47,21 @@ fn main() {
 
     // Initialise the UI
     // This runs the UI event loop and will return when the UI is closed
+    println!("1");
     i_app.ui_run();
-
+println!("2");
     // UI has closed but we still wait to close down so issues can be seen
     pause();
+    println!("4");
     println!("Starting shutdown...");
     i_app.app_close();
-
+    println!("5");
     println!("Rust console closing...");
     thread::sleep(Duration::from_millis(1000));
 }
 
 fn pause() {
+    println!("3");
     let mut stdout = stdout();
     stdout.write(b"\nPress Enter to close...\n\n").unwrap();
     stdout.flush().unwrap();

@@ -126,8 +126,8 @@ pub struct UIApp {
 
     // VFO, mode and filter state
     f_array: [(String, f32, egui::Color32); 9],
-    m_array: [(String, egui::Color32); 12],
-    fi_array: [(String, egui::Color32); 8],
+    //m_array: [(String, egui::Color32); 12],
+    //fi_array: [(String, egui::Color32); 8],
 }
 
 // Implementation for UIApp
@@ -147,7 +147,7 @@ impl UIApp {
            (String::from("0"), HzSz, egui::Color32::TRANSPARENT),
            (String::from("0"), HzSz, egui::Color32::TRANSPARENT), 
         ];
-
+/* 
         let m_array = [
            (String::from("LSB"), egui::Color32::TRANSPARENT),
            (String::from("USB"), egui::Color32::TRANSPARENT),
@@ -173,7 +173,7 @@ impl UIApp {
            (String::from("250H"), egui::Color32::TRANSPARENT),
            (String::from("100H"), egui::Color32::TRANSPARENT),
         ];
-        
+   */     
         Self {
             position: 50.0,
             last_position: 50.0,
@@ -181,8 +181,8 @@ impl UIApp {
             freq_inc: 0,
             i_cc: i_cc,
             f_array: f_array,
-            m_array: m_array,
-            fi_array: fi_array,
+            //m_array: m_array,
+            //fi_array: fi_array,
         }
     }
 
@@ -190,56 +190,57 @@ impl UIApp {
     fn modes(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             if ui.button("LSB").clicked() {
-                self.set_mode_buttons(0);
+                //self.set_mode_buttons(0);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::LSB as i32);
             }
             if ui.button("USB").clicked() {
-                self.set_mode_buttons(1);
+                //self.set_mode_buttons(1);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::USB as i32);
             }
             if ui.button("DSB").clicked() {
-                self.set_mode_buttons(2);
+                //self.set_mode_buttons(2);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DSB as i32);
             }
             if ui.button("CW-L").clicked() {
-                self.set_mode_buttons(3);
+                //self.set_mode_buttons(3);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::CW_L as i32);
             }
             if ui.button("CW-U").clicked() {
-                self.set_mode_buttons(4);
+                //self.set_mode_buttons(4);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::CW_U as i32);
             }
             if ui.button("FM").clicked() {
-                self.set_mode_buttons(5);
+                //self.set_mode_buttons(5);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::FM as i32);
             }
             if ui.button("AM").clicked() {
-                self.set_mode_buttons(6);
+                //self.set_mode_buttons(6);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::AM as i32);
             }
             if ui.button("DIG-L").clicked() {
-                self.set_mode_buttons(7);
+                //self.set_mode_buttons(7);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DIG_L as i32);
             }
             if ui.button("DIG-U").clicked() {
-                self.set_mode_buttons(8);
+                //self.set_mode_buttons(8);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DIG_U as i32);
             }
             if ui.button("SPEC").clicked() {
-                self.set_mode_buttons(9);
+                //self.set_mode_buttons(9);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::SPEC as i32);
             }
             if ui.button("SAM").clicked() {
-                self.set_mode_buttons(10);
+                //self.set_mode_buttons(10);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::SAM as i32);
             }
             if ui.button("DRM").clicked() {
-                self.set_mode_buttons(11);
+                //self.set_mode_buttons(11);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DRM as i32);
             }
         });
     }
    
+    /* 
     // Highlight the selected button
     fn set_mode_buttons(&mut self, id: i32) {
         for i in 0..12 {
@@ -247,7 +248,7 @@ impl UIApp {
         }
         self.m_array[id as usize].1 = HighlightColor;
     }
-
+*/
     // Populate filters window
     fn filters(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
@@ -274,7 +275,7 @@ impl UIApp {
             }
         });
     }
-
+/* 
     // Highlight the selected button
     fn set_filter_buttons(&mut self, id: i32) {
         for i in 0..12 {
@@ -282,7 +283,7 @@ impl UIApp {
         }
         self.fi_array[id as usize].1 = HighlightColor;
     }
-
+*/
     // Populate VFO window
     fn vfo(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
