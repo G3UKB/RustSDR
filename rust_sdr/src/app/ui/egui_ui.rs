@@ -85,8 +85,12 @@ const HzSz: f32 = 25.0;
 const MHzSzGrow: f32 = 40.0;
 const KHzSzGrow: f32 = 40.0;
 const HzSzGrow: f32 = 30.0;
-const NormalColor: egui::Color32 = egui::Color32::TRANSPARENT;
-const HighlightColor: egui::Color32 = egui::Color32::DARK_GRAY;
+const VFONormalColor: egui::Color32 = egui::Color32::TRANSPARENT;
+const VFOHighlightColor: egui::Color32 = egui::Color32::DARK_GREEN;
+const ModeNormalColor: egui::Color32 = egui::Color32::TRANSPARENT;
+const ModeHighlightColor: egui::Color32 = egui::Color32::DARK_BLUE;
+const FiltNormalColor: egui::Color32 = egui::Color32::TRANSPARENT;
+const FiltHighlightColor: egui::Color32 = egui::Color32::DARK_RED;
 
 #[inline]
 fn heading2() -> TextStyle {
@@ -189,52 +193,90 @@ impl UIApp {
     // Populate modes window
     fn modes(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
-            if ui.button("LSB").clicked() {
-                self.set_mode_buttons(0);
+
+            let b = ui.button(RichText::new(&self.m_array[mode_id::LSB as usize].0).text_style(heading2())
+            .background_color(self.m_array[mode_id::LSB as usize].1));
+            if b.clicked() {
+                self.set_mode_buttons(mode_id::LSB as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::LSB as i32);
             }
-            if ui.button("USB").clicked() {
-                self.set_mode_buttons(1);
+
+            let b = ui.button(RichText::new(&self.m_array[mode_id::USB as usize].0).text_style(heading2())
+            .background_color(self.m_array[mode_id::USB as usize].1));
+            if b.clicked() {
+                self.set_mode_buttons(mode_id::USB as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::USB as i32);
             }
-            if ui.button("DSB").clicked() {
-                self.set_mode_buttons(2);
+
+            let b = ui.button(RichText::new(&self.m_array[mode_id::DSB as usize].0).text_style(heading2())
+            .background_color(self.m_array[mode_id::DSB as usize].1));
+            if b.clicked() {
+                self.set_mode_buttons(mode_id::DSB as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DSB as i32);
             }
-            if ui.button("CW-L").clicked() {
-                self.set_mode_buttons(3);
+
+            let b = ui.button(RichText::new(&self.m_array[mode_id::CW_L as usize].0).text_style(heading2())
+            .background_color(self.m_array[mode_id::CW_L as usize].1));
+            if b.clicked() {
+                self.set_mode_buttons(mode_id::CW_L as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::CW_L as i32);
             }
-            if ui.button("CW-U").clicked() {
-                self.set_mode_buttons(4);
+
+            let b = ui.button(RichText::new(&self.m_array[mode_id::CW_U as usize].0).text_style(heading2())
+            .background_color(self.m_array[mode_id::CW_U as usize].1));
+            if b.clicked() {
+                self.set_mode_buttons(mode_id::CW_U as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::CW_U as i32);
             }
-            if ui.button("FM").clicked() {
-                self.set_mode_buttons(5);
+
+            let b = ui.button(RichText::new(&self.m_array[mode_id::FM as usize].0).text_style(heading2())
+            .background_color(self.m_array[mode_id::FM as usize].1));
+            if b.clicked() {
+                self.set_mode_buttons(mode_id::FM as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::FM as i32);
             }
-            if ui.button("AM").clicked() {
-                self.set_mode_buttons(6);
+        });
+        ui.horizontal(|ui| {
+
+            let b = ui.button(RichText::new(&self.m_array[mode_id::AM as usize].0).text_style(heading2())
+            .background_color(self.m_array[mode_id::AM as usize].1));
+            if b.clicked() {
+                self.set_mode_buttons(mode_id::AM as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::AM as i32);
             }
-            if ui.button("DIG-L").clicked() {
-                self.set_mode_buttons(7);
+
+            let b = ui.button(RichText::new(&self.m_array[mode_id::DIG_L as usize].0).text_style(heading2())
+            .background_color(self.m_array[mode_id::DIG_L as usize].1));
+            if b.clicked() {
+                self.set_mode_buttons(mode_id::DIG_L as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DIG_L as i32);
             }
-            if ui.button("DIG-U").clicked() {
-                self.set_mode_buttons(8);
+
+            let b = ui.button(RichText::new(&self.m_array[mode_id::DIG_U as usize].0).text_style(heading2())
+            .background_color(self.m_array[mode_id::DIG_U as usize].1));
+            if b.clicked() {
+                self.set_mode_buttons(mode_id::DIG_U as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DIG_U as i32);
             }
-            if ui.button("SPEC").clicked() {
-                self.set_mode_buttons(9);
+
+            let b = ui.button(RichText::new(&self.m_array[mode_id::SPEC as usize].0).text_style(heading2())
+            .background_color(self.m_array[mode_id::SPEC as usize].1));
+            if b.clicked() {
+                self.set_mode_buttons(mode_id::SPEC as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::SPEC as i32);
             }
-            if ui.button("SAM").clicked() {
-                self.set_mode_buttons(10);
+
+            let b = ui.button(RichText::new(&self.m_array[mode_id::SAM as usize].0).text_style(heading2())
+            .background_color(self.m_array[mode_id::SAM as usize].1));
+            if b.clicked() {
+                self.set_mode_buttons(mode_id::SAM as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::SAM as i32);
             }
-            if ui.button("DRM").clicked() {
-                self.set_mode_buttons(11);
+
+            let b = ui.button(RichText::new(&self.m_array[mode_id::DRM as usize].0).text_style(heading2())
+            .background_color(self.m_array[mode_id::DRM as usize].1));
+            if b.clicked() {
+                self.set_mode_buttons(mode_id::DRM as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DRM as i32);
             }
         });
@@ -243,44 +285,71 @@ impl UIApp {
     // Highlight the selected button
     fn set_mode_buttons(&mut self, id: i32) {
         for i in 0..12 {
-            self.m_array[i as usize].1 = NormalColor;
+            self.m_array[i as usize].1 = ModeNormalColor;
         }
-        self.m_array[id as usize].1 = HighlightColor;
+        self.m_array[id as usize].1 = ModeHighlightColor;
     }
 
     // Populate filters window
     fn filters(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
-            if ui.button("6K0").clicked() {
-                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F6_0KHz as i32);
+            let b = ui.button(RichText::new(&self.fi_array[filter_id::F6_0KHz as usize].0).text_style(heading2())
+            .background_color(self.fi_array[filter_id::F6_0KHz as usize].1));
+            if b.clicked() {
+                self.set_filter_buttons(filter_id::F6_0KHz as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F6_0KHz as i32);
             }
-            if ui.button("4K0").clicked() {
-                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F4_0KHz as i32);
+
+            let b = ui.button(RichText::new(&self.fi_array[filter_id::F4_0KHz as usize].0).text_style(heading2())
+            .background_color(self.fi_array[filter_id::F4_0KHz as usize].1));
+            if b.clicked() {
+                self.set_filter_buttons(filter_id::F4_0KHz as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F4_0KHz as i32);
             }
-            if ui.button("2K7").clicked() {
-                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F2_7KHz as i32);
+
+            let b = ui.button(RichText::new(&self.fi_array[filter_id::F2_7KHz as usize].0).text_style(heading2())
+            .background_color(self.fi_array[filter_id::F2_7KHz as usize].1));
+            if b.clicked() {
+                self.set_filter_buttons(filter_id::F2_7KHz as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F2_7KHz as i32);
             }
-            if ui.button("2K4").clicked() {
-                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F2_4KHz as i32);
+
+            let b = ui.button(RichText::new(&self.fi_array[filter_id::F2_4KHz as usize].0).text_style(heading2())
+            .background_color(self.fi_array[filter_id::F2_4KHz as usize].1));
+            if b.clicked() {
+                self.set_filter_buttons(filter_id::F2_4KHz as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F2_4KHz as i32);
             }
-            if ui.button("1K0").clicked() {
-                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F1_0KHz as i32);
+
+            let b = ui.button(RichText::new(&self.fi_array[filter_id::F1_0KHz as usize].0).text_style(heading2())
+            .background_color(self.fi_array[filter_id::F1_0KHz as usize].1));
+            if b.clicked() {
+                self.set_filter_buttons(filter_id::F1_0KHz as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F1_0KHz as i32);
             }
-            if ui.button("500H").clicked() {
-                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F500Hz as i32);
+
+            let b = ui.button(RichText::new(&self.fi_array[filter_id::F500Hz as usize].0).text_style(heading2())
+            .background_color(self.fi_array[filter_id::F500Hz as usize].1));
+            if b.clicked() {
+                self.set_filter_buttons(filter_id::F500Hz as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F500Hz as i32);
             }
-            if ui.button("100H").clicked() {
-                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F100Hz as i32);
+
+            let b = ui.button(RichText::new(&self.fi_array[filter_id::F100Hz as usize].0).text_style(heading2())
+            .background_color(self.fi_array[filter_id::F100Hz as usize].1));
+            if b.clicked() {
+                self.set_filter_buttons(filter_id::F100Hz as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F100Hz as i32);
             }
         });
     }
 
     // Highlight the selected button
     fn set_filter_buttons(&mut self, id: i32) {
-        for i in 0..12 {
-            self.fi_array[i as usize].1 = NormalColor;
+        for i in 0..8 {
+            self.fi_array[i as usize].1 = FiltNormalColor;
         }
-        self.fi_array[id as usize].1 = HighlightColor;
+        self.fi_array[id as usize].1 = FiltHighlightColor;
     }
 
     // Populate VFO window
@@ -355,7 +424,7 @@ impl UIApp {
     fn scroll_if(&mut self, ui: &mut egui::Ui, id: vfo_id, r: egui::Rect, inc_or_dec: i32, normal: f32, grow: f32) {
         if ui.rect_contains_pointer(r) {
             //self.f_array[id as usize].1 = grow;
-            self.f_array[id as usize].2 = HighlightColor; 
+            self.f_array[id as usize].2 = VFOHighlightColor; 
             let e = &ui.ctx().input().events;
             if e.len() > 0 {
                 match &e[0] {
@@ -373,7 +442,7 @@ impl UIApp {
             }
         } else {
             //self.f_array[id as usize].1 = normal;
-            self.f_array[id as usize].2 = NormalColor; 
+            self.f_array[id as usize].2 = VFONormalColor; 
         }
     }
 
@@ -400,8 +469,11 @@ impl UIApp {
         self.f_array[vfo_id::f_100H as usize].0 = freq_str.chars().nth(6).unwrap().to_string();
         self.f_array[vfo_id::f_10H as usize].0 = freq_str.chars().nth(7).unwrap().to_string();
         self.f_array[vfo_id::f_1H as usize].0 = freq_str.chars().nth(8).unwrap().to_string();
-
     }
+
+    fn display(&mut self, ui: &mut egui::Ui) {
+    }
+
 }
 
 // Create a window for each element in the UI.
@@ -418,6 +490,10 @@ impl eframe::App for UIApp {
         egui::Window::new("VFO")
         .show(ctx, |ui| {
             self.vfo(ui);
+        });
+        egui::Window::new("Display")
+        .show(ctx, |ui| {
+            self.display(ui);
         });
     }
 }
