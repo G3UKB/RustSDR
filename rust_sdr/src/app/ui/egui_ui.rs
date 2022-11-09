@@ -472,6 +472,14 @@ impl UIApp {
     }
 
     fn display(&mut self, ui: &mut egui::Ui) {
+        let mut lines: Vec<Vec<egui::Pos2>> = Default::default();
+        let mut stroke: egui::Stroke = egui::Stroke::new(1.0, egui::Color32::from_rgb(25, 200, 100));
+        egui::stroke_ui(ui, &mut stroke, "Stroke");
+        //let p: egui::Painter = egui::Painter::new(*ui.ctx(),egui::LayerId::new(egui::Order::Background, egui::Id::new(egui::id::BuilIdHasher)), egui::Rect {min: egui::pos2(0.0,0.0), max: egui::pos2(50.0,50.0)});
+        let mut p = ui.allocate_painter(ui.available_size_before_wrap(), egui::Sense::click()).1;
+        egui::Painter::circle_filled(&p, egui::pos2(50.0, 50.0), 40.0, egui::Color32::from_rgb(25, 200, 100));
+        egui::Painter::hline(&p, core::ops::RangeInclusive::new(0.0,50.0), 50.0, stroke);
+        egui::Painter::line_segment(&p, [egui::pos2(0.0, 0.0), egui::pos2(50.0, 50.0)], stroke);
     }
 
 }
