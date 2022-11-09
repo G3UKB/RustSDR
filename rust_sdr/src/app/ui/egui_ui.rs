@@ -480,7 +480,7 @@ impl UIApp {
         //egui::Painter::circle_filled(&p, egui::pos2(50.0, 50.0), 40.0, egui::Color32::from_rgb(25, 200, 100));
         //egui::Painter::hline(&p, core::ops::RangeInclusive::new(0.0,50.0), 50.0, stroke);
         //egui::Painter::line_segment(&p, [egui::pos2(0.0, 0.0), egui::pos2(50.0, 50.0)], stroke);
-        ui.add_sized([300.0,150.0], egui::Label::new(""));
+        ui.add_sized([400.0,250.0], egui::Frame::canvas(&egui::Style::default() );
             let painter = ui.painter();
             let rect = ui.max_rect();
             let height = 20.0;
