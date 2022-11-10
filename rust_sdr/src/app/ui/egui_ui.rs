@@ -478,6 +478,7 @@ impl UIApp {
             let rect = ui.max_rect();
             // Covers whole window
             let rect1 = ui.max_rect();
+            let painter1 = painter.sub_region(egui::Rect::from_x_y_ranges(core::ops::RangeInclusive::new(50.0,100.0),core::ops::RangeInclusive::new(150.0,200.0)));
             // Not relative to window
             //let rect1: egui::Rect = egui::Rect::from_x_y_ranges(core::ops::RangeInclusive::new(50.0,100.0),core::ops::RangeInclusive::new(150.0,200.0));
             let height = 20.0;
@@ -494,7 +495,7 @@ impl UIApp {
                 ],
                 egui::Stroke::new(0.5, egui::Color32::DARK_GREEN),
             );
-            painter.rect_filled(
+            painter1.rect_filled(
                 rect1,
                 10.0,
                 egui::color::Rgba::from_luminance_alpha(0.2, 0.2),
