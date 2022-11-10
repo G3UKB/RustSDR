@@ -481,7 +481,7 @@ impl UIApp {
         //egui::Painter::hline(&p, core::ops::RangeInclusive::new(0.0,50.0), 50.0, stroke);
         //egui::Painter::line_segment(&p, [egui::pos2(0.0, 0.0), egui::pos2(50.0, 50.0)], stroke);
         //ui.add_sized([400.0,250.0], egui::Frame::canvas(&egui::Style::default()) || {
-        ui.horizontal(|ui| {
+        egui::Frame::canvas(ui.style()).show(ui, |ui| { 
             let painter = ui.painter();
             let rect = ui.max_rect();
             let height = 20.0;
