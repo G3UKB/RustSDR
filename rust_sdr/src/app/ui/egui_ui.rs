@@ -472,27 +472,33 @@ impl UIApp {
     }
 
     fn display(&mut self, ui: &mut egui::Ui) {
-        let mut lines: Vec<Vec<egui::Pos2>> = Default::default();
-        let mut stroke: egui::Stroke = egui::Stroke::new(1.0, egui::Color32::from_rgb(25, 200, 100));
-
         ui.add_sized([500.0,300.0],egui::Label::new("Help"));
         //egui::Frame::canvas(ui.style()).show(ui, |ui| { 
             let painter = ui.painter();
             let rect = ui.max_rect();
+            // Covers whole window
+            let rect1 = ui.max_rect();
+            // Not relative to window
+            //let rect1: egui::Rect = egui::Rect::from_x_y_ranges(core::ops::RangeInclusive::new(50.0,100.0),core::ops::RangeInclusive::new(150.0,200.0));
             let height = 20.0;
             painter.rect(
                 rect.shrink(1.0),
                 10.0,
                 ui.ctx().style().visuals.window_fill(),
-                egui::Stroke::new(1.0, egui::Color32::RED),
+                egui::Stroke::new(0.5, egui::Color32::DARK_GRAY),
             );
             painter.line_segment(
                 [
                     rect.left_top() + egui::vec2(2.0, height),
                     rect.right_top() + egui::vec2(-2.0, height),
                 ],
-                egui::Stroke::new(1.0, egui::Color32::BLUE),
+                egui::Stroke::new(0.5, egui::Color32::DARK_GREEN),
             );
+            painter.rect_filled(
+                rect1,
+                10.0,
+                egui::color::Rgba::from_luminance_alpha(0.2, 0.2),
+            )
         //});
     }
 
