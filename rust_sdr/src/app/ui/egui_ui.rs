@@ -474,14 +474,9 @@ impl UIApp {
     fn display(&mut self, ui: &mut egui::Ui) {
         let mut lines: Vec<Vec<egui::Pos2>> = Default::default();
         let mut stroke: egui::Stroke = egui::Stroke::new(1.0, egui::Color32::from_rgb(25, 200, 100));
-        egui::stroke_ui(ui, &mut stroke, "Stroke");
-        //let p: egui::Painter = egui::Painter::new(*ui.ctx(),egui::LayerId::new(egui::Order::Background, egui::Id::new(egui::id::BuilIdHasher)), egui::Rect {min: egui::pos2(0.0,0.0), max: egui::pos2(50.0,50.0)});
-        //let mut p = ui.allocate_painter(ui.available_size_before_wrap(), egui::Sense::click()).1;
-        //egui::Painter::circle_filled(&p, egui::pos2(50.0, 50.0), 40.0, egui::Color32::from_rgb(25, 200, 100));
-        //egui::Painter::hline(&p, core::ops::RangeInclusive::new(0.0,50.0), 50.0, stroke);
-        //egui::Painter::line_segment(&p, [egui::pos2(0.0, 0.0), egui::pos2(50.0, 50.0)], stroke);
-        //ui.add_sized([400.0,250.0], egui::Frame::canvas(&egui::Style::default()) || {
-        egui::Frame::canvas(ui.style()).show(ui, |ui| { 
+
+        ui.add_sized([500.0,300.0],egui::Label::new("Help"));
+        //egui::Frame::canvas(ui.style()).show(ui, |ui| { 
             let painter = ui.painter();
             let rect = ui.max_rect();
             let height = 20.0;
@@ -496,9 +491,9 @@ impl UIApp {
                     rect.left_top() + egui::vec2(2.0, height),
                     rect.right_top() + egui::vec2(-2.0, height),
                 ],
-                egui::Stroke::new(1.0, egui::Color32::RED),
+                egui::Stroke::new(1.0, egui::Color32::BLUE),
             );
-        });
+        //});
     }
 
 }
@@ -519,6 +514,7 @@ impl eframe::App for UIApp {
             self.vfo(ui);
         });
         egui::Window::new("Display")
+        .fixed_size(egui::vec2(500.0,300.0))
         .show(ctx, |ui| {
             self.display(ui);
         });
