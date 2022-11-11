@@ -472,16 +472,24 @@ impl UIApp {
     }
 
     fn display(&mut self, ui: &mut egui::Ui) {
-        ui.add_sized([500.0,300.0],egui::Label::new("Help"));
+        ui.add_sized([500.0,300.0],egui::Label::new(""));
         //egui::Frame::canvas(ui.style()).show(ui, |ui| { 
+            let height = 40.0;
             let painter = ui.painter();
             let rect = ui.max_rect();
-            // Covers whole window
-            let rect1 = ui.max_rect();
-            let painter1 = painter.sub_region(egui::Rect::from_x_y_ranges(core::ops::RangeInclusive::new(50.0,100.0),core::ops::RangeInclusive::new(150.0,200.0)));
-            // Not relative to window
+            let mut rect1 = ui.max_rect();
+            
+            let mid_w = rect1.width()/2.0;
+            let left = rect1.left();
+            let top = rect1.top();
+            rect1.set_left(rect1.left() + mid_w - 50.0);
+            rect1.set_top(rect1.top() + 30.0);
+            rect1.set_right(rect1.right() - mid_w + 50.0);
+            rect1.set_bottom(rect1.bottom() - 10.0);
+            
+            //let rect1 = ui.allocate_exact_size(egui::Vec2::new(50.0, 50.0), egui::Sense::click_and_drag()).0;
             //let rect1: egui::Rect = egui::Rect::from_x_y_ranges(core::ops::RangeInclusive::new(50.0,100.0),core::ops::RangeInclusive::new(150.0,200.0));
-            let height = 20.0;
+            
             painter.rect(
                 rect.shrink(1.0),
                 10.0,
@@ -495,11 +503,19 @@ impl UIApp {
                 ],
                 egui::Stroke::new(0.5, egui::Color32::DARK_GREEN),
             );
-            painter1.rect_filled(
+            painter.rect_filled(
                 rect1,
                 10.0,
                 egui::color::Rgba::from_luminance_alpha(0.2, 0.2),
-            )
+            );
+            painter.text(
+                egui::pos2(left + 100.0, top + 250.0),
+                egui::Align2::CENTER_CENTER,
+                "This is some text",
+                egui::FontId::new(30.0,egui::FontFamily::Proportional),
+                egui::Color32::RED,
+            );
+
         //});
     }
 
@@ -521,7 +537,7 @@ impl eframe::App for UIApp {
             self.vfo(ui);
         });
         egui::Window::new("Display")
-        .fixed_size(egui::vec2(500.0,300.0))
+        .default_size(egui::vec2(500.0,300.0))
         .show(ctx, |ui| {
             self.display(ui);
         });
