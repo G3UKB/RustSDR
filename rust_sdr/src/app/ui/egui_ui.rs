@@ -35,7 +35,7 @@ use crate::app::common::messages;
 use crate::app::dsp;
 
 use eframe::egui;
-use egui::{FontFamily, FontId, RichText, TextStyle};
+use egui::{Frame, FontFamily, FontId, RichText, TextStyle, Color32, Stroke, Vec2, vec2, Pos2, pos2, emath};
 
 // Mode enumerations
 enum mode_id {
@@ -472,24 +472,13 @@ impl UIApp {
     }
 
     fn display(&mut self, ui: &mut egui::Ui) {
-        ui.add_sized([500.0,300.0],egui::Label::new(""));
-        //egui::Frame::canvas(ui.style()).show(ui, |ui| { 
-            let height = 40.0;
+        egui::Frame::canvas(ui.style()).show(ui, |ui| {
+            ui.ctx().request_repaint();
+
+            let desired_size = ui.available_width() * egui::vec2(1.0, 0.35);
+            let (_id, rect) = ui.allocate_space(desired_size);
+
             let painter = ui.painter();
-            let rect = ui.max_rect();
-            let mut rect1 = ui.max_rect();
-            
-            let mid_w = rect1.width()/2.0;
-            let left = rect1.left();
-            let top = rect1.top();
-            rect1.set_left(rect1.left() + mid_w - 50.0);
-            rect1.set_top(rect1.top() + 30.0);
-            rect1.set_right(rect1.right() - mid_w + 50.0);
-            rect1.set_bottom(rect1.bottom() - 10.0);
-            
-            //let rect1 = ui.allocate_exact_size(egui::Vec2::new(50.0, 50.0), egui::Sense::click_and_drag()).0;
-            //let rect1: egui::Rect = egui::Rect::from_x_y_ranges(core::ops::RangeInclusive::new(50.0,100.0),core::ops::RangeInclusive::new(150.0,200.0));
-            
             painter.rect(
                 rect.shrink(1.0),
                 10.0,
@@ -498,57 +487,62 @@ impl UIApp {
             );
             painter.line_segment(
                 [
-                    rect.left_top() + egui::vec2(2.0, height),
-                    rect.right_top() + egui::vec2(-2.0, height),
+                    rect.left_top() + egui::vec2(2.0, rect.height()*0.5),
+                    rect.right_top() + egui::vec2(-2.0, rect.height()*0.5),
                 ],
                 egui::Stroke::new(0.5, egui::Color32::DARK_GREEN),
             );
+            let pos_top_left = emath::pos2(rect.left() + (rect.width()/2.0) - 30.0, rect.top() + 20.0);
+            let pos_bottom_right = emath::pos2(rect.left() + (rect.width()/2.0) + 30.0, rect.top() + rect.height() - 20.0);
+            let r = emath::Rect::from_two_pos(pos_top_left,pos_bottom_right);
+            
             painter.rect_filled(
-                rect1,
+                r,
                 10.0,
                 egui::color::Rgba::from_luminance_alpha(0.2, 0.2),
             );
             painter.text(
-                egui::pos2(left + 100.0, top + 250.0),
-                egui::Align2::CENTER_CENTER,
+                egui::pos2(rect.left() + rect.width()*0.2, rect.top() + rect.height()*0.7),
+                egui::Align2::LEFT_CENTER,
                 "This is some text",
                 egui::FontId::new(30.0,egui::FontFamily::Proportional),
                 egui::Color32::RED,
             );
+        });
 
-            egui::Frame::canvas(ui.style()).show(ui, |ui| {
-                ui.ctx().request_repaint();
-                let time = ui.input().time;
-    
-                let desired_size = ui.available_width() * egui::vec2(1.0, 0.35);
-                let (_id, rect) = ui.allocate_space(desired_size);
-    
-                let to_screen =
-                    egui::emath::RectTransform::from_to(egui::Rect::from_x_y_ranges(0.0..=1.0, -1.0..=1.0), rect);
-    
-                let mut shapes = vec![];
-    
-                for &mode in &[2, 3, 5] {
-                    let mode = mode as f64;
-                    let n = 120;
-                    let speed = 1.5;
-    
-                    let points: Vec<egui::Pos2> = (0..=n)
-                        .map(|i| {
-                            let t = i as f64 / (n as f64);
-                            let amp = (time * speed * mode).sin() / mode;
-                            let y = amp * (t * std::f64::consts::TAU / 2.0 * mode).sin();
-                            to_screen * egui::pos2(t as f32, y as f32)
-                        })
-                        .collect();
-    
-                    let thickness = 10.0 / mode as f32;
-                    shapes.push(epaint::Shape::line(points, egui::Stroke::new(thickness, egui::Color32::from_black_alpha(240))));
-                }
-    
-                ui.painter().extend(shapes);
-            });
-        //});
+        // Build display on a canvas
+        egui::Frame::canvas(ui.style()).show(ui, |ui| {
+            // Make sure we get repainted
+            ui.ctx().request_repaint();
+
+            let time = ui.input().time;
+            let desired_size = ui.available_width() * egui::vec2(1.0, 0.35);
+            let (_id, rect) = ui.allocate_space(desired_size);
+
+            let to_screen =
+                egui::emath::RectTransform::from_to(egui::Rect::from_x_y_ranges(0.0..=1.0, -1.0..=1.0), rect);
+        
+            let mut shapes = vec![];
+
+            for &mode in &[2, 3, 5] {
+                let mode = mode as f64;
+                let n = 120;
+                let speed = 1.5;
+
+                let points: Vec<egui::Pos2> = (0..=n)
+                    .map(|i| {
+                        let t = i as f64 / (n as f64);
+                        let amp = (time * speed * mode).sin() / mode;
+                        let y = amp * (t * std::f64::consts::TAU / 2.0 * mode).sin();
+                        to_screen * egui::pos2(t as f32, y as f32)
+                    })
+                    .collect();
+
+                let thickness = 10.0 / mode as f32;
+                shapes.push(epaint::Shape::line(points, egui::Stroke::new(thickness, egui::Color32::from_black_alpha(240))));
+            }
+            ui.painter().extend(shapes);
+        });
     }
 
 }
@@ -569,7 +563,6 @@ impl eframe::App for UIApp {
             self.vfo(ui);
         });
         egui::Window::new("Display")
-        .default_size(egui::vec2(500.0,300.0))
         .show(ctx, |ui| {
             self.display(ui);
         });
