@@ -138,6 +138,7 @@ fn configure_text_styles(ctx: &egui::Context) {
     ctx.set_style(style);
 }
 
+//===========================================================================================
 // State for UIApp
 pub struct UIApp {
     i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
@@ -152,6 +153,7 @@ pub struct UIApp {
     fi_array: [(String, egui::Color32); 8],
 }
 
+//===========================================================================================
 // Implementation for UIApp
 impl UIApp {
     pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> Self{
@@ -208,6 +210,7 @@ impl UIApp {
         }
     }
 
+    //===========================================================================================
     // Populate modes window
     fn modes(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
@@ -308,6 +311,7 @@ impl UIApp {
         self.m_array[id as usize].1 = ModeHighlightColor;
     }
 
+    //===========================================================================================
     // Populate filters window
     fn filters(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
@@ -370,6 +374,7 @@ impl UIApp {
         self.fi_array[id as usize].1 = FiltHighlightColor;
     }
 
+    //===========================================================================================
     // Populate VFO window
     fn vfo(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
@@ -489,6 +494,7 @@ impl UIApp {
         self.f_array[vfo_id::f_1H as usize].0 = freq_str.chars().nth(8).unwrap().to_string();
     }
 
+    //===========================================================================================
     // Spectrum display
     fn spectrum(&mut self, ui: &mut egui::Ui) {
         egui::Frame::canvas(ui.style()).show(ui, |ui| {
@@ -638,6 +644,7 @@ impl UIApp {
 impl eframe::App for UIApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::Window::new("Modes")
+        
         .show(ctx, |ui| {
             self.modes(ui);
         });
