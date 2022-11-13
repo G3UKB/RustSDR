@@ -78,7 +78,7 @@ enum vfo_id {
     f_1H,
 }
 
-// Digit sizes
+// Modes, Filters and VFO constants
 const MHzSz: f32 = 35.0;
 const KHzSz: f32 = 35.0;
 const HzSz: f32 = 25.0;
@@ -91,6 +91,24 @@ const ModeNormalColor: egui::Color32 = egui::Color32::TRANSPARENT;
 const ModeHighlightColor: egui::Color32 = egui::Color32::DARK_BLUE;
 const FiltNormalColor: egui::Color32 = egui::Color32::TRANSPARENT;
 const FiltHighlightColor: egui::Color32 = egui::Color32::DARK_RED;
+
+// Display constants
+const LOW_DB: i32 = -140;
+const HIGH_DB: i32 = -20;
+const Y_V_LABEL_ADJ: f32 = 14.0;
+const X_H_LABEL_ADJ: f32 = 15.0;
+const TEXT_MARGIN: f32 = 5.0;
+const L_MARGIN: f32 = 35.0;
+const R_MARGIN: f32 = -10.0;
+const T_MARGIN: f32 = 14.0;
+const B_MARGIN: f32 = 26.0;
+const TEXT_COLOR: Color32 = Color32::from_rgb(77, 77, 77);
+const GRID_COLOR: Color32 = Color32::from_rgb(27, 27, 27);
+const CENTRE_COLOR: Color32 = Color32::RED;
+const SPAN_FREQ: i32 = 48000;
+const DIVS: i32 = 6;
+const F_X_MARGIN: f32 = 15.0;
+const F_X_LABEL_ADJ: f32 = 20.0;
 
 #[inline]
 fn heading2() -> TextStyle {
@@ -194,7 +212,7 @@ impl UIApp {
     fn modes(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::LSB as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.m_array[mode_id::LSB as usize].0).text_style(heading3())
             .background_color(self.m_array[mode_id::LSB as usize].1));
             if b.clicked() {
                 self.set_mode_buttons(mode_id::LSB as i32);
@@ -471,6 +489,75 @@ impl UIApp {
         self.f_array[vfo_id::f_1H as usize].0 = freq_str.chars().nth(8).unwrap().to_string();
     }
 
+    // Spectrum display
+    fn spectrum(&mut self, ui: &mut egui::Ui) {
+        egui::Frame::canvas(ui.style()).show(ui, |ui| {
+            // Ensure repaint
+            ui.ctx().request_repaint();
+
+            // Go with the maximum available width and keep the aspect ratio constant
+            let desired_size = ui.available_width() * egui::vec2(1.0, 0.5);
+            let (_id, rect) = ui.allocate_space(desired_size);
+
+            // Get the painter
+            let painter = ui.painter();
+
+            // Draw horizontal lines and legends
+            // Set up the parameters
+            let db_divs = (LOW_DB.abs() - HIGH_DB.abs()) / 20;
+            let db_pixels_per_div: f32 = ((rect.height() - T_MARGIN - B_MARGIN) as f32 / db_divs as f32);
+            let mut j = HIGH_DB;
+            for i in 0..=db_divs {
+                // Draw legends
+                painter.text(
+                    egui::pos2(rect.left() + TEXT_MARGIN, rect.top() + Y_V_LABEL_ADJ + (i as f32 * db_pixels_per_div as f32)),
+                    egui::Align2::LEFT_CENTER,
+                     &String::from(j.to_string()),
+                    egui::FontId::new(14.0,egui::FontFamily::Proportional),
+                    egui::Color32::RED,
+                );
+                // Draw lines
+                painter.line_segment(
+                    [
+                        egui::pos2(rect.left() + L_MARGIN, rect.top() + T_MARGIN + (i as f32 * db_pixels_per_div as f32)),
+                        egui::pos2(rect.right() + R_MARGIN, rect.top() + T_MARGIN + (i as f32 * db_pixels_per_div as f32)),
+                    ],
+                    egui::Stroke::new(0.5, egui::Color32::DARK_GREEN),
+                );
+                j -= 20;
+            }
+
+            // Draw verticle lines and legends
+            // Set up the parameters
+            let freq = 7100000;
+            let start_freq: i32 = freq - (SPAN_FREQ / 2);
+            let freq_inc = SPAN_FREQ / DIVS;
+            let pixels_per_div: f32 = (rect.width() - L_MARGIN - R_MARGIN - F_X_LABEL_ADJ) as f32 / DIVS as f32;
+            let mut j = start_freq;
+            for i in 0..=DIVS {
+                // Draw legends
+                let sfreq: String = String::from((j as f32/1000000.0).to_string());
+                painter.text(
+                    egui::pos2(rect.left() + F_X_MARGIN + (i as f32 * pixels_per_div), rect.top() + rect.height() - B_MARGIN + X_H_LABEL_ADJ),
+                    egui::Align2::LEFT_CENTER,
+                    &sfreq,
+                    egui::FontId::new(14.0,egui::FontFamily::Proportional),
+                    egui::Color32::RED,
+                );
+                // Draw lines
+                //painter.line_segment(
+                //    [
+                //        egui::pos2(rect.left() + L_MARGIN, rect.top() + T_MARGIN + (i as f32 * db_pixels_per_div as f32)),
+                //        egui::pos2(rect.right() + R_MARGIN, rect.top() + T_MARGIN + (i as f32 * db_pixels_per_div as f32)),
+                //    ],
+                //    egui::Stroke::new(0.5, egui::Color32::DARK_GREEN),
+                //);
+                j += freq_inc;
+            }
+
+        });
+    }
+
     fn display(&mut self, ui: &mut egui::Ui) {
         egui::Frame::canvas(ui.style()).show(ui, |ui| {
             ui.ctx().request_repaint();
@@ -564,7 +651,8 @@ impl eframe::App for UIApp {
         });
         egui::Window::new("Display")
         .show(ctx, |ui| {
-            self.display(ui);
+            //self.display(ui);
+            self.spectrum(ui);
         });
     }
 }
