@@ -102,8 +102,8 @@ const L_MARGIN: f32 = 35.0;
 const R_MARGIN: f32 = -10.0;
 const T_MARGIN: f32 = 14.0;
 const B_MARGIN: f32 = 26.0;
-const TEXT_COLOR: Color32 = Color32::from_rgb(77, 77, 77);
-const GRID_COLOR: Color32 = Color32::from_rgb(27, 27, 27);
+const TEXT_COLOR: Color32 = Color32::from_rgba_premultiplied(150,0,0,70);
+const GRID_COLOR: Color32 = Color32::from_rgba_premultiplied(0,50,0,10);
 const CENTRE_COLOR: Color32 = Color32::RED;
 const SPAN_FREQ: i32 = 48000;
 const DIVS: i32 = 6;
@@ -128,7 +128,7 @@ fn configure_text_styles(ctx: &egui::Context) {
     style.text_styles = [
         (TextStyle::Heading, FontId::new(25.0, Proportional)),
         (heading2(), FontId::new(22.0, Proportional)),
-        (heading3(), FontId::new(19.0, Proportional)),
+        (heading3(), FontId::new(16.0, Proportional)),
         (TextStyle::Body, FontId::new(16.0, Proportional)),
         (TextStyle::Monospace, FontId::new(12.0, Proportional)),
         (TextStyle::Button, FontId::new(12.0, Proportional)),
@@ -219,35 +219,35 @@ impl UIApp {
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::LSB as i32);
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::USB as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.m_array[mode_id::USB as usize].0).text_style(heading3())
             .background_color(self.m_array[mode_id::USB as usize].1));
             if b.clicked() {
                 self.set_mode_buttons(mode_id::USB as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::USB as i32);
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::DSB as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.m_array[mode_id::DSB as usize].0).text_style(heading3())
             .background_color(self.m_array[mode_id::DSB as usize].1));
             if b.clicked() {
                 self.set_mode_buttons(mode_id::DSB as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DSB as i32);
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::CW_L as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.m_array[mode_id::CW_L as usize].0).text_style(heading3())
             .background_color(self.m_array[mode_id::CW_L as usize].1));
             if b.clicked() {
                 self.set_mode_buttons(mode_id::CW_L as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::CW_L as i32);
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::CW_U as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.m_array[mode_id::CW_U as usize].0).text_style(heading3())
             .background_color(self.m_array[mode_id::CW_U as usize].1));
             if b.clicked() {
                 self.set_mode_buttons(mode_id::CW_U as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::CW_U as i32);
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::FM as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.m_array[mode_id::FM as usize].0).text_style(heading3())
             .background_color(self.m_array[mode_id::FM as usize].1));
             if b.clicked() {
                 self.set_mode_buttons(mode_id::FM as i32);
@@ -256,42 +256,42 @@ impl UIApp {
         });
         ui.horizontal(|ui| {
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::AM as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.m_array[mode_id::AM as usize].0).text_style(heading3())
             .background_color(self.m_array[mode_id::AM as usize].1));
             if b.clicked() {
                 self.set_mode_buttons(mode_id::AM as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::AM as i32);
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::DIG_L as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.m_array[mode_id::DIG_L as usize].0).text_style(heading3())
             .background_color(self.m_array[mode_id::DIG_L as usize].1));
             if b.clicked() {
                 self.set_mode_buttons(mode_id::DIG_L as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DIG_L as i32);
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::DIG_U as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.m_array[mode_id::DIG_U as usize].0).text_style(heading3())
             .background_color(self.m_array[mode_id::DIG_U as usize].1));
             if b.clicked() {
                 self.set_mode_buttons(mode_id::DIG_U as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DIG_U as i32);
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::SPEC as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.m_array[mode_id::SPEC as usize].0).text_style(heading3())
             .background_color(self.m_array[mode_id::SPEC as usize].1));
             if b.clicked() {
                 self.set_mode_buttons(mode_id::SPEC as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::SPEC as i32);
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::SAM as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.m_array[mode_id::SAM as usize].0).text_style(heading3())
             .background_color(self.m_array[mode_id::SAM as usize].1));
             if b.clicked() {
                 self.set_mode_buttons(mode_id::SAM as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::SAM as i32);
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::DRM as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.m_array[mode_id::DRM as usize].0).text_style(heading3())
             .background_color(self.m_array[mode_id::DRM as usize].1));
             if b.clicked() {
                 self.set_mode_buttons(mode_id::DRM as i32);
@@ -311,49 +311,49 @@ impl UIApp {
     // Populate filters window
     fn filters(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
-            let b = ui.button(RichText::new(&self.fi_array[filter_id::F6_0KHz as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.fi_array[filter_id::F6_0KHz as usize].0).text_style(heading3())
             .background_color(self.fi_array[filter_id::F6_0KHz as usize].1));
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F6_0KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F6_0KHz as i32);
             }
 
-            let b = ui.button(RichText::new(&self.fi_array[filter_id::F4_0KHz as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.fi_array[filter_id::F4_0KHz as usize].0).text_style(heading3())
             .background_color(self.fi_array[filter_id::F4_0KHz as usize].1));
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F4_0KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F4_0KHz as i32);
             }
 
-            let b = ui.button(RichText::new(&self.fi_array[filter_id::F2_7KHz as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.fi_array[filter_id::F2_7KHz as usize].0).text_style(heading3())
             .background_color(self.fi_array[filter_id::F2_7KHz as usize].1));
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F2_7KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F2_7KHz as i32);
             }
 
-            let b = ui.button(RichText::new(&self.fi_array[filter_id::F2_4KHz as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.fi_array[filter_id::F2_4KHz as usize].0).text_style(heading3())
             .background_color(self.fi_array[filter_id::F2_4KHz as usize].1));
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F2_4KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F2_4KHz as i32);
             }
 
-            let b = ui.button(RichText::new(&self.fi_array[filter_id::F1_0KHz as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.fi_array[filter_id::F1_0KHz as usize].0).text_style(heading3())
             .background_color(self.fi_array[filter_id::F1_0KHz as usize].1));
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F1_0KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F1_0KHz as i32);
             }
 
-            let b = ui.button(RichText::new(&self.fi_array[filter_id::F500Hz as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.fi_array[filter_id::F500Hz as usize].0).text_style(heading3())
             .background_color(self.fi_array[filter_id::F500Hz as usize].1));
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F500Hz as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F500Hz as i32);
             }
 
-            let b = ui.button(RichText::new(&self.fi_array[filter_id::F100Hz as usize].0).text_style(heading2())
+            let b = ui.button(RichText::new(&self.fi_array[filter_id::F100Hz as usize].0).text_style(heading3())
             .background_color(self.fi_array[filter_id::F100Hz as usize].1));
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F100Hz as i32);
@@ -496,7 +496,7 @@ impl UIApp {
             ui.ctx().request_repaint();
 
             // Go with the maximum available width and keep the aspect ratio constant
-            let desired_size = ui.available_width() * egui::vec2(1.0, 0.5);
+            let desired_size = ui.available_width() * egui::vec2(1.0, 0.3);
             let (_id, rect) = ui.allocate_space(desired_size);
 
             // Get the painter
@@ -514,7 +514,7 @@ impl UIApp {
                     egui::Align2::LEFT_CENTER,
                      &String::from(j.to_string()),
                     egui::FontId::new(14.0,egui::FontFamily::Proportional),
-                    egui::Color32::RED,
+                    TEXT_COLOR,
                 );
                 // Draw lines
                 painter.line_segment(
@@ -522,7 +522,7 @@ impl UIApp {
                         egui::pos2(rect.left() + L_MARGIN, rect.top() + T_MARGIN + (i as f32 * db_pixels_per_div as f32)),
                         egui::pos2(rect.right() + R_MARGIN, rect.top() + T_MARGIN + (i as f32 * db_pixels_per_div as f32)),
                     ],
-                    egui::Stroke::new(0.5, egui::Color32::DARK_GREEN),
+                    egui::Stroke::new(0.5, GRID_COLOR),
                 );
                 j -= 20;
             }
@@ -542,16 +542,16 @@ impl UIApp {
                     egui::Align2::LEFT_CENTER,
                     &sfreq,
                     egui::FontId::new(14.0,egui::FontFamily::Proportional),
-                    egui::Color32::RED,
+                    TEXT_COLOR,
                 );
                 // Draw lines
-                //painter.line_segment(
-                //    [
-                //        egui::pos2(rect.left() + L_MARGIN, rect.top() + T_MARGIN + (i as f32 * db_pixels_per_div as f32)),
-                //        egui::pos2(rect.right() + R_MARGIN, rect.top() + T_MARGIN + (i as f32 * db_pixels_per_div as f32)),
-                //    ],
-                //    egui::Stroke::new(0.5, egui::Color32::DARK_GREEN),
-                //);
+                painter.line_segment(
+                    [
+                        egui::pos2(rect.left() + L_MARGIN  + (i as f32 *pixels_per_div), rect.top() + T_MARGIN),
+                        egui::pos2(rect.left() + L_MARGIN  + (i as f32 *pixels_per_div), rect.top() + rect.height() - B_MARGIN),
+                    ],
+                    egui::Stroke::new(0.5, GRID_COLOR),
+                );
                 j += freq_inc;
             }
 
