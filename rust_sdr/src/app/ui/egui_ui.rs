@@ -32,6 +32,7 @@ use std::ops::Neg;
 
 use crate::app::protocol;
 use crate::app::common::messages;
+use crate::app::common::common_defs;
 use crate::app::dsp;
 
 use eframe::egui;
@@ -561,6 +562,11 @@ impl UIApp {
                 j += freq_inc;
             }
 
+            // Draw spectrum
+            let mut out_real: [f32; (common_defs::DSP_BLK_SZ ) as usize] = [0.0; (common_defs::DSP_BLK_SZ ) as usize];
+            if dsp::dsp_interface::wdsp_get_display_data(0, &mut out_real) {
+                println!("{:?}", out_real);
+            }
         });
     }
 

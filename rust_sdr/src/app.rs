@@ -32,6 +32,7 @@ pub mod pipeline;
 pub mod dsp;
 pub mod audio;
 pub mod ui;
+use crate::app::common::common_defs;
 
 use std::sync::{Arc, Mutex, Condvar};
 use std::cell::RefCell;
@@ -40,6 +41,7 @@ use std::thread;
 use std::time::Duration;
 use std::option;
 use eframe::egui;
+
 
 use socket2;
 use crossbeam_channel::unbounded;
@@ -118,6 +120,23 @@ impl Appdata {
         dsp::dsp_interface::wdsp_set_ch_state(0, 1, 0);
 
         // TBD same for TX channel
+
+        // Open a display channel
+        // Need to be set dynamically
+        const FFT_SZ: i32 = 8192;
+        const SUB_SPANS: i32 = 1;
+        const OVER_FRAMES: i32 = 10;
+        const FRAME_RATE: i32 = 20;
+        const SAMPLE_RATE: i32 = 48000;
+        const IN_SZ: i32 = 1024;
+        const DISPLAY_WIDTH: i32 = 300;
+        if dsp::dsp_interface::wdsp_open_disp(
+            0, FFT_SZ, common_defs::WINDOW_TYPES::RECTANGULAR as i32, 
+            SUB_SPANS, IN_SZ, DISPLAY_WIDTH, 
+            common_defs::AV_MODE::PAN_TIME_AV_LIN as i32, OVER_FRAMES, 
+            SAMPLE_RATE, FRAME_RATE) {
+                println!("Opened display channel");
+        }
 
         // Create the message q's for reader, hardware and Pipeline
         let (r_s, r_r) = unbounded();

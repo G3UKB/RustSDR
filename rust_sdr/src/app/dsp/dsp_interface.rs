@@ -37,6 +37,7 @@ static mut g_filter: i32 = 0;
 #[link(name = "wdsp_win")]
 extern "C" {
 	fn WDSPwisdom(s: *const c_char);
+
 	fn OpenChannel(
 		ch_id: i32, in_sz: i32, dsp_sz: i32, 
 		in_rate: i32, dsp_rate: i32, out_rate: i32, 
@@ -44,6 +45,40 @@ extern "C" {
 		tslewup: f64, tdelaydown: f64, tslewdown: f64);
 	fn SetChannelState (ch_id: i32, state: i32, dmode: i32) -> i32;
 	fn fexchange0(ch_id: i32, in_buf: *mut f64, out_buf: *mut f64, error: *mut i32);
+
+	fn XCreateAnalyzer ( 
+		disp_id: i32,
+		success: *mut i32,
+		m_size: i32,
+		m_LO: i32,
+		m_stitch: i32,
+		app_data_path: *mut i8);
+	fn SetAnalyzer ( 
+		disp_id: i32,
+		n_fft: i32,
+		typ: i32,
+		flp: *mut i32,
+		fft_sz: i32,
+		bf_sz: i32,
+		win_type: i32,
+		pi: f64,
+		ovrlp: i32,
+		clp: i32,
+		fscLin: i32,
+		fscHin: i32,
+		n_pix: i32,
+		n_stch: i32,
+		av_m: i32,
+		n_av: i32,
+		av_b: f64,
+		calset: i32,
+		fmin: f64,
+		fmax: f64,
+		max_w: i32);
+	fn DestroyAnalyzer(disp_id: i32);
+	fn GetPixels(disp_id: i32, out_real: *mut f32, flag: *mut i32);
+	fn Spectrum2(disp_id: i32, ss: i32, LO: i32, in_real: *mut f32);
+
 	fn SetRXAMode(ch_id: i32, mode: i32);
 	fn SetRXABandpassRun(ch_id: i32, run: i32);
 	fn SetRXABandpassFreqs(ch_id: i32, low: f64, high: f64);
@@ -175,4 +210,104 @@ fn set_mode_filter(ch_id: i32) {
 		SetRXABandpassRun(ch_id, 1);
 		SetRXABandpassFreqs(ch_id, new_low as f64, new_high as f64);
 	}
+}
+
+// Open WDSP display
+pub fn wdsp_open_disp(
+	disp_id: i32, fft_size: i32, win_type: i32, 
+	sub_spans: i32, in_sz: i32, display_width: i32, 
+	average_mode: i32, over_frames: i32, 
+	sample_rate: i32, frame_rate: i32) -> bool {
+
+	/*
+	** Open a display unit.
+	**
+	** Arguments:
+	**	display			-- display id to use
+	** 	fft_size		-- fft size to use, power of 2
+	** 	win_type		-- window type
+	** 	sub_spans		-- number of receivers to stitch
+	** 	in_sz			-- number of input samples
+	** 	display_width	-- number of points to plot, generally pixel width
+	** 	average_mode	-- modes available :
+	** 					-1	Peak detect
+	** 					0	No averaging
+	** 					1	Time weighted linear
+	** 					2	Time weighted log
+	** 					3	Window averaging linear
+	**					4	Window averaging log
+	** 					5	Weighted averaging linear, low noise floor mode
+	** 					6	Weighted averaging log, low noise floor mode
+	** 	over_frames		-- number of frames to average over
+	** 	sample_rate		-- in Hz
+	** 	frame_rate		-- required frames per second
+	*/
+	
+	// Create the display analyzer
+	let mut success = -1;
+	let mut path: i8 = 0;
+	unsafe {
+		XCreateAnalyzer(
+			disp_id,
+			&mut success,
+			fft_size,
+			1,
+			sub_spans,
+			&mut path
+		);
+	}
+	
+	// XCreateAnalyzer sets success to 0 if successful 
+	if success == 0 {
+		// Calculate the display parameters
+		let mut flp: [i32; 1] = [0];
+		let overlap: i32 = (f64::max(0.0, f64::ceil(fft_size as f64 - sample_rate as f64 / frame_rate as f64))) as i32;
+		let clip_fraction: f64 = 0.17;
+		let clp: i32 = f64::floor(clip_fraction * fft_size as f64) as i32;
+		let max_av_frames: i32 = 60;
+		let keep_time: f64 = 0.1;
+		let max_w: i32 = fft_size + f64::min(keep_time * sample_rate as f64, keep_time * fft_size as f64 * frame_rate as f64) as i32;
+
+		// Set the display parameters
+		unsafe {
+			SetAnalyzer(
+				disp_id,				// the disply id
+				1,				// no of LO freq, 1 for non-SA use
+				1,					// complex data input
+				flp.as_mut_ptr(),	// single value for non-SA use
+				fft_size,		// actual fft size same as max fft size for now
+				in_sz,			// no input samples per call
+				win_type,				// window type
+				14.0,				// window shaping function, 14 is recommended
+				overlap,			// no of samples to use from previous frame
+				clp,					// no of bins to clip off each side of the sub-span
+				0,				// no of bins to clip from low end of span (zoom)
+				0,				// no of bins to clip from high end of span (zoom)
+				display_width,	// no of pixel values to return
+				sub_spans,		// no of sub-spans to concatenate to form a complete span
+				average_mode,		// select algorithm for averaging
+				over_frames,		// number of frames to average over
+				0.0,				// not sure how to use this
+				0,				// no calibration in use
+				0.0,				// min freq for calibration
+				0.0,				// max freq for calibration
+				max_w,					// how much data to keep in the display buffers
+			);
+		}
+		return true;
+	}
+	return false;
+}
+
+// Get display pixels if available.
+pub fn wdsp_get_display_data(disp_id: i32, out_real: &mut [f32; (common_defs::DSP_BLK_SZ) as usize]) -> bool {
+	let mut flag: i32 = 0;
+	unsafe {
+		GetPixels(disp_id, out_real.as_mut_ptr(), &mut flag);
+	}
+	
+	if flag == 1 {
+		return true;
+	}
+	return false;
 }
