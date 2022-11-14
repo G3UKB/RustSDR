@@ -299,15 +299,16 @@ pub fn wdsp_open_disp(
 	return false;
 }
 
+// Push display data as interleaved IQ
+pub fn wdsp_write_spec_data(disp_id: i32, in_iq: &mut [f32; (common_defs::DSP_BLK_SZ * 2) as usize]) {
+	unsafe{ Spectrum2(disp_id, 0, 0, in_iq.as_mut_ptr())};
+}
+
 // Get display pixels if available.
 pub fn wdsp_get_display_data(disp_id: i32, out_real: &mut [f32; (common_defs::DSP_BLK_SZ) as usize]) -> bool {
 	let mut flag: i32 = 0;
-	unsafe {
-		GetPixels(disp_id, out_real.as_mut_ptr(), &mut flag);
-	}
+	unsafe {GetPixels(disp_id, out_real.as_mut_ptr(), &mut flag);}
 	
-	if flag == 1 {
-		return true;
-	}
+	if flag == 1 {return true;}
 	return false;
 }

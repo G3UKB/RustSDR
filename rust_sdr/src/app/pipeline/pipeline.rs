@@ -53,6 +53,7 @@ pub struct PipelineData<'a>{
     rb_local_audio : &'a ringb::SyncByteRingBuf,
     iq_data : Vec<u8>,
     dec_iq_data : [f64; (common_defs::DSP_BLK_SZ * 2) as usize],
+    disp_iq_data : [f32; (common_defs::DSP_BLK_SZ * 2) as usize],
     proc_iq_data : [f64; (common_defs::DSP_BLK_SZ * 2) as usize],
     output_frame : [u8; common_defs::DSP_BLK_SZ as usize * 8],
     audio_frame : [u8; common_defs::DSP_BLK_SZ as usize * 4],
@@ -78,6 +79,7 @@ impl PipelineData<'_> {
             iq_data: vec![0; (common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) as usize],
             // Exchange size with DSP is 1024 I and 1024 Q samples interleaved as f64
             dec_iq_data : [0.0; (common_defs::DSP_BLK_SZ * 2)as usize],
+            disp_iq_data : [0.0; (common_defs::DSP_BLK_SZ * 2)as usize],
             proc_iq_data : [0.0; (common_defs::DSP_BLK_SZ * 2) as usize],
             // Output contiguous audio and TX IQ data
             output_frame : [0; (common_defs::DSP_BLK_SZ as usize * 8) as usize],
@@ -171,6 +173,11 @@ impl PipelineData<'_> {
          //println!("{:?}", self.dec_iq_data);
         let mut error: i32 = 0;
         dsp::dsp_interface::wdsp_exchange(0, &mut self.dec_iq_data,  &mut self.proc_iq_data, &mut error );
+        // Pass data to spectrum
+        for i in 0..self.dec_iq_data.len() {
+            self.disp_iq_data[i] = self.dec_iq_data[i] as f32;
+        }
+        dsp::dsp_interface::wdsp_write_spec_data(0, &mut self.disp_iq_data);
         //println!("{:?}", self.proc_iq_data);
          if error == 0 {
             // We have output data from the DSP

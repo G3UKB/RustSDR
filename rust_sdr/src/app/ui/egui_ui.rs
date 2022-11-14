@@ -152,6 +152,9 @@ pub struct UIApp {
     f_array: [(String, f32, egui::Color32); 9],
     m_array: [(String, egui::Color32); 12],
     fi_array: [(String, egui::Color32); 8],
+
+    // Displat data
+    out_real: [f32; (common_defs::DSP_BLK_SZ ) as usize],
 }
 
 //===========================================================================================
@@ -208,6 +211,7 @@ impl UIApp {
             f_array: f_array,
             m_array: m_array,
             fi_array: fi_array,
+            out_real: [0.0; (common_defs::DSP_BLK_SZ ) as usize],
         }
     }
 
@@ -563,9 +567,8 @@ impl UIApp {
             }
 
             // Draw spectrum
-            let mut out_real: [f32; (common_defs::DSP_BLK_SZ ) as usize] = [0.0; (common_defs::DSP_BLK_SZ ) as usize];
-            if dsp::dsp_interface::wdsp_get_display_data(0, &mut out_real) {
-                println!("{:?}", out_real);
+            if dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real) {
+                //println!("{:?}", self.out_real);
             }
         });
     }
