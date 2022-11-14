@@ -570,24 +570,18 @@ impl UIApp {
             // Draw spectrum
             if dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real) {
                 // The array out_real contains a set of db values, one per pixel of the horizontal display area.
-                //println!("{:?}", self.out_real);
                 let to_screen =
                 egui::emath::RectTransform::from_to(egui::Rect::from_x_y_ranges(0.0..=1.0, -1.0..=1.0), rect);
-                println!("{:?}", to_screen);
                 let mut shapes = vec![];
-                let points: Vec<egui::Pos2> = (0..=(rect.width() - L_MARGIN as f32 - R_MARGIN as f32) as i32)
+                let points: Vec<egui::Pos2> = (0..=(rect.width() - L_MARGIN as f32 + R_MARGIN as f32) as i32)
                     .map(|i| {
-                        //println!("{:?}", i);
                         //to_screen * egui::pos2(rect.left() + L_MARGIN as f32 + i as f32, rect.top() + self.out_real[i as usize])
-                        to_screen * egui::pos2(L_MARGIN as f32 + i as f32, self.out_real[i as usize])
-                        //egui::pos2(rect.left() + L_MARGIN as f32 + i as f32, (rect.top() + self.out_real[i as usize])/1.8)
+                        //to_screen * egui::pos2(L_MARGIN as f32 + i as f32, self.out_real[i as usize])
+                        egui::pos2(rect.left() + L_MARGIN as f32 + i as f32, (rect.top() + self.out_real[i as usize])/1.8)
                     })
                     .collect();
-//println!("{:?}", points);
+                    println!("{:?}", points);
                 shapes.push(epaint::Shape::line(points, egui::Stroke::new(1.0, SPEC_COLOR)));
-                //println!("*****************************************");
-                //println!("{:?}", shapes);
-                //println!("*****************************************");
                 painter.extend(shapes);
             }
         });
