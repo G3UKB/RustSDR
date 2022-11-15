@@ -122,19 +122,11 @@ impl Appdata {
         // TBD same for TX channel
 
         // Open a display channel
-        // Need to be set dynamically
-        const FFT_SZ: i32 = 8192;
-        const SUB_SPANS: i32 = 1;
-        const OVER_FRAMES: i32 = 10;
-        const FRAME_RATE: i32 = 20;
-        const SAMPLE_RATE: i32 = 48000;
-        const IN_SZ: i32 = 1024;
-        const DISPLAY_WIDTH: i32 = 300;
         if dsp::dsp_interface::wdsp_open_disp(
-            0, FFT_SZ, common_defs::WINDOW_TYPES::RECTANGULAR as i32, 
-            SUB_SPANS, IN_SZ, DISPLAY_WIDTH, 
-            common_defs::AV_MODE::PAN_TIME_AV_LIN as i32, OVER_FRAMES, 
-            SAMPLE_RATE, FRAME_RATE) {
+            0, common_defs::FFT_SZ, common_defs::WINDOW_TYPES::RECTANGULAR as i32, 
+            common_defs::SUB_SPANS, common_defs::IN_SZ, common_defs::DISPLAY_WIDTH, 
+            common_defs::AV_MODE::PAN_TIME_AV_LIN as i32, common_defs::OVER_FRAMES, 
+            common_defs::SAMPLE_RATE, common_defs::FRAME_RATE) {
                 println!("Opened display channel");
         }
 

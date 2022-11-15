@@ -299,6 +299,50 @@ pub fn wdsp_open_disp(
 	return false;
 }
 
+// Update WDSP display parameters
+pub fn wdsp_update_disp(
+	disp_id: i32, fft_size: i32, win_type: i32, 
+	sub_spans: i32, in_sz: i32, display_width: i32, 
+	average_mode: i32, over_frames: i32, 
+	sample_rate: i32, frame_rate: i32) {
+
+	// Calculate the display parameters
+	let mut flp: [i32; 1] = [0];
+	let overlap: i32 = (f64::max(0.0, f64::ceil(fft_size as f64 - sample_rate as f64 / frame_rate as f64))) as i32;
+	let clip_fraction: f64 = 0.17;
+	let clp: i32 = f64::floor(clip_fraction * fft_size as f64) as i32;
+	let max_av_frames: i32 = 60;
+	let keep_time: f64 = 0.1;
+	let max_w: i32 = fft_size + f64::min(keep_time * sample_rate as f64, keep_time * fft_size as f64 * frame_rate as f64) as i32;
+
+	// Set the display parameters
+	unsafe {
+		SetAnalyzer(
+			disp_id,				// the disply id
+			1,				// no of LO freq, 1 for non-SA use
+			1,					// complex data input
+			flp.as_mut_ptr(),	// single value for non-SA use
+			fft_size,		// actual fft size same as max fft size for now
+			in_sz,			// no input samples per call
+			win_type,				// window type
+			14.0,				// window shaping function, 14 is recommended
+			overlap,			// no of samples to use from previous frame
+			clp,					// no of bins to clip off each side of the sub-span
+			0,				// no of bins to clip from low end of span (zoom)
+			0,				// no of bins to clip from high end of span (zoom)
+			display_width,	// no of pixel values to return
+			sub_spans,		// no of sub-spans to concatenate to form a complete span
+			average_mode,		// select algorithm for averaging
+			over_frames,		// number of frames to average over
+			0.0,				// not sure how to use this
+			0,				// no calibration in use
+			0.0,				// min freq for calibration
+			0.0,				// max freq for calibration
+			max_w,					// how much data to keep in the display buffers
+		);
+	}
+}
+
 // Push display data as interleaved IQ
 pub fn wdsp_write_spec_data(disp_id: i32, in_iq: &mut [f32; (common_defs::DSP_BLK_SZ * 2) as usize]) {
 	unsafe{ Spectrum2(disp_id, 0, 0, in_iq.as_mut_ptr())};

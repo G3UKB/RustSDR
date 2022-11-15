@@ -105,7 +105,7 @@ const T_MARGIN: f32 = 14.0;
 const B_MARGIN: f32 = 26.0;
 const TEXT_COLOR: Color32 = Color32::from_rgba_premultiplied(150,0,0,70);
 const GRID_COLOR: Color32 = Color32::from_rgba_premultiplied(0,50,0,10);
-const SPEC_COLOR: Color32 = Color32::from_rgba_premultiplied(0,50,50,70);
+const SPEC_COLOR: Color32 = Color32::from_rgba_premultiplied(0,150,150,70);
 const CENTRE_COLOR: Color32 = Color32::RED;
 const SPAN_FREQ: i32 = 48000;
 const DIVS: i32 = 6;
@@ -154,8 +154,9 @@ pub struct UIApp {
     m_array: [(String, egui::Color32); 12],
     fi_array: [(String, egui::Color32); 8],
 
-    // Displat data
+    // Display data
     out_real: [f32; (common_defs::DSP_BLK_SZ ) as usize],
+    disp_width: i32,
 }
 
 //===========================================================================================
@@ -213,6 +214,7 @@ impl UIApp {
             m_array: m_array,
             fi_array: fi_array,
             out_real: [0.0; (common_defs::DSP_BLK_SZ ) as usize],
+            disp_width: 300,
         }
     }
 
@@ -541,8 +543,7 @@ impl UIApp {
 
             // Draw verticle lines and legends
             // Set up the parameters
-            let freq = 7100000;
-            let start_freq: i32 = freq - (SPAN_FREQ / 2);
+            let start_freq: i32 = self.frequency as i32 - (SPAN_FREQ / 2);
             let freq_inc = SPAN_FREQ / DIVS;
             let pixels_per_div: f32 = (rect.width() - L_MARGIN - R_MARGIN - F_X_LABEL_ADJ) as f32 / DIVS as f32;
             let mut j = start_freq;
@@ -569,20 +570,23 @@ impl UIApp {
 
             // Draw spectrum
             if dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real) {
+                // Update the display width if necessary
+                if self.disp_width != (rect.width() - L_MARGIN + R_MARGIN) as i32 {
+                    self.disp_width = (rect.width() - L_MARGIN + R_MARGIN) as i32;
+                    dsp::dsp_interface::wdsp_update_disp(
+                        0, common_defs::FFT_SZ, common_defs::WINDOW_TYPES::RECTANGULAR as i32, 
+                        common_defs::SUB_SPANS, common_defs::IN_SZ, self.disp_width, 
+                        common_defs::AV_MODE::PAN_TIME_AV_LIN as i32, common_defs::OVER_FRAMES, 
+                        common_defs::SAMPLE_RATE, common_defs::FRAME_RATE);
+                }
                 // The array out_real contains a set of db values, one per pixel of the horizontal display area.
-                //let to_screen =
-                //egui::emath::RectTransform::from_to(egui::Rect::from_x_y_ranges(0.0..=1.0, -1.0..=1.0), rect);
                 let mut shapes = vec![];
                 let points: Vec<egui::Pos2> = (0..=(rect.width() - L_MARGIN as f32 + R_MARGIN as f32) as i32)
                     .map(|i| {
-                        //to_screen * egui::pos2(rect.left() + L_MARGIN as f32 + i as f32, rect.top() + self.out_real[i as usize])
-                        //to_screen * egui::pos2(L_MARGIN as f32 + i as f32, self.out_real[i as usize])
-                        //let y_coord: f32 = self.val_to_coord(self.out_real[i as usize], rect.height()) as f32;
                         egui::pos2(rect.left() + L_MARGIN as f32 + i as f32, 
                             rect.top() + self.val_to_coord(self.out_real[i as usize], rect.height()))
                     })
                     .collect();
-                    //println!("{:?}", points);
                 shapes.push(epaint::Shape::line(points, egui::Stroke::new(1.0, SPEC_COLOR)));
                 painter.extend(shapes);
             }
@@ -597,6 +601,7 @@ impl UIApp {
         return y;
     }
 
+    // Test display
     fn display(&mut self, ui: &mut egui::Ui) {
         egui::Frame::canvas(ui.style()).show(ui, |ui| {
             ui.ctx().request_repaint();

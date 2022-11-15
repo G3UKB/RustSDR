@@ -73,6 +73,15 @@ pub const BYTES_PER_SAMPLE : u32 = 6;   // 2*24 bits
 pub const FRAMES_IN_RING : u32 = 8;     // Number of frames to accommodate in the IQ ring buffer
 
 // DSP
+// Temp constants until we have a configurator
+pub const FFT_SZ: i32 = 8192;
+pub const SUB_SPANS: i32 = 1;
+pub const OVER_FRAMES: i32 = 10;
+pub const FRAME_RATE: i32 = 20;
+pub const SAMPLE_RATE: i32 = 48000;
+pub const IN_SZ: i32 = 1024;
+pub const DISPLAY_WIDTH: i32 = 300;
+
 // Block size
 pub const DSP_BLK_SZ : u32 = 1024;
 // Channel type
