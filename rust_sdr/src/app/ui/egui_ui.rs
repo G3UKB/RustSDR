@@ -105,7 +105,7 @@ const T_MARGIN: f32 = 14.0;
 const B_MARGIN: f32 = 26.0;
 const TEXT_COLOR: Color32 = Color32::from_rgba_premultiplied(150,0,0,70);
 const GRID_COLOR: Color32 = Color32::from_rgba_premultiplied(0,50,0,10);
-const SPEC_COLOR: Color32 = Color32::from_rgba_premultiplied(0,150,150,70);
+const SPEC_COLOR: Color32 = Color32::from_rgba_premultiplied(150,150,0,70);
 const CENTRE_COLOR: Color32 = Color32::RED;
 const SPAN_FREQ: i32 = 48000;
 const DIVS: i32 = 6;
@@ -579,17 +579,18 @@ impl UIApp {
                         common_defs::AV_MODE::PAN_TIME_AV_LIN as i32, common_defs::OVER_FRAMES, 
                         common_defs::SAMPLE_RATE, common_defs::FRAME_RATE);
                 }
-                // The array out_real contains a set of db values, one per pixel of the horizontal display area.
-                let mut shapes = vec![];
-                let points: Vec<egui::Pos2> = (0..=(rect.width() - L_MARGIN as f32 + R_MARGIN as f32) as i32)
-                    .map(|i| {
-                        egui::pos2(rect.left() + L_MARGIN as f32 + i as f32, 
-                            rect.top() + self.val_to_coord(self.out_real[i as usize], rect.height()))
-                    })
-                    .collect();
-                shapes.push(epaint::Shape::line(points, egui::Stroke::new(1.0, SPEC_COLOR)));
-                painter.extend(shapes);
             }
+            // The array out_real contains a set of db values, one per pixel of the horizontal display area.
+            // Must be painted every iteration even when not changed otherwise it will flicker
+            let mut shapes = vec![];
+            let points: Vec<egui::Pos2> = (0..(rect.width() - L_MARGIN as f32 + R_MARGIN as f32) as i32)
+                .map(|i| {
+                    egui::pos2(rect.left() + L_MARGIN as f32 + i as f32, 
+                        rect.top() + self.val_to_coord(self.out_real[i as usize], rect.height()))
+                })
+                .collect();
+            shapes.push(epaint::Shape::line(points, egui::Stroke::new(0.25, SPEC_COLOR)));
+            painter.extend(shapes);
         });
     }
 
@@ -600,83 +601,6 @@ impl UIApp {
         let y: f32 = (disp_height as i32 - (((i32::abs(LOW_DB) - i32::abs(val as i32))) * (disp_height as i32 / (i32::abs(LOW_DB) - i32::abs(HIGH_DB))))) as f32;
         return y;
     }
-
-    // Test display
-    fn display(&mut self, ui: &mut egui::Ui) {
-        egui::Frame::canvas(ui.style()).show(ui, |ui| {
-            ui.ctx().request_repaint();
-
-            let desired_size = ui.available_width() * egui::vec2(1.0, 0.35);
-            let (_id, rect) = ui.allocate_space(desired_size);
-
-            let painter = ui.painter();
-            painter.rect(
-                rect.shrink(1.0),
-                10.0,
-                ui.ctx().style().visuals.window_fill(),
-                egui::Stroke::new(0.5, egui::Color32::DARK_GRAY),
-            );
-            painter.line_segment(
-                [
-                    rect.left_top() + egui::vec2(2.0, rect.height()*0.5),
-                    rect.right_top() + egui::vec2(-2.0, rect.height()*0.5),
-                ],
-                egui::Stroke::new(0.5, egui::Color32::DARK_GREEN),
-            );
-            let pos_top_left = emath::pos2(rect.left() + (rect.width()/2.0) - 30.0, rect.top() + 20.0);
-            let pos_bottom_right = emath::pos2(rect.left() + (rect.width()/2.0) + 30.0, rect.top() + rect.height() - 20.0);
-            let r = emath::Rect::from_two_pos(pos_top_left,pos_bottom_right);
-            
-            painter.rect_filled(
-                r,
-                10.0,
-                egui::color::Rgba::from_luminance_alpha(0.2, 0.2),
-            );
-            painter.text(
-                egui::pos2(rect.left() + rect.width()*0.2, rect.top() + rect.height()*0.7),
-                egui::Align2::LEFT_CENTER,
-                "This is some text",
-                egui::FontId::new(30.0,egui::FontFamily::Proportional),
-                egui::Color32::RED,
-            );
-        });
-
-        // Build display on a canvas
-        egui::Frame::canvas(ui.style()).show(ui, |ui| {
-            // Make sure we get repainted
-            ui.ctx().request_repaint();
-
-            let time = ui.input().time;
-            let desired_size = ui.available_width() * egui::vec2(1.0, 0.35);
-            let (_id, rect) = ui.allocate_space(desired_size);
-
-            let to_screen =
-                egui::emath::RectTransform::from_to(egui::Rect::from_x_y_ranges(0.0..=1.0, -1.0..=1.0), rect);
-        
-            let mut shapes = vec![];
-
-            for &mode in &[2, 3, 5] {
-                let mode = mode as f64;
-                let n = 120;
-                let speed = 1.5;
-
-                let points: Vec<egui::Pos2> = (0..=n)
-                    .map(|i| {
-                        let t = i as f64 / (n as f64);
-                        let amp = (time * speed * mode).sin() / mode;
-                        let y = amp * (t * std::f64::consts::TAU / 2.0 * mode).sin();
-                        to_screen * egui::pos2(t as f32, y as f32)
-                    })
-                    .collect();
-                    println!("{:?}", points);
-
-                let thickness = 10.0 / mode as f32;
-                shapes.push(epaint::Shape::line(points, egui::Stroke::new(thickness, egui::Color32::from_black_alpha(240))));
-            }
-            ui.painter().extend(shapes);
-        });
-    }
-
 }
 
 // Create a window for each element in the UI.
@@ -695,9 +619,9 @@ impl eframe::App for UIApp {
         .show(ctx, |ui| {
             self.vfo(ui);
         });
-        egui::Window::new("Display")
+        egui::Window::new("Spectrum")
+        .auto_sized()
         .show(ctx, |ui| {
-            //self.display(ui);
             self.spectrum(ui);
         });
     }
