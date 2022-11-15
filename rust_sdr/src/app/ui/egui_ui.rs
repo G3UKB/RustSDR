@@ -264,8 +264,8 @@ impl UIApp {
                 self.set_mode_buttons(mode_id::FM as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::FM as i32);
             }
-        });
-        ui.horizontal(|ui| {
+        //});
+        //ui.horizontal(|ui| {
 
             let b = ui.button(RichText::new(&self.m_array[mode_id::AM as usize].0).text_style(heading3())
             .background_color(self.m_array[mode_id::AM as usize].1));
@@ -607,15 +607,17 @@ impl UIApp {
 impl eframe::App for UIApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::Window::new("Modes")
-        
+        .auto_sized()
         .show(ctx, |ui| {
             self.modes(ui);
         });
         egui::Window::new("Filters")
+        .auto_sized()
         .show(ctx, |ui| {
             self.filters(ui);
         });
         egui::Window::new("VFO")
+        .auto_sized()
         .show(ctx, |ui| {
             self.vfo(ui);
         });
