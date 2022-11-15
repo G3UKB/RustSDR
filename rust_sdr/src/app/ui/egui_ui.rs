@@ -570,21 +570,31 @@ impl UIApp {
             // Draw spectrum
             if dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real) {
                 // The array out_real contains a set of db values, one per pixel of the horizontal display area.
-                let to_screen =
-                egui::emath::RectTransform::from_to(egui::Rect::from_x_y_ranges(0.0..=1.0, -1.0..=1.0), rect);
+                //let to_screen =
+                //egui::emath::RectTransform::from_to(egui::Rect::from_x_y_ranges(0.0..=1.0, -1.0..=1.0), rect);
                 let mut shapes = vec![];
                 let points: Vec<egui::Pos2> = (0..=(rect.width() - L_MARGIN as f32 + R_MARGIN as f32) as i32)
                     .map(|i| {
                         //to_screen * egui::pos2(rect.left() + L_MARGIN as f32 + i as f32, rect.top() + self.out_real[i as usize])
                         //to_screen * egui::pos2(L_MARGIN as f32 + i as f32, self.out_real[i as usize])
-                        egui::pos2(rect.left() + L_MARGIN as f32 + i as f32, (rect.top() + self.out_real[i as usize])/1.8)
+                        //let y_coord: f32 = self.val_to_coord(self.out_real[i as usize], rect.height()) as f32;
+                        egui::pos2(rect.left() + L_MARGIN as f32 + i as f32, 
+                            rect.top() + self.val_to_coord(self.out_real[i as usize], rect.height()))
                     })
                     .collect();
-                    println!("{:?}", points);
+                    //println!("{:?}", points);
                 shapes.push(epaint::Shape::line(points, egui::Stroke::new(1.0, SPEC_COLOR)));
                 painter.extend(shapes);
             }
         });
+    }
+
+    // Convert a dBM value to a Y coordinate
+    fn val_to_coord(&mut self, val: f32, height: f32) -> f32{
+        // y-coord = disp-height - ((abs(low-dBm) - abs(dBm)) * (disp-height/span_db))
+        let disp_height: f32 = (height - T_MARGIN - B_MARGIN);
+        let y: f32 = (disp_height as i32 - (((i32::abs(LOW_DB) - i32::abs(val as i32))) * (disp_height as i32 / (i32::abs(LOW_DB) - i32::abs(HIGH_DB))))) as f32;
+        return y;
     }
 
     fn display(&mut self, ui: &mut egui::Ui) {
@@ -653,6 +663,7 @@ impl UIApp {
                         to_screen * egui::pos2(t as f32, y as f32)
                     })
                     .collect();
+                    println!("{:?}", points);
 
                 let thickness = 10.0 / mode as f32;
                 shapes.push(epaint::Shape::line(points, egui::Stroke::new(thickness, egui::Color32::from_black_alpha(240))));
