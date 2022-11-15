@@ -541,7 +541,16 @@ impl UIApp {
             let (_id, rect) = ui.allocate_space(desired_size);
             if ui.rect_contains_pointer(rect) {
                 // Paint frequency at cursor
-
+                let e = &ui.ctx().input().events;
+                if e.len() > 0 {
+                    match &e[0] {
+                        egui::Event::PointerMoved(v) => {
+                            //println!("{:?}", v );#
+                            // Print freq at pointer
+                        }
+                        _ => ()
+                    }
+                }
             }
 
             // Get the painter
