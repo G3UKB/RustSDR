@@ -53,6 +53,12 @@ enum mode_id {
     SAM,
     DRM,
 }
+#[derive(PartialEq)]
+enum enum_mode_pos {
+    LOWER,
+    UPPER,
+    BOTH,
+}
 
 // Filter enumerations
 enum filter_id {
@@ -106,6 +112,7 @@ const B_MARGIN: f32 = 26.0;
 const TEXT_COLOR: Color32 = Color32::from_rgba_premultiplied(150,0,0,70);
 const GRID_COLOR: Color32 = Color32::from_rgba_premultiplied(0,50,0,10);
 const SPEC_COLOR: Color32 = Color32::from_rgba_premultiplied(150,150,0,70);
+const OVERLAY_COLOR: Color32 = Color32::from_rgba_premultiplied(0,50,0,10);
 const CENTRE_COLOR: Color32 = Color32::RED;
 const SPAN_FREQ: i32 = 48000;
 const DIVS: i32 = 6;
@@ -148,6 +155,8 @@ pub struct UIApp {
     last_position: f32,
     frequency: u32,
     freq_inc: i32,
+    mode_pos: enum_mode_pos,
+    filter_width: i32,
 
     // VFO, mode and filter state
     f_array: [(String, f32, egui::Color32); 9],
@@ -215,6 +224,8 @@ impl UIApp {
             fi_array: fi_array,
             out_real: [0.0; (common_defs::DSP_BLK_SZ ) as usize],
             disp_width: 300,
+            mode_pos: enum_mode_pos::BOTH,
+            filter_width: 2400,
         }
     }
 
@@ -228,6 +239,7 @@ impl UIApp {
             if b.clicked() {
                 self.set_mode_buttons(mode_id::LSB as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::LSB as i32);
+                self.mode_pos = enum_mode_pos::LOWER;
             }
 
             let b = ui.button(RichText::new(&self.m_array[mode_id::USB as usize].0).text_style(heading3())
@@ -235,6 +247,7 @@ impl UIApp {
             if b.clicked() {
                 self.set_mode_buttons(mode_id::USB as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::USB as i32);
+                self.mode_pos = enum_mode_pos::UPPER;
             }
 
             let b = ui.button(RichText::new(&self.m_array[mode_id::DSB as usize].0).text_style(heading3())
@@ -242,6 +255,7 @@ impl UIApp {
             if b.clicked() {
                 self.set_mode_buttons(mode_id::DSB as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DSB as i32);
+                self.mode_pos = enum_mode_pos::BOTH;
             }
 
             let b = ui.button(RichText::new(&self.m_array[mode_id::CW_L as usize].0).text_style(heading3())
@@ -249,6 +263,7 @@ impl UIApp {
             if b.clicked() {
                 self.set_mode_buttons(mode_id::CW_L as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::CW_L as i32);
+                self.mode_pos = enum_mode_pos::LOWER;
             }
 
             let b = ui.button(RichText::new(&self.m_array[mode_id::CW_U as usize].0).text_style(heading3())
@@ -256,6 +271,7 @@ impl UIApp {
             if b.clicked() {
                 self.set_mode_buttons(mode_id::CW_U as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::CW_U as i32);
+                self.mode_pos = enum_mode_pos::UPPER;
             }
 
             let b = ui.button(RichText::new(&self.m_array[mode_id::FM as usize].0).text_style(heading3())
@@ -263,15 +279,14 @@ impl UIApp {
             if b.clicked() {
                 self.set_mode_buttons(mode_id::FM as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::FM as i32);
+                self.mode_pos = enum_mode_pos::BOTH;
             }
-        //});
-        //ui.horizontal(|ui| {
-
             let b = ui.button(RichText::new(&self.m_array[mode_id::AM as usize].0).text_style(heading3())
             .background_color(self.m_array[mode_id::AM as usize].1));
             if b.clicked() {
                 self.set_mode_buttons(mode_id::AM as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::AM as i32);
+                self.mode_pos = enum_mode_pos::BOTH;
             }
 
             let b = ui.button(RichText::new(&self.m_array[mode_id::DIG_L as usize].0).text_style(heading3())
@@ -279,6 +294,7 @@ impl UIApp {
             if b.clicked() {
                 self.set_mode_buttons(mode_id::DIG_L as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DIG_L as i32);
+                self.mode_pos = enum_mode_pos::LOWER;
             }
 
             let b = ui.button(RichText::new(&self.m_array[mode_id::DIG_U as usize].0).text_style(heading3())
@@ -286,6 +302,7 @@ impl UIApp {
             if b.clicked() {
                 self.set_mode_buttons(mode_id::DIG_U as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DIG_U as i32);
+                self.mode_pos = enum_mode_pos::UPPER;
             }
 
             let b = ui.button(RichText::new(&self.m_array[mode_id::SPEC as usize].0).text_style(heading3())
@@ -293,6 +310,7 @@ impl UIApp {
             if b.clicked() {
                 self.set_mode_buttons(mode_id::SPEC as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::SPEC as i32);
+                self.mode_pos = enum_mode_pos::BOTH;
             }
 
             let b = ui.button(RichText::new(&self.m_array[mode_id::SAM as usize].0).text_style(heading3())
@@ -300,6 +318,7 @@ impl UIApp {
             if b.clicked() {
                 self.set_mode_buttons(mode_id::SAM as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::SAM as i32);
+                self.mode_pos = enum_mode_pos::BOTH;
             }
 
             let b = ui.button(RichText::new(&self.m_array[mode_id::DRM as usize].0).text_style(heading3())
@@ -307,6 +326,7 @@ impl UIApp {
             if b.clicked() {
                 self.set_mode_buttons(mode_id::DRM as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DRM as i32);
+                self.mode_pos = enum_mode_pos::BOTH;
             }
         });
     }
@@ -328,6 +348,7 @@ impl UIApp {
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F6_0KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F6_0KHz as i32);
+                self.filter_width = 6000;
             }
 
             let b = ui.button(RichText::new(&self.fi_array[filter_id::F4_0KHz as usize].0).text_style(heading3())
@@ -335,6 +356,7 @@ impl UIApp {
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F4_0KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F4_0KHz as i32);
+                self.filter_width = 4000;
             }
 
             let b = ui.button(RichText::new(&self.fi_array[filter_id::F2_7KHz as usize].0).text_style(heading3())
@@ -342,6 +364,7 @@ impl UIApp {
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F2_7KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F2_7KHz as i32);
+                self.filter_width = 2700;
             }
 
             let b = ui.button(RichText::new(&self.fi_array[filter_id::F2_4KHz as usize].0).text_style(heading3())
@@ -349,6 +372,7 @@ impl UIApp {
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F2_4KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F2_4KHz as i32);
+                self.filter_width = 2400;
             }
 
             let b = ui.button(RichText::new(&self.fi_array[filter_id::F1_0KHz as usize].0).text_style(heading3())
@@ -356,6 +380,7 @@ impl UIApp {
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F1_0KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F1_0KHz as i32);
+                self.filter_width = 1000;
             }
 
             let b = ui.button(RichText::new(&self.fi_array[filter_id::F500Hz as usize].0).text_style(heading3())
@@ -363,6 +388,7 @@ impl UIApp {
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F500Hz as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F500Hz as i32);
+                self.filter_width = 500;
             }
 
             let b = ui.button(RichText::new(&self.fi_array[filter_id::F100Hz as usize].0).text_style(heading3())
@@ -370,6 +396,7 @@ impl UIApp {
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F100Hz as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F100Hz as i32);
+                self.filter_width = 100;
             }
         });
     }
@@ -512,6 +539,10 @@ impl UIApp {
             // Go with the maximum available width and keep the aspect ratio constant
             let desired_size = ui.available_width() * egui::vec2(1.0, 0.3);
             let (_id, rect) = ui.allocate_space(desired_size);
+            if ui.rect_contains_pointer(rect) {
+                // Paint frequency at cursor
+
+            }
 
             // Get the painter
             let painter = ui.painter();
@@ -569,16 +600,16 @@ impl UIApp {
             }
 
             // Draw spectrum
-            if dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real) {
-                // Update the display width if necessary
-                if self.disp_width != (rect.width() - L_MARGIN + R_MARGIN) as i32 {
-                    self.disp_width = (rect.width() - L_MARGIN + R_MARGIN) as i32;
-                    dsp::dsp_interface::wdsp_update_disp(
-                        0, common_defs::FFT_SZ, common_defs::WINDOW_TYPES::RECTANGULAR as i32, 
-                        common_defs::SUB_SPANS, common_defs::IN_SZ, self.disp_width, 
-                        common_defs::AV_MODE::PAN_TIME_AV_LIN as i32, common_defs::OVER_FRAMES, 
-                        common_defs::SAMPLE_RATE, common_defs::FRAME_RATE);
-                }
+            // Update dataset if available
+            dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real);
+            // Update the display width if necessary
+            if self.disp_width != (rect.width() - L_MARGIN + R_MARGIN) as i32 {
+                self.disp_width = (rect.width() - L_MARGIN + R_MARGIN) as i32;
+                dsp::dsp_interface::wdsp_update_disp(
+                    0, common_defs::FFT_SZ, common_defs::WINDOW_TYPES::RECTANGULAR as i32, 
+                    common_defs::SUB_SPANS, common_defs::IN_SZ, self.disp_width, 
+                    common_defs::AV_MODE::PAN_TIME_AV_LIN as i32, common_defs::OVER_FRAMES, 
+                    common_defs::SAMPLE_RATE, common_defs::FRAME_RATE);
             }
             // The array out_real contains a set of db values, one per pixel of the horizontal display area.
             // Must be painted every iteration even when not changed otherwise it will flicker
@@ -591,6 +622,30 @@ impl UIApp {
                 .collect();
             shapes.push(epaint::Shape::line(points, egui::Stroke::new(0.25, SPEC_COLOR)));
             painter.extend(shapes);
+
+            // Draw filter overlay
+            let pos_top_left: Pos2;
+            let pos_bottom_right: Pos2;
+            // Width of filter in pixels
+            let filt_pix = (self.filter_width as f32/common_defs::SMPLS_48K as f32) * self.disp_width as f32;
+            if self.mode_pos == enum_mode_pos::LOWER {
+                pos_top_left = emath::pos2(rect.left() + L_MARGIN + (self.disp_width as f32/2.0) - filt_pix, rect.top() + T_MARGIN);
+                pos_bottom_right = emath::pos2(rect.left() + L_MARGIN + (self.disp_width as f32/2.0), rect.top() + rect.height() - B_MARGIN);
+            } else if self.mode_pos == enum_mode_pos::UPPER{
+                pos_top_left = emath::pos2(rect.left() + L_MARGIN + (self.disp_width as f32/2.0), rect.top() + T_MARGIN);
+                pos_bottom_right = emath::pos2(rect.left() + L_MARGIN + (self.disp_width as f32/2.0) + filt_pix, rect.top() + rect.height() - B_MARGIN);
+            } else {
+                pos_top_left = emath::pos2(rect.left() + L_MARGIN + (self.disp_width as f32/2.0) - filt_pix, rect.top() + T_MARGIN);
+                pos_bottom_right = emath::pos2(rect.left() + L_MARGIN + (self.disp_width as f32/2.0) + filt_pix, rect.top() + rect.height() - B_MARGIN);
+            }
+            let r = emath::Rect::from_two_pos(pos_top_left,pos_bottom_right);
+            
+            painter.rect_filled(
+                r,
+                3.0,
+                //egui::color::Rgba::from_luminance_alpha(0.2, 0.2),
+                OVERLAY_COLOR,
+            );
         });
     }
 
