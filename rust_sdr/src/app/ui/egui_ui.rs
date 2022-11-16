@@ -112,7 +112,7 @@ const B_MARGIN: f32 = 26.0;
 const TEXT_COLOR: Color32 = Color32::from_rgba_premultiplied(150,0,0,70);
 const GRID_COLOR: Color32 = Color32::from_rgba_premultiplied(0,50,0,10);
 const SPEC_COLOR: Color32 = Color32::from_rgba_premultiplied(150,150,0,70);
-const OVERLAY_COLOR: Color32 = Color32::from_rgba_premultiplied(0,50,0,10);
+const OVERLAY_COLOR: Color32 = Color32::from_rgba_premultiplied(0,30,0,10);
 const CENTRE_COLOR: Color32 = Color32::RED;
 const SPAN_FREQ: i32 = 48000;
 const DIVS: i32 = 6;
@@ -167,7 +167,7 @@ pub struct UIApp {
     out_real: [f32; (common_defs::DSP_BLK_SZ ) as usize],
     disp_width: i32,
     mouse_pos: Pos2,
-    freq_at_ptr: u32,
+    freq_at_ptr: f32,
     draw_at_ptr: bool,
 }
 
@@ -230,7 +230,7 @@ impl UIApp {
             mode_pos: enum_mode_pos::BOTH,
             filter_width: 2400,
             mouse_pos: pos2(0.0,0.0),
-            freq_at_ptr: 7100000,
+            freq_at_ptr: 7.1,
             draw_at_ptr: false,
         }
     }
@@ -651,15 +651,20 @@ impl UIApp {
             // Draw frequency at cursor
             if ui.rect_contains_pointer(rect) {
                 // Within the area
-                self.draw_at_ptr = true;
+                if  self.mouse_pos.x > rect.left() + L_MARGIN &&
+                    self.mouse_pos.x < rect.right() + R_MARGIN &&
+                    self.mouse_pos.y > rect.top() + T_MARGIN &&
+                    self.mouse_pos.y < rect.bottom() - B_MARGIN {
+                    self.draw_at_ptr = true;
+                } else {
+                    self.draw_at_ptr = false;
+                }
                 let e = &ui.ctx().input().events;
                 if e.len() > 0 {
                     match &e[0] {
                         egui::Event::PointerMoved(v) => {
-                            if v.x > rect.left() + L_MARGIN && v.x < rect.right() + R_MARGIN {
-                                self.mouse_pos = *v;
-                                self.freq_at_ptr();
-                            }
+                            self.mouse_pos = *v;
+                            self.freq_at_ptr();
                         }
                         _ => ()
                     }
@@ -667,9 +672,13 @@ impl UIApp {
             } else {
                 self.draw_at_ptr = false;
             }
-            if self.draw_at_ptr && (self.mouse_pos.x > rect.left() + L_MARGIN && self.mouse_pos.x < rect.right() + R_MARGIN) {
+            if self.draw_at_ptr {
+                let mut draw_at = self.mouse_pos.x + 5.0;
+                if ((self.mouse_pos.x - L_MARGIN) as i32) > self.disp_width/2 {
+                    draw_at = self.mouse_pos.x - 30.0;
+                }
                 painter.text(
-                    egui::pos2(self.mouse_pos.x + 5.0, self.mouse_pos.y),
+                    egui::pos2(draw_at, self.mouse_pos.y),
                     egui::Align2::LEFT_CENTER,
                     &String::from(self.freq_at_ptr.to_string()),
                     egui::FontId::new(12.0,egui::FontFamily::Proportional),
@@ -689,9 +698,10 @@ impl UIApp {
 
     // Calculate frequency at mouse pointer
     fn freq_at_ptr(&mut self) {
-        let x = self.mouse_pos.x + L_MARGIN;
+        let x = self.mouse_pos.x - L_MARGIN;
         let x_frac = x/self.disp_width as f32;
-        self.freq_at_ptr = (common_defs::SMPLS_48K as f32 * x_frac + (self.frequency - common_defs::SMPLS_48K /2 ) as f32) as u32;
+        self.freq_at_ptr = (common_defs::SMPLS_48K as f32 * x_frac + (self.frequency - common_defs::SMPLS_48K /2 ) as f32)/1000000.0;
+        self.freq_at_ptr = (self.freq_at_ptr * 1000.0).round() / 1000.0;
     }
 
 }
