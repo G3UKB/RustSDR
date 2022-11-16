@@ -166,6 +166,9 @@ pub struct UIApp {
     // Display data
     out_real: [f32; (common_defs::DSP_BLK_SZ ) as usize],
     disp_width: i32,
+    mouse_pos: Pos2,
+    freq_at_ptr: u32,
+    draw_at_ptr: bool,
 }
 
 //===========================================================================================
@@ -226,6 +229,9 @@ impl UIApp {
             disp_width: 300,
             mode_pos: enum_mode_pos::BOTH,
             filter_width: 2400,
+            mouse_pos: pos2(0.0,0.0),
+            freq_at_ptr: 7100000,
+            draw_at_ptr: false,
         }
     }
 
@@ -539,19 +545,6 @@ impl UIApp {
             // Go with the maximum available width and keep the aspect ratio constant
             let desired_size = ui.available_width() * egui::vec2(1.0, 0.3);
             let (_id, rect) = ui.allocate_space(desired_size);
-            if ui.rect_contains_pointer(rect) {
-                // Paint frequency at cursor
-                let e = &ui.ctx().input().events;
-                if e.len() > 0 {
-                    match &e[0] {
-                        egui::Event::PointerMoved(v) => {
-                            //println!("{:?}", v );#
-                            // Print freq at pointer
-                        }
-                        _ => ()
-                    }
-                }
-            }
 
             // Get the painter
             let painter = ui.painter();
@@ -652,9 +645,37 @@ impl UIApp {
             painter.rect_filled(
                 r,
                 3.0,
-                //egui::color::Rgba::from_luminance_alpha(0.2, 0.2),
                 OVERLAY_COLOR,
             );
+
+            // Draw frequency at cursor
+            if ui.rect_contains_pointer(rect) {
+                // Within the area
+                self.draw_at_ptr = true;
+                let e = &ui.ctx().input().events;
+                if e.len() > 0 {
+                    match &e[0] {
+                        egui::Event::PointerMoved(v) => {
+                            if v.x > rect.left() + L_MARGIN && v.x < rect.right() + R_MARGIN {
+                                self.mouse_pos = *v;
+                                self.freq_at_ptr();
+                            }
+                        }
+                        _ => ()
+                    }
+                }
+            } else {
+                self.draw_at_ptr = false;
+            }
+            if self.draw_at_ptr && (self.mouse_pos.x > rect.left() + L_MARGIN && self.mouse_pos.x < rect.right() + R_MARGIN) {
+                painter.text(
+                    egui::pos2(self.mouse_pos.x + 5.0, self.mouse_pos.y),
+                    egui::Align2::LEFT_CENTER,
+                    &String::from(self.freq_at_ptr.to_string()),
+                    egui::FontId::new(12.0,egui::FontFamily::Proportional),
+                    TEXT_COLOR,
+                );
+            }
         });
     }
 
@@ -665,6 +686,14 @@ impl UIApp {
         let y: f32 = (disp_height as i32 - (((i32::abs(LOW_DB) - i32::abs(val as i32))) * (disp_height as i32 / (i32::abs(LOW_DB) - i32::abs(HIGH_DB))))) as f32;
         return y;
     }
+
+    // Calculate frequency at mouse pointer
+    fn freq_at_ptr(&mut self) {
+        let x = self.mouse_pos.x + L_MARGIN;
+        let x_frac = x/self.disp_width as f32;
+        self.freq_at_ptr = (common_defs::SMPLS_48K as f32 * x_frac + (self.frequency - common_defs::SMPLS_48K /2 ) as f32) as u32;
+    }
+
 }
 
 // Create a window for each element in the UI.
