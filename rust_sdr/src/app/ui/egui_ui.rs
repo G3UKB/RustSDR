@@ -665,6 +665,9 @@ impl UIApp {
                         egui::Event::PointerMoved(v) => {
                             self.mouse_pos = *v;
                             self.freq_at_ptr();
+                        },
+                        egui::Event::PointerButton { pos, button, pressed, modifiers } => {
+                            println!("{:?}, {:?}, {:?}", pos, button, pressed);
                         }
                         _ => ()
                     }
