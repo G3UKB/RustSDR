@@ -505,7 +505,6 @@ impl UIApp {
                 }
             }
         } else {
-            //self.f_array[id as usize].1 = normal;
             self.f_array[id as usize].2 = VFONormalColor; 
         }
     }
@@ -582,7 +581,8 @@ impl UIApp {
             let mut j = start_freq;
             for i in 0..=DIVS {
                 // Draw legends
-                let sfreq: String = String::from((j as f32/1000000.0).to_string());
+                let f = ((j as f32 /1000000.0) * 1000.0).round() / 1000.0;
+                let sfreq = String::from(f.to_string());
                 painter.text(
                     egui::pos2(rect.left() + F_X_MARGIN + (i as f32 * pixels_per_div), rect.top() + rect.height() - B_MARGIN + X_H_LABEL_ADJ),
                     egui::Align2::LEFT_CENTER,
@@ -667,7 +667,12 @@ impl UIApp {
                             self.freq_at_ptr();
                         },
                         egui::Event::PointerButton { pos, button, pressed, modifiers } => {
-                            println!("{:?}, {:?}, {:?}", pos, button, pressed);
+                            if *pressed {
+                                let f = self.freq_at_click(*pos);
+                                self.frequency = f;
+                                self.set_freq();
+                                self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
+                            }
                         }
                         _ => ()
                     }
@@ -707,6 +712,13 @@ impl UIApp {
         self.freq_at_ptr = (self.freq_at_ptr * 1000.0).round() / 1000.0;
     }
 
+    // Calculate frequency at mouse pointer on click
+    fn freq_at_click(&mut self, pos: Pos2) -> u32{
+        let x = pos.x - L_MARGIN;
+        let x_frac = x/self.disp_width as f32;
+        let f = (common_defs::SMPLS_48K as f32 * x_frac + (self.frequency - common_defs::SMPLS_48K /2 ) as f32) as u32;
+        return f;
+    }
 }
 
 // Create a window for each element in the UI.
