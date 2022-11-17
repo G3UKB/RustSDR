@@ -96,7 +96,7 @@ pub fn frame_decode(
 
 	// The total number of IQ bytes to be concatenated
 	total_iq_bytes = n_smpls * n_rx * 6;	// 6 bytes per sample (2 x 24 bit)
-	total_iq_bytes_ct = total_iq_bytes - 1;	// iteration counter
+	total_iq_bytes_ct = total_iq_bytes;		// iteration counter
 
 	// Determine if we are using HPSDR or local mic input
 	// Note that for local we let the normal processing run through except when it comes to
@@ -115,7 +115,7 @@ pub fn frame_decode(
 		// We then skip frames if necessary
 		total_mic_bytes = n_smpls;
 	}
-	total_mic_bytes_ct = total_mic_bytes - 1;
+	total_mic_bytes_ct = total_mic_bytes;
 
 	// The number of IQ bytes for each receiver(s) sample
 	iq_bytes = n_rx * common_defs::BYTES_PER_SAMPLE;
