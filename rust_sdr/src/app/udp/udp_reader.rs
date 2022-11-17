@@ -176,12 +176,12 @@ impl UDPRData<'_> {
                 // Extract the data from the UDP frame into the protocol frame
                 // Frame 1
                 j = 0;
-                for b in common_defs::START_FRAME_1..end_frame_1 {
+                for b in common_defs::START_FRAME_1..=end_frame_1 {
                     self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
                     j += 1;
                 }
                 // Frame 2
-                for b in common_defs::START_FRAME_2..end_frame_2 {
+                for b in common_defs::START_FRAME_2..=end_frame_2 {
                     self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
                     j += 1;
                 }
