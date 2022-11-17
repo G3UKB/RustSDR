@@ -37,7 +37,7 @@ use crate::app::common::cc_out_defs:: {
 // Constants
 // Round robin sequence for sending CC bytes
 // Note 0-6 for CCOBufferIdx 
-const RR_CC:  usize = 6;
+const RR_CC:  usize = 7;
 
 //========================================================================
 // Enumerations for bit fields in the CC structure
@@ -151,7 +151,7 @@ pub struct CCData{
 	// Default MOX state
 	cc_mox_state: bool,
 	// Default array contains the C0 values that define how C1-C4 are defined
-	cc_array : [[u8; 5];7],
+	cc_array : [[u8; 5];8],
 	// Single row of the array is returned as next in sequence
 	cc_el : [u8; 5],
 }
@@ -170,8 +170,9 @@ impl CCData {
 					[ 0x04, 0x00, 0x00, 0x00, 0x00 ],
 					[ 0x06, 0x00, 0x00, 0x00, 0x00 ],
 					[ 0x08, 0x00, 0x00, 0x00, 0x00 ],
-					[ 0x12, 0x00, 0x00, 0x00, 0x00 ],
-					[ 0x14, 0x00, 0x00, 0x00, 0x00 ],
+					[ 0x0a, 0x00, 0x00, 0x00, 0x00 ],
+					[ 0x0c, 0x00, 0x00, 0x00, 0x00 ],
+					[ 0x0e, 0x00, 0x00, 0x00, 0x00 ],
 				]
 			),
 			cc_el: ([ 0x00, 0x00, 0x00, 0x00, 0x00 ]),
