@@ -353,7 +353,7 @@ impl UIApp {
             .background_color(self.fi_array[filter_id::F6_0KHz as usize].1));
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F6_0KHz as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F6_0KHz as i32);
+                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F6_0KHz as i32);
                 self.filter_width = 6000;
             }
 
@@ -361,7 +361,7 @@ impl UIApp {
             .background_color(self.fi_array[filter_id::F4_0KHz as usize].1));
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F4_0KHz as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F4_0KHz as i32);
+                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F4_0KHz as i32);
                 self.filter_width = 4000;
             }
 
@@ -369,7 +369,7 @@ impl UIApp {
             .background_color(self.fi_array[filter_id::F2_7KHz as usize].1));
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F2_7KHz as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F2_7KHz as i32);
+                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F2_7KHz as i32);
                 self.filter_width = 2700;
             }
 
@@ -377,7 +377,7 @@ impl UIApp {
             .background_color(self.fi_array[filter_id::F2_4KHz as usize].1));
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F2_4KHz as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F2_4KHz as i32);
+                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F2_4KHz as i32);
                 self.filter_width = 2400;
             }
 
@@ -385,7 +385,7 @@ impl UIApp {
             .background_color(self.fi_array[filter_id::F1_0KHz as usize].1));
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F1_0KHz as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F1_0KHz as i32);
+                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F1_0KHz as i32);
                 self.filter_width = 1000;
             }
 
@@ -393,7 +393,7 @@ impl UIApp {
             .background_color(self.fi_array[filter_id::F500Hz as usize].1));
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F500Hz as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F500Hz as i32);
+                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F500Hz as i32);
                 self.filter_width = 500;
             }
 
@@ -401,7 +401,7 @@ impl UIApp {
             .background_color(self.fi_array[filter_id::F100Hz as usize].1));
             if b.clicked() {
                 self.set_filter_buttons(filter_id::F100Hz as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, filter_id::F100Hz as i32);
+                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F100Hz as i32);
                 self.filter_width = 100;
             }
         });
