@@ -191,7 +191,7 @@ impl UIApp {
         ];
 
         let m_array = [
-           (String::from("LSB"), egui::Color32::TRANSPARENT),
+           (String::from("LSB"), ModeHighlightColor),
            (String::from("USB"), egui::Color32::TRANSPARENT),
            (String::from("DSB"), egui::Color32::TRANSPARENT),
            (String::from("CW-L"), egui::Color32::TRANSPARENT),
@@ -209,13 +209,17 @@ impl UIApp {
            (String::from("6K0"), egui::Color32::TRANSPARENT),
            (String::from("4K0"), egui::Color32::TRANSPARENT),
            (String::from("2K7"), egui::Color32::TRANSPARENT),
-           (String::from("2K4"), egui::Color32::TRANSPARENT),
+           (String::from("2K4"), FiltHighlightColor),
            (String::from("1K0"), egui::Color32::TRANSPARENT),
            (String::from("500H"), egui::Color32::TRANSPARENT),
            (String::from("250H"), egui::Color32::TRANSPARENT),
            (String::from("100H"), egui::Color32::TRANSPARENT),
         ];
     
+        // Set default mode and filter
+        dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::LSB as i32);
+        dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F2_4KHz as i32);
+
         Self {
             position: 50.0,
             last_position: 50.0,
@@ -227,7 +231,7 @@ impl UIApp {
             fi_array: fi_array,
             out_real: [0.0; (common_defs::DSP_BLK_SZ ) as usize],
             disp_width: 300,
-            mode_pos: enum_mode_pos::BOTH,
+            mode_pos: enum_mode_pos::LOWER,
             filter_width: 2400,
             mouse_pos: pos2(0.0,0.0),
             freq_at_ptr: 7.1,
@@ -616,15 +620,16 @@ impl UIApp {
             // The array out_real contains a set of db values, one per pixel of the horizontal display area.
             // Must be painted every iteration even when not changed otherwise it will flicker
             let mut shapes = vec![];
-            let points: Vec<egui::Pos2> = (0..(rect.width() - L_MARGIN as f32 + R_MARGIN as f32) as i32)
+            let end = (rect.width() - L_MARGIN + R_MARGIN) as i32; 
+            let points: Vec<egui::Pos2> = (0..end)
                 .map(|i| {
                     egui::pos2(rect.left() + L_MARGIN as f32 + i as f32, 
-                        rect.top() + self.val_to_coord(self.out_real[i as usize], rect.height()))
+                        rect.top() + self.val_to_coord(self.out_real[(end - i - 1) as usize], rect.height()))
                 })
                 .collect();
             shapes.push(epaint::Shape::line(points, egui::Stroke::new(0.25, SPEC_COLOR)));
             painter.extend(shapes);
-
+            
             // Draw filter overlay
             let pos_top_left: Pos2;
             let pos_bottom_right: Pos2;
