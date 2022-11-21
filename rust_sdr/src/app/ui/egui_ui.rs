@@ -150,7 +150,7 @@ fn configure_text_styles(ctx: &egui::Context) {
 //===========================================================================================
 // State for UIApp
 pub struct UIApp {
-    i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
+    i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
     position: f32,
     last_position: f32,
     frequency: u32,
@@ -174,7 +174,7 @@ pub struct UIApp {
 //===========================================================================================
 // Implementation for UIApp
 impl UIApp {
-    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> Self{
+    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>) -> Self{
         configure_text_styles(&cc.egui_ctx);
 
         // Create array of strings and size for VFO digits

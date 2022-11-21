@@ -89,7 +89,7 @@ pub struct Appdata{
     pub rb_iq : Arc<common::ringb::SyncByteRingBuf>,
 
     // Command and Control out
-    pub i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
+    pub i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
 
     //=================================================
     // State
@@ -167,7 +167,7 @@ impl Appdata {
         i_sock.udp_revert_socket();
 
         // Create an instance of the cc_out type
-        let mut i_cc = Arc::new(Mutex::new(protocol::cc_out::CCDataMutex::new()));
+        let mut i_cc = Arc::new(Mutex::new(protocol::cc_out::CCData::new()));
 
         // Create the UDP reader and writer if we have a valid hardware address
         let mut opt_udp_writer: option::Option<udp::udp_writer::UDPWData> = None;

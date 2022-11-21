@@ -47,7 +47,7 @@ use crate::app::protocol;
 *	Data is encoded into the packet buffer
 */
 pub fn encode(  i_seq: &mut protocol::seq_out::SeqData, 
-                i_cc: &mut protocol::cc_out::CCDataMutex, 
+                i_cc: &mut protocol::cc_out::CCData, 
                 udp_frame: &mut [u8; FRAME_SZ as usize], 
                 prot_frame: &mut [u8; PROT_SZ as usize *2]) {
 

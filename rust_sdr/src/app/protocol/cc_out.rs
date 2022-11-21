@@ -178,59 +178,44 @@ impl CCData {
 			cc_el: ([ 0x00, 0x00, 0x00, 0x00, 0x00 ]),
 		}
 	}
-}
-
-pub struct CCDataMutex {
-	ccdata_mutex: Mutex<CCData>,
-} 
-
-impl CCDataMutex {
-	// Create a new instance and initialise the Mutex
-	pub fn new() -> CCDataMutex {
-		CCDataMutex {
-			ccdata_mutex: Mutex::new(CCData::new()),
-		}
-	}
 
 	// Return the next CC data in sequence
 	pub fn cc_out_next_seq(&mut self) -> [u8; 5] {
-		
-		let mut m = self.ccdata_mutex.lock().unwrap();
-		m.cc_el = m.cc_array[m.cc_idx];
+		self.cc_el = self.cc_array[self.cc_idx];
 		
 		// Check for MOX
-		if m.cc_idx == 0 {
-			if m .cc_mox_state {
+		if self.cc_idx == 0 {
+			if self.cc_mox_state {
 				// Need to set the MOX bit
-				m.cc_array[0] [0]= m.cc_array[0] [0] | 0x01;
+				self.cc_array[0] [0]= self.cc_array[0] [0] | 0x01;
 			}
 			else {
 				// Need to reset the MOX bit
-				m.cc_array[0] [0] = m.cc_array[0] [0] & 0xfe;
+				self.cc_array[0] [0] = self.cc_array[0] [0] & 0xfe;
 			}
 		}
 
 		// Bump the index
-		m.cc_idx = m.cc_idx + 1;
-		if m.cc_idx > RR_CC {
-			m.cc_idx = 0;
+		self.cc_idx = self.cc_idx + 1;
+		if self.cc_idx > RR_CC {
+			self.cc_idx = 0;
 		}
 
 		// Return a copy of the current index array
-		return m.cc_el.clone();
+		return self.cc_el.clone();
 	}
 
 	//==============================================================
 	// Functions to manipulate fields in the cc_array
 
 	// Get the given byte at the given index in cc_array
-	fn cc_get_byte(m: &mut MutexGuard<CCData>, array_idx: usize, byte_idx: usize) -> u8 {
-		return m.cc_array[array_idx] [byte_idx];
+	fn cc_get_byte(&mut self, array_idx: usize, byte_idx: usize) -> u8 {
+		return self.cc_array[array_idx] [byte_idx];
 	}
 
 	// Overwrite the given byte at the given index in cc_array 
-	fn cc_put_byte(m: &mut MutexGuard<CCData>, array_idx: usize, byte_idx: usize, b: u8) {
-		m.cc_array[array_idx] [byte_idx] = b;
+	fn cc_put_byte(&mut self, array_idx: usize, byte_idx: usize, b: u8) {
+		self.cc_array[array_idx] [byte_idx] = b;
 	}
 
 	// Given a target bit setting and the current bit field and mask return the modified field
@@ -242,15 +227,13 @@ impl CCDataMutex {
 	// Get the new byte with the field updated.
 	// Update the given field in cc_array
 	fn cc_update(&mut self, array_idx: usize, byte_idx: usize, bit_setting: u8, bit_mask: u8) {
-		let mut m = self.ccdata_mutex.lock().unwrap();
-		let b: u8 = Self::cc_get_byte(&mut m, array_idx, byte_idx);
+		let b: u8 = self.cc_get_byte(array_idx, byte_idx);
 		let new_b: u8 = Self::cc_set_bits(bit_setting, b, bit_mask);
-		Self::cc_put_byte(&mut m, array_idx, byte_idx, new_b);
+		self.cc_put_byte(array_idx, byte_idx, new_b);
 	}
 
 	pub fn cc_print(&mut self) {
-		let mut m = self.ccdata_mutex.lock().unwrap();
-		println!("{:#02x?}", m.cc_array);
+		println!("{:#02x?}", self.cc_array);
 	}
 
 	//==============================================================
@@ -258,11 +241,10 @@ impl CCDataMutex {
 
 	// Set/clear the MOX bit
 	pub fn cc_mox(&mut self, mox: bool) {
-		let mut m = self.ccdata_mutex.lock().unwrap();
 		if mox {
-			m.cc_mox_state = true;
+			self.cc_mox_state = true;
 		} else {
-			m.cc_mox_state = false;
+			self.cc_mox_state = false;
 		}
 	}
 
@@ -426,12 +408,11 @@ impl CCDataMutex {
 	// Slightly different from the single fields as frequency is a 4 byte field
 	// The common setting function
 	fn cc_common_set_freq(&mut self, buffer_idx: CCOBufferIdx, freq_in_hz: u32) {
-		let mut m = self.ccdata_mutex.lock().unwrap();
 		let idx = buffer_idx as usize;
-		m.cc_array[idx][1] = ((freq_in_hz >> 24) & 0xff) as u8;
-		m.cc_array[idx][2] = ((freq_in_hz >> 16) & 0xff) as u8;
-		m.cc_array[idx][3] = ((freq_in_hz >> 8) & 0xff) as u8;
-		m.cc_array[idx][4] = (freq_in_hz & 0xff) as u8;
+		self.cc_array[idx][1] = ((freq_in_hz >> 24) & 0xff) as u8;
+		self.cc_array[idx][2] = ((freq_in_hz >> 16) & 0xff) as u8;
+		self.cc_array[idx][3] = ((freq_in_hz >> 8) & 0xff) as u8;
+		self.cc_array[idx][4] = (freq_in_hz & 0xff) as u8;
 	}
 
 	//There are several frequencies for RX 1/TX and RX 2,3,4
@@ -473,5 +454,4 @@ impl CCDataMutex {
 		self.cc_set_rx_tx_freq(7150000);
 		self.cc_set_tx_freq(7150000);
 	}
-
 }

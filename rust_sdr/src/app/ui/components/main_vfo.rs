@@ -42,7 +42,7 @@ use crate::app::protocol;
 //==================================================================================
 // VFO State
 pub struct VFOState{
-    i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>,
+    i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
     freq_inc_map : HashMap<u32, u32>,
     current_freq_in_hz : u32,
     digit_map : HashMap<i32, Frame>,
@@ -54,7 +54,7 @@ pub struct VFOState{
 // Implementation methods on VFOState
 impl VFOState {
 	// Create a new instance and initialise the default arrays
-    pub fn new(i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>, ch_s : fltk_app::Sender<messages::UIMsg>) -> VFOState {
+    pub fn new(i_cc : Arc<Mutex<protocol::cc_out::CCData>>, ch_s : fltk_app::Sender<messages::UIMsg>) -> VFOState {
 
         // Lookup for digit number to frequency increment 100MHz to 1Hz
         let freq_inc_map = HashMap::from([

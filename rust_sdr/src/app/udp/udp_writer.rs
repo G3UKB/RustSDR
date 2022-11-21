@@ -39,28 +39,31 @@ use crate::app::common::messages;
 use crate::app::protocol;
 use crate::app::common::ringb;
 
-pub struct UDPWData<'a>{
+//pub struct UDPWData<'a>{
+pub struct UDPWData{
     receiver : crossbeam_channel::Receiver<messages::WriterMsg>,
-	p_sock : &'a socket2::Socket,
-    p_addr : &'a socket2::SockAddr,
-    rb_audio : &'a ringb::SyncByteRingBuf,
-    audio_cond : &'a (Mutex<bool>, Condvar),
+    p_sock : Arc<socket2::Socket>,
+    p_addr : Arc<socket2::SockAddr>,
+    rb_audio : Arc<ringb::SyncByteRingBuf>,
+    audio_cond : Arc<(Mutex<bool>, Condvar)>,
     udp_frame : [u8; common_defs::FRAME_SZ as usize],
     prot_frame : [u8; common_defs::PROT_SZ as usize*2],
-    pub i_cc : &'a Arc<Mutex<protocol::cc_out::CCDataMutex>>,
+    pub i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
     pub i_seq: protocol::seq_out::SeqData,
     listen : bool,
 }
 
 // Implementation methods on CCData
-impl UDPWData<'_> {
+//impl UDPWData<'_> {
+impl UDPWData {
 	// Create a new instance and initialise the default arrays
-	pub fn new<'a>(
+	pub fn new(
             receiver : crossbeam_channel::Receiver<messages::WriterMsg>,
-            p_sock : &'a socket2::Socket, p_addr : &'a socket2::SockAddr,
-            rb_audio : &'a ringb::SyncByteRingBuf,
-            audio_cond : &'a (Mutex<bool>, Condvar),
-            i_cc : &'a Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> UDPWData<'a> {
+            p_sock : Arc<socket2::Socket>, 
+            p_addr : Arc<socket2::SockAddr>,
+            rb_audio : Arc<ringb::SyncByteRingBuf>,
+            audio_cond : Arc<(Mutex<bool>, Condvar)>,
+            i_cc : Arc<Mutex<protocol::cc_out::CCData>>) -> UDPWData {
         // Initialise the cc data
         i_cc.lock().unwrap().cc_init();
         // Create an instance of the sequence type
@@ -167,24 +170,24 @@ pub fn writer_start(
         p_addr : Arc<socket2::SockAddr>, 
         rb_audio : Arc<ringb::SyncByteRingBuf>, 
         audio_cond : Arc<(Mutex<bool>, Condvar)>,
-        i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) -> thread::JoinHandle<()> {
+        i_cc : Arc<Mutex<protocol::cc_out::CCData>>) -> thread::JoinHandle<()> {
     let join_handle = thread::spawn(  move || {
-        writer_run(receiver, &p_sock, &p_addr, &rb_audio, &audio_cond, i_cc);
+        writer_run(receiver, p_sock, p_addr, rb_audio, audio_cond, i_cc);
     });
-    return join_handle; //join_handle;
+    return join_handle;
 }
 
 fn writer_run(
     receiver : crossbeam_channel::Receiver<messages::WriterMsg>, 
-    p_sock : &socket2::Socket,
-    p_addr : &socket2::SockAddr, 
-    rb_audio : &ringb::SyncByteRingBuf,
-    audio_cond : &(Mutex<bool>, Condvar),
-    i_cc : Arc<Mutex<protocol::cc_out::CCDataMutex>>) {
+    p_sock : Arc<socket2::Socket>,
+    p_addr : Arc<socket2::SockAddr>, 
+    rb_audio : Arc<ringb::SyncByteRingBuf>,
+    audio_cond : Arc<(Mutex<bool>, Condvar)>,
+    i_cc : Arc<Mutex<protocol::cc_out::CCData>>) {
     println!("UDP Writer running");
 
     // Instantiate the runtime object
-    let mut i_writer = UDPWData::new(receiver, p_sock, p_addr, rb_audio, audio_cond, &i_cc);
+    let mut i_writer = UDPWData::new(receiver, p_sock, p_addr, rb_audio, audio_cond, i_cc);
 
     // Exits when the reader loop exits
     i_writer.writer_run();
