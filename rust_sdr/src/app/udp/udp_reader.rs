@@ -40,14 +40,13 @@ use crate::app::common::messages;
 
 //==================================================================================
 // Runtime object for thread
-pub struct UDPRData<'a>{
+pub struct UDPRData{
     receiver : crossbeam_channel::Receiver<messages::ReaderMsg>,
-	p_sock :  &'a socket2::Socket,
-    rb_iq : &'a ringb::SyncByteRingBuf,
-    iq_cond : &'a (Mutex<bool>, Condvar),
+	p_sock :  Arc<socket2::Socket>,
+    rb_iq : Arc<ringb::SyncByteRingBuf>,
+    iq_cond : Arc<(Mutex<bool>, Condvar)>,
     udp_frame : [MaybeUninit<u8>; common_defs::FRAME_SZ as usize],
     prot_frame : [u8; common_defs::PROT_SZ as usize *2],
-    //pub i_cc: protocol::cc_in::CCDataMutex,
     pub i_seq: protocol::seq_in::SeqData,
     listen: bool,
     iq: [u8; common_defs::IQ_ARR_SZ_R1 as usize],
@@ -55,15 +54,13 @@ pub struct UDPRData<'a>{
 }
 
 // Implementation methods on UDPRData
-impl UDPRData<'_> {
+impl UDPRData {
 	// Create a new instance and initialise the default arrays
-    pub fn new<'a>(
+    pub fn new(
         receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, 
-        p_sock : &'a socket2::Socket, 
-        rb_iq : &'a ringb::SyncByteRingBuf,
-        iq_cond : &'a (Mutex<bool>, Condvar)) -> UDPRData<'a> {
-        // Create an instance of the cc_in type
-        //let i_cc = protocol::cc_in::CCDataMutex::new();
+        p_sock : Arc<socket2::Socket>, 
+        rb_iq : Arc<ringb::SyncByteRingBuf>,
+        iq_cond : Arc<(Mutex<bool>, Condvar)>) -> UDPRData {
         // Create an instance of the sequence type
         let i_seq = protocol::seq_in::SeqData::new();
 
@@ -76,7 +73,6 @@ impl UDPRData<'_> {
             udp_frame: [MaybeUninit::uninit(); common_defs::FRAME_SZ as usize],
             // UDP data contains a header + 2 protocol frames
             prot_frame: [0; common_defs::PROT_SZ as usize *2],
-            //i_cc: i_cc,
             i_seq: i_seq,
             listen: false,
             iq: [0; common_defs::IQ_ARR_SZ_R1 as usize],
@@ -252,16 +248,16 @@ pub fn reader_start(
     rb_iq : Arc<ringb::SyncByteRingBuf>, 
     iq_cond : Arc<(Mutex<bool>, Condvar)>) -> thread::JoinHandle<()> {
     let join_handle = thread::spawn(  move || {
-        reader_run(receiver, &p_sock, &rb_iq, &iq_cond);
+        reader_run(receiver, p_sock, rb_iq, iq_cond);
     });
     return join_handle;
 }
 
 fn reader_run(
     receiver : crossbeam_channel::Receiver<messages::ReaderMsg>, 
-    p_sock : &socket2::Socket, 
-    rb_iq : &ringb::SyncByteRingBuf,
-    iq_cond : &(Mutex<bool>, Condvar)) {
+    p_sock : Arc<socket2::Socket>, 
+    rb_iq : Arc<ringb::SyncByteRingBuf>,
+    iq_cond : Arc<(Mutex<bool>, Condvar)>) {
     println!("UDP Reader running");
 
     // Instantiate the runtime object
