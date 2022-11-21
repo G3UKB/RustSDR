@@ -63,49 +63,28 @@ pub fn frame_decode(
 	const IQ: u32 = 0;
 	const MIC: u32 = 1;
 
+	// Depends on relative rate
 	let mic_blk_sel = rate / 48000;
 	// This is a count of blocks to skip and must be static
-	static mut skip_mic_data: i32 = 0;
-
-	// Set of variables to manage the decode
-	let mut nskip = 0;
-	let mut total_iq_bytes: u32 = 0;
-	let mut total_mic_bytes: u32 = 0;
-	let mut total_iq_bytes_ct: u32 = 0;
-	let mut total_mic_bytes_ct: u32 = 0;
-	let mut iq_bytes = 0;
-	let mut iq_ct = 0;
-	let mut mic_bytes = 0;
-	let mut mic_ct = 0;
-	let mut iq_index = 0;
-	let mut mic_index = 0;
-	let mut state = 0;
-	let mut signal = 0;
-	let mut sample_input_level: i16 = 0;
-	let mut peak_input_inst: i16 = 0;
-	let mut i = 0;
-	let mut local: bool = false;
-	let mut ret = 0;
-	let mut write_space = 0;
-	let mut read_space  = 0;
-	let mut xfer_sz = 0;
+	static mut _SKIP_MIC_DATA: i32 = 0;
 
 	// Reset the peak input level
-	sample_input_level = 0;
-	peak_input_inst = 0;
+	let _sample_input_level: i16 = 0;
+	let _peak_input_inst: i16 = 0;
 
 	// The total number of IQ bytes to be concatenated
-	total_iq_bytes = n_smpls * n_rx * 6;	// 6 bytes per sample (2 x 24 bit)
-	total_iq_bytes_ct = total_iq_bytes;		// iteration counter
+	let total_iq_bytes: u32 = n_smpls * n_rx * 6;	// 6 bytes per sample (2 x 24 bit)
+	let mut total_iq_bytes_ct: u32 = total_iq_bytes;		// iteration counter
 
 	// Determine if we are using HPSDR or local mic input
 	// Note that for local we let the normal processing run through except when it comes to
 	// writing to the ring buffer we write data from the local audio input ring buffer to
 	// the mic ring buffer.
 	// TBD
-	local = false;
+	let mut _local = false;
 	
 	// The total number of Mic bytes to be moved
+	let total_mic_bytes: u32;
 	if mic_blk_sel == 1 {
 		// Take every byte in every frame
 		total_mic_bytes = n_smpls * 2;	// 2 bytes per sample (1 x 16 bit)
@@ -115,22 +94,22 @@ pub fn frame_decode(
 		// We then skip frames if necessary
 		total_mic_bytes = n_smpls;
 	}
-	total_mic_bytes_ct = total_mic_bytes;
+	let mut total_mic_bytes_ct: u32 = total_mic_bytes;
 
 	// The number of IQ bytes for each receiver(s) sample
-	iq_bytes = n_rx * common_defs::BYTES_PER_SAMPLE;
+	let iq_bytes = n_rx * common_defs::BYTES_PER_SAMPLE;
 	// IQ byte counter
-	iq_ct = iq_bytes;
+	let mut iq_ct = iq_bytes;
 	// The number of Mic bytes following receiver sample
-	mic_bytes = 2;
+	let mic_bytes = 2;
 	// Mic byte counter
-	mic_ct = mic_bytes;
+	let mut mic_ct = mic_bytes;
 	// Initial state is reading IQ bytes as we always align at the start of IQ data
-	state = IQ;
+	let mut state = IQ;
 
 	// Iterate through every input byte
-	iq_index = 0;
-	mic_index = 0;
+	let mut iq_index = 0;
+	let mut mic_index = 0;
 	for i in 0..in_sz {
 		if state == IQ {
 			// Processing IQ bytes

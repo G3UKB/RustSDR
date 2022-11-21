@@ -35,12 +35,12 @@ pub mod ui;
 use crate::app::common::common_defs;
 
 use std::sync::{Arc, Mutex, Condvar};
-use std::cell::RefCell;
-use std::rc::{Rc, Weak};
+//use std::cell::RefCell;
+//use std::rc::{Rc, Weak};
 use std::thread;
-use std::time::Duration;
+//use std::time::Duration;
 use std::option;
-use eframe::egui;
+//use eframe::egui;
 
 
 use socket2;
@@ -167,24 +167,22 @@ impl Appdata {
         i_sock.udp_revert_socket();
 
         // Create an instance of the cc_out type
-        let mut i_cc = Arc::new(Mutex::new(protocol::cc_out::CCData::new()));
+        let i_cc = Arc::new(Mutex::new(protocol::cc_out::CCData::new()));
 
         // Create the UDP reader and writer if we have a valid hardware address
-        let mut opt_udp_writer: option::Option<udp::udp_writer::UDPWData> = None;
         let mut opt_reader_join_handle: option::Option<thread::JoinHandle<()>> = None;
         let mut opt_writer_join_handle: option::Option<thread::JoinHandle<()>> = None;
-        let arc2 = p_sock.clone();
         let arc3 = p_sock.clone();
         let arc4 = p_sock.clone();
         match p_addr {
             Some(addr) => { 
                 // Create UDP writer 
-                let arc5 = addr.clone();
+                let arc2 = addr.clone();
                 
                 // Start the UDP writer thread
                 opt_writer_join_handle = Some(
                     udp::udp_writer::writer_start(w_r.clone(), 
-                    arc3, arc5, 
+                    arc3, arc2, 
                     rb_audio.clone(), audio_cond.clone(), i_cc.clone()));
 
                 // Start the UDP reader thread
@@ -199,15 +197,13 @@ impl Appdata {
         }
 
         // Start the pipeline thread
+        #[allow(unused_assignments)]
         let mut opt_pipeline_join_handle: option::Option<thread::JoinHandle<()>> = None;
         opt_pipeline_join_handle = Some(pipeline::pipeline::pipeline_start(
                 pipeline_r.clone(), rb_iq.clone(), iq_cond.clone(), rb_audio.clone(), rb_local_audio.clone()));
 
         // Create the local audio
-        let mut i_local_audio = audio::audio_out::AudioData::new(rb_local_audio.clone());
-
-        // Create the UI instance
-        //let mut i_ui: ui::main_window::UIState = ui::main_window::UIState::new(i_cc.clone());
+        let i_local_audio = audio::audio_out::AudioData::new(rb_local_audio.clone());
 
         // Initialise the application data
         Appdata { 
@@ -230,7 +226,6 @@ impl Appdata {
             stream : None,
             run : l_run,
             i_cc : i_cc,
-            //i_ui : i_ui,
         }
     }
     
@@ -303,8 +298,8 @@ impl Appdata {
         // Wait for pipeline to exit
         if let Some(h) = self.opt_pipeline_join_handle.take(){
             println!("Waiting for pipeline to terminate...");
-            h.join().expect("Join Pipeline failed!");;
-            println!("Pipeline terminated");
+            h.join().expect("Join Pipeline failed!");
+            println!("Pipeline terminated")
         }
         
         if self.run {

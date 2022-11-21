@@ -25,8 +25,8 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use std::sync::Mutex;
-use std::sync::MutexGuard;
+//use std::sync::Mutex;
+//use std::sync::MutexGuard;
 use crate::app::common::cc_out_defs:: {
 	CCOSpeed,CCO10MhzRef,CCO122MhzRef,CCOBoardConfig,CCOMicSrc,
 	CCOAlexAttn,CCOPreamp,CCORxAnt,CCOAlexRxOut,CCOAlexTxRly,
@@ -42,6 +42,7 @@ const RR_CC:  usize = 7;
 //========================================================================
 // Enumerations for bit fields in the CC structure
 // CC buffer index
+#[allow(dead_code)]
 enum CCOBufferIdx {
 	BGen,
 	BRx1TxF,
@@ -53,6 +54,7 @@ enum CCOBufferIdx {
 }
 
 // CC byte index
+#[allow(dead_code)]
 enum CCOByteIdx {
 	CC0,
 	CC1,
