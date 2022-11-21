@@ -27,4 +27,4 @@ bob@bobcowdery.plus.com
 
 //pub mod main_window;
 pub mod egui_ui;
-pub mod components;
+
