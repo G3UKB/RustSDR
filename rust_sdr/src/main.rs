@@ -29,7 +29,6 @@ use std::time::Duration;
 use std::io::{stdin, stdout, Read, Write};
 
 pub mod app;
-use crate::app::ui;
 
 /// Entry point for RustConsole SDR application
 ///

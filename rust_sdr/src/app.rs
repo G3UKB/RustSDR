@@ -35,13 +35,8 @@ pub mod ui;
 use crate::app::common::common_defs;
 
 use std::sync::{Arc, Mutex, Condvar};
-//use std::cell::RefCell;
-//use std::rc::{Rc, Weak};
 use std::thread;
-//use std::time::Duration;
 use std::option;
-//use eframe::egui;
-
 
 use socket2;
 use crossbeam_channel::unbounded;

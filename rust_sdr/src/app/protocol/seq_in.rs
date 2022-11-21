@@ -81,7 +81,7 @@ impl SeqData {
     }
 
     fn big_to_little_endian(&mut self, big_endian: [u8; 4]) -> u32 {
-        let mut little_endian: u32 = 0;
+        let mut little_endian: u32;
         little_endian = big_endian[0] as u32;
         little_endian = (little_endian << 8) | (big_endian[1] as u32);
         little_endian = (little_endian << 8) | (big_endian[2] as u32);
