@@ -91,22 +91,22 @@ pub const CH_TX : u32 = 0;
 pub const STATE_STOPPED: u32 = 0;
 pub const STATE_RUN: u32 = 1;
 // Window types
-pub enum WINDOW_TYPES {
-	RECTANGULAR,
-	BLACKMAN_HARRIS,
-	HANN,
-	FLAT_TOP,
-	HAMMING,
-	KAISER
+pub enum WindowTypes {
+	Rectangular,
+	BlackmanHarris,
+	Hann,
+	FlatTop,
+	Hamming,
+	Kaiser,
 }
 // Average mode
-pub enum AV_MODE {
-	PAN_PEAK = -1,
-	PAN_NONE,
-	PAN_TIME_AV_LIN,
-	PAN_TIME_AV_LOG,
-	PAN_WIN_AV_LIN,
-	PAN_WIN_AV_LOG,
-	PAN_LNF_LIN,
-	PAN_LNF_LOG
+pub enum AvMode {
+	PanPeak = -1,
+	PanNone,
+	PanTimeAvLin,
+	PanTimeAvLog,
+	PanWinAvLin,
+	PanWinAvLog,
+	PanLnfLin,
+	PanLnfLog
 }

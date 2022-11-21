@@ -123,9 +123,9 @@ impl Appdata {
 
         // Open a display channel
         if dsp::dsp_interface::wdsp_open_disp(
-            0, common_defs::FFT_SZ, common_defs::WINDOW_TYPES::RECTANGULAR as i32, 
+            0, common_defs::FFT_SZ, common_defs::WindowTypes::Rectangular as i32, 
             common_defs::SUB_SPANS, common_defs::IN_SZ, common_defs::DISPLAY_WIDTH, 
-            common_defs::AV_MODE::PAN_TIME_AV_LIN as i32, common_defs::OVER_FRAMES, 
+            common_defs::AvMode::PanTimeAvLin as i32, common_defs::OVER_FRAMES, 
             common_defs::SAMPLE_RATE, common_defs::FRAME_RATE) {
                 println!("Opened display channel");
         }

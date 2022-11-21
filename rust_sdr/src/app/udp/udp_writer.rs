@@ -27,19 +27,16 @@ bob@bobcowdery.plus.com
 
 use std::thread;
 use std::time::Duration;
-use socket2::{self, SockAddr};
-use std::option;
+use socket2;
 use std::sync::{Arc, Mutex, Condvar};
-use std::io:: {Read, Write};
-use std::cell::RefCell;
-use std::cell::RefMut;
+use std::io:: Read;
 
 use crate::app::common::common_defs;
 use crate::app::common::messages;
 use crate::app::protocol;
 use crate::app::common::ringb;
 
-//pub struct UDPWData<'a>{
+#[allow(dead_code)]
 pub struct UDPWData{
     receiver : crossbeam_channel::Receiver<messages::WriterMsg>,
     p_sock : Arc<socket2::Socket>,
@@ -113,7 +110,7 @@ impl UDPWData {
     // Send a fully set of cc bytes to prime the radio before starting to listen
     pub fn prime(&mut self) {
         
-        for i in 0..6 {
+        for _i in 0..6 {
             // Encode the next frame
             protocol::encoder::encode(&mut self.i_seq, &mut self.i_cc.lock().unwrap(), &mut self.udp_frame, &mut self.prot_frame);
             // Send to hardware
@@ -153,7 +150,7 @@ impl UDPWData {
                         }
                     }
                 }
-                Err(e) => {
+                Err(_e) => {
                     // Couldn't get lock so try next time
                     break;
                 }

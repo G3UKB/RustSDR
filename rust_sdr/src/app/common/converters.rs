@@ -43,7 +43,7 @@ pub fn i8be_to_f64le(in_data: &Vec<u8>, out_data: &mut [f64; (common_defs::DSP_B
     let scale: f64 = 1.0 /(base.pow(23)) as f64;
     
     // Size to iterate over
-    let sz: u32 = ((common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) - common_defs::BYTES_PER_SAMPLE/2);
+    let sz: u32 = (common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) - common_defs::BYTES_PER_SAMPLE/2;
 
     let mut in_index: u32 = 0;
     let mut out_index: u32 = 0;
@@ -79,14 +79,14 @@ pub fn f64le_to_i8be(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], ou
 
     let base: i32 = 2;
     let scale: f64 = base.pow(15) as f64;
-    let sz: u32 = (common_defs::DSP_BLK_SZ * 4 * 2);
+    let sz: u32 = common_defs::DSP_BLK_SZ * 4 * 2;
 
     let mut dest: usize = 0;
     let mut src: usize = 0;
-    let mut L: i16;
-    let mut R: i16;
-    let mut I: i16;
-    let mut Q: i16;
+    let mut l: i16;
+    let mut r: i16;
+    let mut i: i16;
+    let mut q: i16;
     
     // We get 1024 f64 audio interleaved left/right
     // We 'will' get f64 samples interleaved IQ output data when TX is implemented
@@ -96,19 +96,19 @@ pub fn f64le_to_i8be(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], ou
 
     // We iterate on the output side starting at the LSB
     while dest <= (sz - 8) as usize {
-        L = (in_data[src] * scale) as i16;
-        R = (in_data[src+1] * scale) as i16;
-        I = 0 as i16;
-        Q = 0 as i16;
-        out_data[dest] = ((L >> 8) & 0xff) as u8;
-        out_data[dest+1] = (L & 0xff) as u8;
-        out_data[dest+2] = ((R >> 8) & 0xff) as u8;
-        out_data[dest+3] = (R & 0xff) as u8;
+        l = (in_data[src] * scale) as i16;
+        r = (in_data[src+1] * scale) as i16;
+        i = 0 as i16;
+        q = 0 as i16;
+        out_data[dest] = ((l >> 8) & 0xff) as u8;
+        out_data[dest+1] = (l & 0xff) as u8;
+        out_data[dest+2] = ((r >> 8) & 0xff) as u8;
+        out_data[dest+3] = (r & 0xff) as u8;
 
-        out_data[dest+4] = I as u8;
-        out_data[dest+5] = I as u8;
-        out_data[dest+6] = Q as u8;
-        out_data[dest+7] = Q as u8;
+        out_data[dest+4] = i as u8;
+        out_data[dest+5] = i as u8;
+        out_data[dest+6] = q as u8;
+        out_data[dest+7] = q as u8;
 
         dest += 8;
         src += 2;
@@ -131,20 +131,20 @@ pub fn f64le_to_i8le(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], ou
     let out_sz: usize = (common_defs::DSP_BLK_SZ * 4) as usize;
     let mut dest: usize = 0;
     let mut src: usize = 0;
-    let mut L: i16;
-    let mut R: i16;
+    let mut l: i16;
+    let mut r: i16;
     let base: i32 = 2;
     let scale: f64 = base.pow(15) as f64;
 
     // We iterate on the output side starting at the MSB
     while dest <= out_sz - 4 {
-        L = (in_data[src] * scale) as i16;
-        R = (in_data[src+1] * scale) as i16;
+        l = (in_data[src] * scale) as i16;
+        r = (in_data[src+1] * scale) as i16;
         
-        out_data[dest] = (L & 0xff) as u8;
-        out_data[dest+1] = ((L >> 8) & 0xff) as u8;
-        out_data[dest+2] = (R & 0xff) as u8;
-        out_data[dest+3] = ((R >> 8) & 0xff) as u8;
+        out_data[dest] = (l & 0xff) as u8;
+        out_data[dest+1] = ((l >> 8) & 0xff) as u8;
+        out_data[dest+2] = (r & 0xff) as u8;
+        out_data[dest+3] = ((r >> 8) & 0xff) as u8;
 
         dest += 4;
         src += 2;
@@ -153,6 +153,7 @@ pub fn f64le_to_i8le(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], ou
 
 // Convert input buffer in i8 LE to output buffer f32 LE
 // Audio ring buffer to local audio
+#[allow(unused_parens)]
 pub fn i8le_to_f32le(in_data: &Vec<u8>, out_data: &mut Vec<f32>, sz: u32) {
     // The U8 data in the ring buffer is ordered as LE i16 2 byte values 
 
@@ -162,6 +163,7 @@ pub fn i8le_to_f32le(in_data: &Vec<u8>, out_data: &mut Vec<f32>, sz: u32) {
     let mut dest: u32 = 0;
     let mut as_int_left: i16;
     let mut as_int_right: i16;
+    // NOTE Do not remove parenthesis, they are required
     while src <= sz -4 {
         as_int_left = (
             in_data[src as usize] as i16 | 

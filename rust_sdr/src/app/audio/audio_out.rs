@@ -26,7 +26,7 @@ bob@bobcowdery.plus.com
 */
 
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use cpal::{Data, Sample, SampleFormat, PlayStreamError};
+use cpal::{Sample, SampleFormat};
 use std::vec;
 use std::io::Read;
 use std::sync::Arc;
