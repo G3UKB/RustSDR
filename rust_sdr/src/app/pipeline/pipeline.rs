@@ -26,16 +26,14 @@ bob@bobcowdery.plus.com
 
 use std::thread;
 use std::time::Duration;
-use std::sync::{Arc, Mutex, Condvar, MutexGuard, WaitTimeoutResult};
+use std::sync::{Arc, Mutex, Condvar};
 use std::io::{Read, Write};
-use std::cell::RefCell;
 
 use crate::app::common::messages;
 use crate::app::common::common_defs;
 use crate::app::common::ringb;
 use crate::app::common::converters;
 use crate::app::dsp;
-use crate::app::udp::udp_writer;
 
 enum ACTIONS {
     ActionNone,
@@ -58,6 +56,7 @@ pub struct PipelineData<'a>{
     output_frame : [u8; common_defs::DSP_BLK_SZ as usize * 8],
     audio_frame : [u8; common_defs::DSP_BLK_SZ as usize * 4],
     run : bool,
+    #[allow(dead_code)]
     num_rx : u32,
 }
 

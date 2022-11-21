@@ -24,14 +24,14 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use std::ffi:: {CString, c_int, c_double, c_long};
+use std::ffi:: {CString};
 use std::os::raw::c_char;
 use std::ops::Neg;
 
 use crate::app::common::common_defs;
 
-static mut g_mode: i32 = 0;
-static mut g_filter: i32 = 0;
+static mut G_MODE: i32 = 0;
+static mut G_FILTER: i32 = 0;
 
 // External interfaces exposed through the WDSP library
 #[link(name = "wdsp_win")]
@@ -121,8 +121,8 @@ pub fn wdsp_open_ch(
 	*/
 
 
-	let mut input_sz: i32;
-	let mut dsp_rate: i32;
+	let input_sz: i32;
+	let dsp_rate: i32;
 
 	if ch_type == common_defs::CH_RX as i32 {
 		// For RX we keep the input and dsp size the same.
@@ -162,14 +162,14 @@ pub fn wdsp_exchange(ch_id: i32, in_buf: &mut [f64; (common_defs::DSP_BLK_SZ * 2
 
 // Modes and filters
 pub fn wdsp_set_rx_mode(ch_id: i32, mode: i32) {
-	unsafe{g_mode = mode;}
+	unsafe{G_MODE = mode;}
 	set_mode_filter(ch_id);
 }
 
 pub fn wdsp_set_rx_filter(ch_id: i32, filter: i32) {
 	// Filters are 0-7 in order
 	// 6K 4K 2.7K 2.4K 1.0K 500Hz 250Hz 100Hz
-	unsafe{g_filter = filter;}
+	unsafe{G_FILTER = filter;}
 	set_mode_filter(ch_id);
 }
 
@@ -177,10 +177,10 @@ fn set_mode_filter(ch_id: i32) {
 	let mut low: i32 = 0;
 	let mut high: i32 = 0;
 	unsafe{
-		let filter = g_filter;
-		let mode = g_mode;
-		let mut new_low = 0;
-		let mut new_high = 0;
+		let filter = G_FILTER;
+		let mode = G_MODE;
+		let new_low;
+		let new_high;
 		match filter {
 			0 => {low = 100; high = 6100},
 			1 => {low = 100; high = 4100},
@@ -264,7 +264,7 @@ pub fn wdsp_open_disp(
 		let overlap: i32 = (f64::max(0.0, f64::ceil(fft_size as f64 - sample_rate as f64 / frame_rate as f64))) as i32;
 		let clip_fraction: f64 = 0.17;
 		let clp: i32 = f64::floor(clip_fraction * fft_size as f64) as i32;
-		let max_av_frames: i32 = 60;
+		//let max_av_frames: i32 = 60;
 		let keep_time: f64 = 0.1;
 		let max_w: i32 = fft_size + f64::min(keep_time * sample_rate as f64, keep_time * fft_size as f64 * frame_rate as f64) as i32;
 
@@ -311,7 +311,6 @@ pub fn wdsp_update_disp(
 	let overlap: i32 = (f64::max(0.0, f64::ceil(fft_size as f64 - sample_rate as f64 / frame_rate as f64))) as i32;
 	let clip_fraction: f64 = 0.17;
 	let clp: i32 = f64::floor(clip_fraction * fft_size as f64) as i32;
-	let max_av_frames: i32 = 60;
 	let keep_time: f64 = 0.1;
 	let max_w: i32 = fft_size + f64::min(keep_time * sample_rate as f64, keep_time * fft_size as f64 * frame_rate as f64) as i32;
 
@@ -341,6 +340,10 @@ pub fn wdsp_update_disp(
 			max_w,					// how much data to keep in the display buffers
 		);
 	}
+}
+
+pub fn destroy_analyzer(disp_id: i32) {
+	unsafe{ DestroyAnalyzer(disp_id)};
 }
 
 // Push display data as interleaved IQ
