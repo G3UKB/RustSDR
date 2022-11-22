@@ -43,12 +43,12 @@ enum ACTIONS {
 
 //==================================================================================
 // Runtime object for thread
-pub struct PipelineData<'a>{
+pub struct PipelineData{
     receiver : crossbeam_channel::Receiver<messages::PipelineMsg>,
-    rb_iq : &'a ringb::SyncByteRingBuf,
-    iq_cond : &'a (Mutex<bool>, Condvar),
-    rb_audio : &'a ringb::SyncByteRingBuf,
-    rb_local_audio : &'a ringb::SyncByteRingBuf,
+    rb_iq : Arc<ringb::SyncByteRingBuf>,
+    iq_cond : Arc<(Mutex<bool>, Condvar)>,
+    rb_audio : Arc< ringb::SyncByteRingBuf>,
+    rb_local_audio : Arc<ringb::SyncByteRingBuf>,
     iq_data : Vec<u8>,
     dec_iq_data : [f64; (common_defs::DSP_BLK_SZ * 2) as usize],
     disp_iq_data : [f32; (common_defs::DSP_BLK_SZ * 2) as usize],
@@ -61,12 +61,12 @@ pub struct PipelineData<'a>{
 }
 
 // Implementation methods on UDPRData
-impl PipelineData<'_> {
+impl PipelineData {
 	// Create a new instance and initialise the default arrays
-    pub fn new<'a> (
+    pub fn new (
         receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, 
-        rb_iq : &'a ringb::SyncByteRingBuf, iq_cond : &'a (Mutex<bool>, Condvar),
-        rb_audio : &'a ringb::SyncByteRingBuf, rb_local_audio : &'a ringb::SyncByteRingBuf) -> PipelineData {
+        rb_iq : Arc<ringb::SyncByteRingBuf>, iq_cond : Arc<(Mutex<bool>, Condvar)>,
+        rb_audio :Arc<ringb::SyncByteRingBuf>, rb_local_audio :Arc<ringb::SyncByteRingBuf>) -> PipelineData {
 
 		PipelineData {
             receiver: receiver,
@@ -223,21 +223,21 @@ pub fn pipeline_start(
     rb_audio : Arc<ringb::SyncByteRingBuf>,
     rb_local_audio : Arc<ringb::SyncByteRingBuf>) -> thread::JoinHandle<()> {
     let join_handle = thread::spawn(  move || {
-        pipeline_run(receiver, &rb_iq, &iq_cond, &rb_audio, &rb_local_audio);
+        pipeline_run(receiver, rb_iq, iq_cond, rb_audio, rb_local_audio);
     });
     return join_handle;
 }
 
 fn pipeline_run(
         receiver : crossbeam_channel::Receiver<messages::PipelineMsg>, 
-        rb_iq : &ringb::SyncByteRingBuf, 
-        iq_cond : &(Mutex<bool>, Condvar), 
-        rb_audio : &ringb::SyncByteRingBuf,
-        rb_local_audio : &ringb::SyncByteRingBuf){
+        rb_iq : Arc<ringb::SyncByteRingBuf>, 
+        iq_cond : Arc<(Mutex<bool>, Condvar)>, 
+        rb_audio : Arc<ringb::SyncByteRingBuf>,
+        rb_local_audio : Arc<ringb::SyncByteRingBuf>){
     println!("Pipeline running");
 
     // Instantiate the runtime object
-    let mut i_pipeline = PipelineData::new(receiver, rb_iq, iq_cond, rb_audio, rb_local_audio);
+    let mut i_pipeline = PipelineData::new(receiver,rb_iq, iq_cond, rb_audio, rb_local_audio);
 
     // Exits when the reader loop exits
     i_pipeline.pipeline_run();

@@ -250,7 +250,6 @@ impl Appdata {
     //=========================================================================================
     // Run the UI event loop. Only returns when the UI is closed.
     pub fn ui_run(&mut self) {
-        //self.i_ui.run_event_loop();
         let options = eframe::NativeOptions::default();
         let i_cc = self.i_cc.clone();
         eframe::run_native(
@@ -279,6 +278,11 @@ impl Appdata {
                 h.join().expect("Join UDP Writer failed!");
                 println!("Writer terminated");
             }
+
+            //match &self.opt_writer_join_handle {
+            //    Some(inst) => inst.join().expect("Join UDP Writer failed!"),
+            //    None => ()
+            //}
 
             // Wait for UDP reader to exit
             if let Some(h) = self.opt_reader_join_handle.take(){
