@@ -90,9 +90,6 @@ pub struct Appdata{
     // State
     pub run : bool,
 
-    //=================================================
-    // User interface object
-    //pub i_ui : ui::main_window::UIState,
 }
 
 //=========================================================================================
@@ -278,11 +275,6 @@ impl Appdata {
                 h.join().expect("Join UDP Writer failed!");
                 println!("Writer terminated");
             }
-
-            //match &self.opt_writer_join_handle {
-            //    Some(inst) => inst.join().expect("Join UDP Writer failed!"),
-            //    None => ()
-            //}
 
             // Wait for UDP reader to exit
             if let Some(h) = self.opt_reader_join_handle.take(){
