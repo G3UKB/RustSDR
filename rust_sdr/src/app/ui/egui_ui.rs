@@ -25,7 +25,7 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
+//#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
 use std::sync::{Arc, Mutex};
 use std::ops::Neg;
@@ -35,68 +35,64 @@ use crate::app::common::common_defs;
 use crate::app::dsp;
 
 use eframe::egui;
-use egui::{Frame, FontFamily, FontId, RichText, TextStyle, Color32, Stroke, Vec2, vec2, Pos2, pos2, emath};
+use egui::{FontFamily, FontId, RichText, TextStyle, Color32, Pos2, pos2, emath};
 
 // Mode enumerations
-enum mode_id {
-    LSB, 
-    USB,
-    DSB,
-    CW_L,
-    CW_U,
-    FM,
-    AM,
-    DIG_U,
-    SPEC,
-    DIG_L,
-    SAM,
-    DRM,
+enum ModeId {
+    Lsb, 
+    Usb,
+    Dsb,
+    CwL,
+    CwU,
+    Fm,
+    Am,
+    DigU,
+    Spec,
+    DigL,
+    Sam,
+    Drm,
 }
 #[derive(PartialEq)]
-enum enum_mode_pos {
-    LOWER,
-    UPPER,
-    BOTH,
+enum EnumModePos {
+    Lower,
+    Upper,
+    Both,
 }
 
 // Filter enumerations
-enum filter_id {
+enum FilterId {
     F6_0KHz,
     F4_0KHz,
     F2_7KHz,
     F2_4KHz,
     F1_0KHz,
     F500Hz,
-    F250Hz,
     F100Hz,
 }
 
 // VFO enumeration
-enum vfo_id {
-    f_100M,
-    f_10M,
-    f_1M,
-    f_100K,
-    f_10K,
-    f_1K,
-    f_100H,
-    f_10H,
-    f_1H,
+enum VfoId {
+    F100M,
+    F10M,
+    F1M,
+    F100K,
+    F10K,
+    F1K,
+    F100H,
+    F10H,
+    F1H,
 }
 
 // Modes, Filters and VFO constants
-const MHzSz: f32 = 35.0;
-const KHzSz: f32 = 35.0;
-const HzSz: f32 = 25.0;
-const MHzSzGrow: f32 = 40.0;
-const KHzSzGrow: f32 = 40.0;
-const HzSzGrow: f32 = 30.0;
-const VFONormalColor: egui::Color32 = egui::Color32::TRANSPARENT;
-const VFOHighlightColor: egui::Color32 = egui::Color32::DARK_GREEN;
-const ModeNormalColor: egui::Color32 = egui::Color32::TRANSPARENT;
-const ModeHighlightColor: egui::Color32 = egui::Color32::DARK_BLUE;
-const FiltNormalColor: egui::Color32 = egui::Color32::TRANSPARENT;
-const FiltHighlightColor: egui::Color32 = egui::Color32::DARK_RED;
+const MHZ_SZ: f32 = 35.0;
+const KHZ_SZ: f32 = 35.0;
+const HZ_SZ: f32 = 25.0;
+const VFO_NORMAL_COLOR: egui::Color32 = egui::Color32::TRANSPARENT;
+const VFO_HIGHLIGHT_COLOR: egui::Color32 = egui::Color32::DARK_GREEN;
+const MODE_NORMAL_COLOR: egui::Color32 = egui::Color32::TRANSPARENT;
+const MODE_HIGHLIGHT_COLOR: egui::Color32 = egui::Color32::DARK_BLUE;
+const FILT_NORMAL_COLOR: egui::Color32 = egui::Color32::TRANSPARENT;
+const FILT_HIGHLIGHT_COLOR: egui::Color32 = egui::Color32::DARK_RED;
 
 // Display constants
 const LOW_DB: i32 = -140;
@@ -150,11 +146,8 @@ fn configure_text_styles(ctx: &egui::Context) {
 // State for UIApp
 pub struct UIApp {
     i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
-    position: f32,
-    last_position: f32,
     frequency: u32,
-    freq_inc: i32,
-    mode_pos: enum_mode_pos,
+    mode_pos: EnumModePos,
     filter_width: i32,
 
     // VFO, mode and filter state
@@ -178,19 +171,19 @@ impl UIApp {
 
         // Create array of strings and size for VFO digits
         let f_array = [
-           (String::from("0"), MHzSz, egui::Color32::TRANSPARENT),
-           (String::from("0"), MHzSz, egui::Color32::TRANSPARENT),
-           (String::from("7"), MHzSz, egui::Color32::TRANSPARENT),
-           (String::from("1"), KHzSz, egui::Color32::TRANSPARENT),
-           (String::from("0"), KHzSz, egui::Color32::TRANSPARENT),
-           (String::from("0"), KHzSz, egui::Color32::TRANSPARENT),
-           (String::from("0"), HzSz, egui::Color32::TRANSPARENT),
-           (String::from("0"), HzSz, egui::Color32::TRANSPARENT),
-           (String::from("0"), HzSz, egui::Color32::TRANSPARENT), 
+           (String::from("0"), MHZ_SZ, egui::Color32::TRANSPARENT),
+           (String::from("0"), MHZ_SZ, egui::Color32::TRANSPARENT),
+           (String::from("7"), MHZ_SZ, egui::Color32::TRANSPARENT),
+           (String::from("1"), KHZ_SZ, egui::Color32::TRANSPARENT),
+           (String::from("0"), KHZ_SZ, egui::Color32::TRANSPARENT),
+           (String::from("0"), KHZ_SZ, egui::Color32::TRANSPARENT),
+           (String::from("0"), HZ_SZ, egui::Color32::TRANSPARENT),
+           (String::from("0"), HZ_SZ, egui::Color32::TRANSPARENT),
+           (String::from("0"), HZ_SZ, egui::Color32::TRANSPARENT), 
         ];
 
         let m_array = [
-           (String::from("LSB"), ModeHighlightColor),
+           (String::from("LSB"), MODE_HIGHLIGHT_COLOR),
            (String::from("USB"), egui::Color32::TRANSPARENT),
            (String::from("DSB"), egui::Color32::TRANSPARENT),
            (String::from("CW-L"), egui::Color32::TRANSPARENT),
@@ -208,7 +201,7 @@ impl UIApp {
            (String::from("6K0"), egui::Color32::TRANSPARENT),
            (String::from("4K0"), egui::Color32::TRANSPARENT),
            (String::from("2K7"), egui::Color32::TRANSPARENT),
-           (String::from("2K4"), FiltHighlightColor),
+           (String::from("2K4"), FILT_HIGHLIGHT_COLOR),
            (String::from("1K0"), egui::Color32::TRANSPARENT),
            (String::from("500H"), egui::Color32::TRANSPARENT),
            (String::from("250H"), egui::Color32::TRANSPARENT),
@@ -216,21 +209,18 @@ impl UIApp {
         ];
     
         // Set default mode and filter
-        dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::LSB as i32);
-        dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F2_4KHz as i32);
+        dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Lsb as i32);
+        dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F2_4KHz as i32);
 
         Self {
-            position: 50.0,
-            last_position: 50.0,
             frequency: 7100000,
-            freq_inc: 0,
             i_cc: i_cc,
             f_array: f_array,
             m_array: m_array,
             fi_array: fi_array,
             out_real: [0.0; (common_defs::DSP_BLK_SZ ) as usize],
             disp_width: 300,
-            mode_pos: enum_mode_pos::LOWER,
+            mode_pos: EnumModePos::Lower,
             filter_width: 2400,
             mouse_pos: pos2(0.0,0.0),
             freq_at_ptr: 7.1,
@@ -243,99 +233,99 @@ impl UIApp {
     fn modes(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::LSB as usize].0).text_style(heading3())
-            .background_color(self.m_array[mode_id::LSB as usize].1));
+            let b = ui.button(RichText::new(&self.m_array[ModeId::Lsb as usize].0).text_style(heading3())
+            .background_color(self.m_array[ModeId::Lsb as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(mode_id::LSB as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::LSB as i32);
-                self.mode_pos = enum_mode_pos::LOWER;
+                self.set_mode_buttons(ModeId::Lsb as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Lsb as i32);
+                self.mode_pos = EnumModePos::Lower;
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::USB as usize].0).text_style(heading3())
-            .background_color(self.m_array[mode_id::USB as usize].1));
+            let b = ui.button(RichText::new(&self.m_array[ModeId::Usb as usize].0).text_style(heading3())
+            .background_color(self.m_array[ModeId::Usb as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(mode_id::USB as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::USB as i32);
-                self.mode_pos = enum_mode_pos::UPPER;
+                self.set_mode_buttons(ModeId::Usb as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Usb as i32);
+                self.mode_pos = EnumModePos::Upper;
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::DSB as usize].0).text_style(heading3())
-            .background_color(self.m_array[mode_id::DSB as usize].1));
+            let b = ui.button(RichText::new(&self.m_array[ModeId::Dsb as usize].0).text_style(heading3())
+            .background_color(self.m_array[ModeId::Dsb as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(mode_id::DSB as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DSB as i32);
-                self.mode_pos = enum_mode_pos::BOTH;
+                self.set_mode_buttons(ModeId::Dsb as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Dsb as i32);
+                self.mode_pos = EnumModePos::Both;
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::CW_L as usize].0).text_style(heading3())
-            .background_color(self.m_array[mode_id::CW_L as usize].1));
+            let b = ui.button(RichText::new(&self.m_array[ModeId::CwL as usize].0).text_style(heading3())
+            .background_color(self.m_array[ModeId::CwL as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(mode_id::CW_L as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::CW_L as i32);
-                self.mode_pos = enum_mode_pos::LOWER;
+                self.set_mode_buttons(ModeId::CwL as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::CwL as i32);
+                self.mode_pos = EnumModePos::Lower;
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::CW_U as usize].0).text_style(heading3())
-            .background_color(self.m_array[mode_id::CW_U as usize].1));
+            let b = ui.button(RichText::new(&self.m_array[ModeId::CwU as usize].0).text_style(heading3())
+            .background_color(self.m_array[ModeId::CwU as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(mode_id::CW_U as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::CW_U as i32);
-                self.mode_pos = enum_mode_pos::UPPER;
+                self.set_mode_buttons(ModeId::CwU as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::CwU as i32);
+                self.mode_pos = EnumModePos::Upper;
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::FM as usize].0).text_style(heading3())
-            .background_color(self.m_array[mode_id::FM as usize].1));
+            let b = ui.button(RichText::new(&self.m_array[ModeId::Fm as usize].0).text_style(heading3())
+            .background_color(self.m_array[ModeId::Fm as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(mode_id::FM as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::FM as i32);
-                self.mode_pos = enum_mode_pos::BOTH;
+                self.set_mode_buttons(ModeId::Fm as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Fm as i32);
+                self.mode_pos = EnumModePos::Both;
             }
-            let b = ui.button(RichText::new(&self.m_array[mode_id::AM as usize].0).text_style(heading3())
-            .background_color(self.m_array[mode_id::AM as usize].1));
+            let b = ui.button(RichText::new(&self.m_array[ModeId::Am as usize].0).text_style(heading3())
+            .background_color(self.m_array[ModeId::Am as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(mode_id::AM as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::AM as i32);
-                self.mode_pos = enum_mode_pos::BOTH;
-            }
-
-            let b = ui.button(RichText::new(&self.m_array[mode_id::DIG_L as usize].0).text_style(heading3())
-            .background_color(self.m_array[mode_id::DIG_L as usize].1));
-            if b.clicked() {
-                self.set_mode_buttons(mode_id::DIG_L as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DIG_L as i32);
-                self.mode_pos = enum_mode_pos::LOWER;
+                self.set_mode_buttons(ModeId::Am as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Am as i32);
+                self.mode_pos = EnumModePos::Both;
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::DIG_U as usize].0).text_style(heading3())
-            .background_color(self.m_array[mode_id::DIG_U as usize].1));
+            let b = ui.button(RichText::new(&self.m_array[ModeId::DigL as usize].0).text_style(heading3())
+            .background_color(self.m_array[ModeId::DigL as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(mode_id::DIG_U as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DIG_U as i32);
-                self.mode_pos = enum_mode_pos::UPPER;
+                self.set_mode_buttons(ModeId::DigL as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::DigL as i32);
+                self.mode_pos = EnumModePos::Lower;
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::SPEC as usize].0).text_style(heading3())
-            .background_color(self.m_array[mode_id::SPEC as usize].1));
+            let b = ui.button(RichText::new(&self.m_array[ModeId::DigU as usize].0).text_style(heading3())
+            .background_color(self.m_array[ModeId::DigU as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(mode_id::SPEC as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::SPEC as i32);
-                self.mode_pos = enum_mode_pos::BOTH;
+                self.set_mode_buttons(ModeId::DigU as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::DigU as i32);
+                self.mode_pos = EnumModePos::Upper;
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::SAM as usize].0).text_style(heading3())
-            .background_color(self.m_array[mode_id::SAM as usize].1));
+            let b = ui.button(RichText::new(&self.m_array[ModeId::Spec as usize].0).text_style(heading3())
+            .background_color(self.m_array[ModeId::Spec as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(mode_id::SAM as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::SAM as i32);
-                self.mode_pos = enum_mode_pos::BOTH;
+                self.set_mode_buttons(ModeId::Spec as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Spec as i32);
+                self.mode_pos = EnumModePos::Both;
             }
 
-            let b = ui.button(RichText::new(&self.m_array[mode_id::DRM as usize].0).text_style(heading3())
-            .background_color(self.m_array[mode_id::DRM as usize].1));
+            let b = ui.button(RichText::new(&self.m_array[ModeId::Sam as usize].0).text_style(heading3())
+            .background_color(self.m_array[ModeId::Sam as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(mode_id::DRM as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, mode_id::DRM as i32);
-                self.mode_pos = enum_mode_pos::BOTH;
+                self.set_mode_buttons(ModeId::Sam as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Sam as i32);
+                self.mode_pos = EnumModePos::Both;
+            }
+
+            let b = ui.button(RichText::new(&self.m_array[ModeId::Drm as usize].0).text_style(heading3())
+            .background_color(self.m_array[ModeId::Drm as usize].1));
+            if b.clicked() {
+                self.set_mode_buttons(ModeId::Drm as i32);
+                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Drm as i32);
+                self.mode_pos = EnumModePos::Both;
             }
         });
     }
@@ -343,68 +333,68 @@ impl UIApp {
     // Highlight the selected button
     fn set_mode_buttons(&mut self, id: i32) {
         for i in 0..12 {
-            self.m_array[i as usize].1 = ModeNormalColor;
+            self.m_array[i as usize].1 = MODE_NORMAL_COLOR;
         }
-        self.m_array[id as usize].1 = ModeHighlightColor;
+        self.m_array[id as usize].1 = MODE_HIGHLIGHT_COLOR;
     }
 
     //===========================================================================================
     // Populate filters window
     fn filters(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
-            let b = ui.button(RichText::new(&self.fi_array[filter_id::F6_0KHz as usize].0).text_style(heading3())
-            .background_color(self.fi_array[filter_id::F6_0KHz as usize].1));
+            let b = ui.button(RichText::new(&self.fi_array[FilterId::F6_0KHz as usize].0).text_style(heading3())
+            .background_color(self.fi_array[FilterId::F6_0KHz as usize].1));
             if b.clicked() {
-                self.set_filter_buttons(filter_id::F6_0KHz as i32);
-                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F6_0KHz as i32);
+                self.set_filter_buttons(FilterId::F6_0KHz as i32);
+                dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F6_0KHz as i32);
                 self.filter_width = 6000;
             }
 
-            let b = ui.button(RichText::new(&self.fi_array[filter_id::F4_0KHz as usize].0).text_style(heading3())
-            .background_color(self.fi_array[filter_id::F4_0KHz as usize].1));
+            let b = ui.button(RichText::new(&self.fi_array[FilterId::F4_0KHz as usize].0).text_style(heading3())
+            .background_color(self.fi_array[FilterId::F4_0KHz as usize].1));
             if b.clicked() {
-                self.set_filter_buttons(filter_id::F4_0KHz as i32);
-                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F4_0KHz as i32);
+                self.set_filter_buttons(FilterId::F4_0KHz as i32);
+                dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F4_0KHz as i32);
                 self.filter_width = 4000;
             }
 
-            let b = ui.button(RichText::new(&self.fi_array[filter_id::F2_7KHz as usize].0).text_style(heading3())
-            .background_color(self.fi_array[filter_id::F2_7KHz as usize].1));
+            let b = ui.button(RichText::new(&self.fi_array[FilterId::F2_7KHz as usize].0).text_style(heading3())
+            .background_color(self.fi_array[FilterId::F2_7KHz as usize].1));
             if b.clicked() {
-                self.set_filter_buttons(filter_id::F2_7KHz as i32);
-                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F2_7KHz as i32);
+                self.set_filter_buttons(FilterId::F2_7KHz as i32);
+                dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F2_7KHz as i32);
                 self.filter_width = 2700;
             }
 
-            let b = ui.button(RichText::new(&self.fi_array[filter_id::F2_4KHz as usize].0).text_style(heading3())
-            .background_color(self.fi_array[filter_id::F2_4KHz as usize].1));
+            let b = ui.button(RichText::new(&self.fi_array[FilterId::F2_4KHz as usize].0).text_style(heading3())
+            .background_color(self.fi_array[FilterId::F2_4KHz as usize].1));
             if b.clicked() {
-                self.set_filter_buttons(filter_id::F2_4KHz as i32);
-                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F2_4KHz as i32);
+                self.set_filter_buttons(FilterId::F2_4KHz as i32);
+                dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F2_4KHz as i32);
                 self.filter_width = 2400;
             }
 
-            let b = ui.button(RichText::new(&self.fi_array[filter_id::F1_0KHz as usize].0).text_style(heading3())
-            .background_color(self.fi_array[filter_id::F1_0KHz as usize].1));
+            let b = ui.button(RichText::new(&self.fi_array[FilterId::F1_0KHz as usize].0).text_style(heading3())
+            .background_color(self.fi_array[FilterId::F1_0KHz as usize].1));
             if b.clicked() {
-                self.set_filter_buttons(filter_id::F1_0KHz as i32);
-                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F1_0KHz as i32);
+                self.set_filter_buttons(FilterId::F1_0KHz as i32);
+                dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F1_0KHz as i32);
                 self.filter_width = 1000;
             }
 
-            let b = ui.button(RichText::new(&self.fi_array[filter_id::F500Hz as usize].0).text_style(heading3())
-            .background_color(self.fi_array[filter_id::F500Hz as usize].1));
+            let b = ui.button(RichText::new(&self.fi_array[FilterId::F500Hz as usize].0).text_style(heading3())
+            .background_color(self.fi_array[FilterId::F500Hz as usize].1));
             if b.clicked() {
-                self.set_filter_buttons(filter_id::F500Hz as i32);
-                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F500Hz as i32);
+                self.set_filter_buttons(FilterId::F500Hz as i32);
+                dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F500Hz as i32);
                 self.filter_width = 500;
             }
 
-            let b = ui.button(RichText::new(&self.fi_array[filter_id::F100Hz as usize].0).text_style(heading3())
-            .background_color(self.fi_array[filter_id::F100Hz as usize].1));
+            let b = ui.button(RichText::new(&self.fi_array[FilterId::F100Hz as usize].0).text_style(heading3())
+            .background_color(self.fi_array[FilterId::F100Hz as usize].1));
             if b.clicked() {
-                self.set_filter_buttons(filter_id::F100Hz as i32);
-                dsp::dsp_interface::wdsp_set_rx_filter(0, filter_id::F100Hz as i32);
+                self.set_filter_buttons(FilterId::F100Hz as i32);
+                dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F100Hz as i32);
                 self.filter_width = 100;
             }
         });
@@ -413,9 +403,9 @@ impl UIApp {
     // Highlight the selected button
     fn set_filter_buttons(&mut self, id: i32) {
         for i in 0..8 {
-            self.fi_array[i as usize].1 = FiltNormalColor;
+            self.fi_array[i as usize].1 = FILT_NORMAL_COLOR;
         }
-        self.fi_array[id as usize].1 = FiltHighlightColor;
+        self.fi_array[id as usize].1 = FILT_HIGHLIGHT_COLOR;
     }
 
     //===========================================================================================
@@ -424,74 +414,74 @@ impl UIApp {
         ui.horizontal(|ui| {
             ui.style_mut().spacing.item_spacing = egui::vec2(14.0,5.0);
             
-            let f_100M = ui.label(RichText::new(&self.f_array[vfo_id::f_100M as usize].0).text_style(heading2())
-            .size(self.f_array[vfo_id::f_100M as usize].1)
-            .background_color(self.f_array[vfo_id::f_100M as usize].2)
+            let f_100_m = ui.label(RichText::new(&self.f_array[VfoId::F100M as usize].0).text_style(heading2())
+            .size(self.f_array[VfoId::F100M as usize].1)
+            .background_color(self.f_array[VfoId::F100M as usize].2)
             .strong());
-            self.scroll_if(ui, vfo_id::f_100M, f_100M.rect, 100000000, MHzSz, MHzSzGrow);
+            self.scroll_if(ui, VfoId::F100M, f_100_m.rect, 100000000);
 
-            let f_10M = ui.label(RichText::new(&self.f_array[vfo_id::f_10M as usize].0).text_style(heading2())
-            .size(self.f_array[vfo_id::f_10M as usize].1)
-            .background_color(self.f_array[vfo_id::f_10M as usize].2)
+            let f_10_m = ui.label(RichText::new(&self.f_array[VfoId::F10M as usize].0).text_style(heading2())
+            .size(self.f_array[VfoId::F10M as usize].1)
+            .background_color(self.f_array[VfoId::F10M as usize].2)
             .strong());
-            self.scroll_if(ui, vfo_id::f_10M ,f_10M.rect, 10000000, MHzSz, MHzSzGrow);
+            self.scroll_if(ui, VfoId::F10M ,f_10_m.rect, 10000000);
 
-            let f_1M = ui.label(RichText::new(&self.f_array[vfo_id::f_1M as usize].0).text_style(heading2())
-            .size(self.f_array[vfo_id::f_1M as usize].1)
-            .background_color(self.f_array[vfo_id::f_1M as usize].2)
+            let f_1_m = ui.label(RichText::new(&self.f_array[VfoId::F1M as usize].0).text_style(heading2())
+            .size(self.f_array[VfoId::F1M as usize].1)
+            .background_color(self.f_array[VfoId::F1M as usize].2)
             .strong());
-            self.scroll_if(ui, vfo_id::f_1M, f_1M.rect, 1000000, MHzSz, MHzSzGrow);
+            self.scroll_if(ui, VfoId::F1M, f_1_m.rect, 1000000);
 
             ui.label(RichText::new("-").text_style(heading2()).strong()
             .size(30.0));
 
-            let f_100K = ui.label(RichText::new(&self.f_array[vfo_id::f_100K as usize].0).text_style(heading2())
-            .size(self.f_array[vfo_id::f_100K as usize].1)
-            .background_color(self.f_array[vfo_id::f_100K as usize].2)
+            let f_100_k = ui.label(RichText::new(&self.f_array[VfoId::F100K as usize].0).text_style(heading2())
+            .size(self.f_array[VfoId::F100K as usize].1)
+            .background_color(self.f_array[VfoId::F100K as usize].2)
             .strong());
-            self.scroll_if(ui, vfo_id::f_100K, f_100K.rect, 100000, KHzSz, KHzSzGrow);
+            self.scroll_if(ui, VfoId::F100K, f_100_k.rect, 100000);
 
-            let f_10K = ui.label(RichText::new(&self.f_array[vfo_id::f_10K as usize].0).text_style(heading2())
-            .size(self.f_array[vfo_id::f_10K as usize].1)
-            .background_color(self.f_array[vfo_id::f_10K as usize].2)
+            let f_10_k = ui.label(RichText::new(&self.f_array[VfoId::F10K as usize].0).text_style(heading2())
+            .size(self.f_array[VfoId::F10K as usize].1)
+            .background_color(self.f_array[VfoId::F10K as usize].2)
             .strong());
-            self.scroll_if(ui, vfo_id::f_10K, f_10K.rect, 10000, KHzSz, KHzSzGrow);
+            self.scroll_if(ui, VfoId::F10K, f_10_k.rect, 10000);
 
-            let f_1K = ui.label(RichText::new(&self.f_array[vfo_id::f_1K as usize].0).text_style(heading2())
-            .size(self.f_array[vfo_id::f_1K as usize].1)
-            .background_color(self.f_array[vfo_id::f_1K as usize].2)
+            let f_1_k = ui.label(RichText::new(&self.f_array[VfoId::F1K as usize].0).text_style(heading2())
+            .size(self.f_array[VfoId::F1K as usize].1)
+            .background_color(self.f_array[VfoId::F1K as usize].2)
             .strong());
-            self.scroll_if(ui,vfo_id::f_1K, f_1K.rect, 1000, KHzSz, KHzSzGrow);
+            self.scroll_if(ui,VfoId::F1K, f_1_k.rect, 1000);
 
             ui.label(RichText::new("-").text_style(heading2()).strong()
             .size(30.0));
 
-            let f_100H = ui.label(RichText::new(&self.f_array[vfo_id::f_100H as usize].0).text_style(heading2())
-            .size(self.f_array[vfo_id::f_100H as usize].1)
-            .background_color(self.f_array[vfo_id::f_100H as usize].2)
+            let f_100_h = ui.label(RichText::new(&self.f_array[VfoId::F100H as usize].0).text_style(heading2())
+            .size(self.f_array[VfoId::F100H as usize].1)
+            .background_color(self.f_array[VfoId::F100H as usize].2)
             .strong());
-            self.scroll_if(ui, vfo_id::f_100H, f_100H.rect, 100, HzSz, HzSzGrow);
+            self.scroll_if(ui, VfoId::F100H, f_100_h.rect, 100);
 
-            let f_10H = ui.label(RichText::new(&self.f_array[vfo_id::f_10H as usize].0).text_style(heading2())
-            .size(self.f_array[vfo_id::f_10H as usize].1)
-            .background_color(self.f_array[vfo_id::f_10H as usize].2)
+            let f_10_h = ui.label(RichText::new(&self.f_array[VfoId::F10H as usize].0).text_style(heading2())
+            .size(self.f_array[VfoId::F10H as usize].1)
+            .background_color(self.f_array[VfoId::F10H as usize].2)
             .strong());
-            self.scroll_if(ui, vfo_id::f_10H,f_10H.rect, 10, HzSz, HzSzGrow);
+            self.scroll_if(ui, VfoId::F10H,f_10_h.rect, 10);
 
-            let f_1H = ui.label(RichText::new(&self.f_array[vfo_id::f_1H as usize].0).text_style(heading2())
-            .size(self.f_array[vfo_id::f_1H as usize].1)
-            .background_color(self.f_array[vfo_id::f_1H as usize].2)
+            let f_1_h = ui.label(RichText::new(&self.f_array[VfoId::F1H as usize].0).text_style(heading2())
+            .size(self.f_array[VfoId::F1H as usize].1)
+            .background_color(self.f_array[VfoId::F1H as usize].2)
             .strong());
-            self.scroll_if(ui, vfo_id::f_1H, f_1H.rect, 1, HzSz, HzSzGrow);
+            self.scroll_if(ui, VfoId::F1H, f_1_h.rect, 1);
         });
     }
 
-    // If within the rectangle of a digit then grow the digit, else shrink to normal.
+    // If within the rectangle of a digit then highlight the digit, else normal.
     // If the mouse wheel is being scrolled then scroll the digit up or down.
-    fn scroll_if(&mut self, ui: &mut egui::Ui, id: vfo_id, r: egui::Rect, inc_or_dec: i32, normal: f32, grow: f32) {
+    fn scroll_if(&mut self, ui: &mut egui::Ui, id: VfoId, r: egui::Rect, inc_or_dec: i32) {
         if ui.rect_contains_pointer(r) {
             //self.f_array[id as usize].1 = grow;
-            self.f_array[id as usize].2 = VFOHighlightColor; 
+            self.f_array[id as usize].2 = VFO_HIGHLIGHT_COLOR; 
             let e = &ui.ctx().input().events;
             if e.len() > 0 {
                 match &e[0] {
@@ -508,7 +498,7 @@ impl UIApp {
                 }
             }
         } else {
-            self.f_array[id as usize].2 = VFONormalColor; 
+            self.f_array[id as usize].2 = VFO_NORMAL_COLOR; 
         }
     }
 
@@ -523,18 +513,18 @@ impl UIApp {
         for _i in 0..num_zeros {
             zeros_str += "0";
         }
-        let mut freq_str = String::from(zeros_str + &new_freq);
+        let freq_str = String::from(zeros_str + &new_freq);
         // We now have a 9 digit string
         // Set each digit from the string
-        self.f_array[vfo_id::f_100M as usize].0 = freq_str.chars().nth(0).unwrap().to_string();
-        self.f_array[vfo_id::f_10M as usize].0 = freq_str.chars().nth(1).unwrap().to_string();
-        self.f_array[vfo_id::f_1M as usize].0 = freq_str.chars().nth(2).unwrap().to_string();
-        self.f_array[vfo_id::f_100K as usize].0 = freq_str.chars().nth(3).unwrap().to_string();
-        self.f_array[vfo_id::f_10K as usize].0 = freq_str.chars().nth(4).unwrap().to_string();
-        self.f_array[vfo_id::f_1K as usize].0 = freq_str.chars().nth(5).unwrap().to_string();
-        self.f_array[vfo_id::f_100H as usize].0 = freq_str.chars().nth(6).unwrap().to_string();
-        self.f_array[vfo_id::f_10H as usize].0 = freq_str.chars().nth(7).unwrap().to_string();
-        self.f_array[vfo_id::f_1H as usize].0 = freq_str.chars().nth(8).unwrap().to_string();
+        self.f_array[VfoId::F100M as usize].0 = freq_str.chars().nth(0).unwrap().to_string();
+        self.f_array[VfoId::F10M as usize].0 = freq_str.chars().nth(1).unwrap().to_string();
+        self.f_array[VfoId::F1M as usize].0 = freq_str.chars().nth(2).unwrap().to_string();
+        self.f_array[VfoId::F100K as usize].0 = freq_str.chars().nth(3).unwrap().to_string();
+        self.f_array[VfoId::F10K as usize].0 = freq_str.chars().nth(4).unwrap().to_string();
+        self.f_array[VfoId::F1K as usize].0 = freq_str.chars().nth(5).unwrap().to_string();
+        self.f_array[VfoId::F100H as usize].0 = freq_str.chars().nth(6).unwrap().to_string();
+        self.f_array[VfoId::F10H as usize].0 = freq_str.chars().nth(7).unwrap().to_string();
+        self.f_array[VfoId::F1H as usize].0 = freq_str.chars().nth(8).unwrap().to_string();
     }
 
     //===========================================================================================
@@ -554,7 +544,7 @@ impl UIApp {
             // Draw horizontal lines and legends
             // Set up the parameters
             let db_divs = (LOW_DB.abs() - HIGH_DB.abs()) / 20;
-            let db_pixels_per_div: f32 = ((rect.height() - T_MARGIN - B_MARGIN) as f32 / db_divs as f32);
+            let db_pixels_per_div: f32 = (rect.height() - T_MARGIN - B_MARGIN) as f32 / db_divs as f32;
             let mut j = HIGH_DB;
             for i in 0..=db_divs {
                 // Draw legends
@@ -594,12 +584,17 @@ impl UIApp {
                     TEXT_COLOR,
                 );
                 // Draw lines
+                let mut color = GRID_COLOR;
+                if i == DIVS/2 {
+                    color = CENTRE_COLOR;
+                }
+
                 painter.line_segment(
                     [
                         egui::pos2(rect.left() + L_MARGIN  + (i as f32 *pixels_per_div), rect.top() + T_MARGIN),
                         egui::pos2(rect.left() + L_MARGIN  + (i as f32 *pixels_per_div), rect.top() + rect.height() - B_MARGIN),
                     ],
-                    egui::Stroke::new(0.5, GRID_COLOR),
+                    egui::Stroke::new(0.5, color),
                 );
                 j += freq_inc;
             }
@@ -634,10 +629,10 @@ impl UIApp {
             let pos_bottom_right: Pos2;
             // Width of filter in pixels
             let filt_pix = (self.filter_width as f32/common_defs::SMPLS_48K as f32) * self.disp_width as f32;
-            if self.mode_pos == enum_mode_pos::LOWER {
+            if self.mode_pos == EnumModePos::Lower {
                 pos_top_left = emath::pos2(rect.left() + L_MARGIN + (self.disp_width as f32/2.0) - filt_pix, rect.top() + T_MARGIN);
                 pos_bottom_right = emath::pos2(rect.left() + L_MARGIN + (self.disp_width as f32/2.0), rect.top() + rect.height() - B_MARGIN);
-            } else if self.mode_pos == enum_mode_pos::UPPER{
+            } else if self.mode_pos == EnumModePos::Upper{
                 pos_top_left = emath::pos2(rect.left() + L_MARGIN + (self.disp_width as f32/2.0), rect.top() + T_MARGIN);
                 pos_bottom_right = emath::pos2(rect.left() + L_MARGIN + (self.disp_width as f32/2.0) + filt_pix, rect.top() + rect.height() - B_MARGIN);
             } else {
@@ -670,7 +665,7 @@ impl UIApp {
                             self.mouse_pos = *v;
                             self.freq_at_ptr();
                         },
-                        egui::Event::PointerButton { pos, button, pressed, modifiers } => {
+                        egui::Event::PointerButton { pos, button: _, pressed, modifiers: _ } => {
                             if *pressed {
                                 let f = self.freq_at_click(*pos);
                                 self.frequency = f;
@@ -703,7 +698,7 @@ impl UIApp {
     // Convert a dBM value to a Y coordinate
     fn val_to_coord(&mut self, val: f32, height: f32) -> f32{
         // y-coord = disp-height - ((abs(low-dBm) - abs(dBm)) * (disp-height/span_db))
-        let disp_height: f32 = (height - T_MARGIN - B_MARGIN);
+        let disp_height: f32 = height - T_MARGIN - B_MARGIN;
         let y: f32 = (disp_height as i32 - (((i32::abs(LOW_DB) - i32::abs(val as i32))) * (disp_height as i32 / (i32::abs(LOW_DB) - i32::abs(HIGH_DB))))) as f32;
         return y;
     }

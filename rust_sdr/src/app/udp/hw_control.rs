@@ -74,7 +74,6 @@ impl HWData {
         match resp {
             None => println!("read_response failed"),
             Some(addr) => {
-                println!("Addr: {:#?}", addr);
                 self.addr =  Some(Arc::new(addr));
                 success = true;
             },

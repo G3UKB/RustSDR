@@ -29,7 +29,7 @@ bob@bobcowdery.plus.com
     use std::time::Duration;
     use std::sync::Arc;
 
-    use get_if_addrs;
+    use if_addrs;
     use socket2;
 
     pub struct Sockdata{
@@ -66,8 +66,8 @@ bob@bobcowdery.plus.com
         }
 
         fn get_ip() -> String{
-            let iface = get_if_addrs::get_if_addrs().unwrap();
-            println!("IP {}", iface[0].ip().to_string());
+            let iface = if_addrs::get_if_addrs().unwrap();
+            println!("My IP {}", iface[0].ip().to_string());
             return iface[0].ip().to_string();
         }
     }
