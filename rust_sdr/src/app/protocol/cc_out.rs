@@ -162,6 +162,7 @@ pub struct CCData{
 impl CCData {
 	// Create a new instance and initialise the default arrays
 	pub fn new() -> CCData {
+
 		CCData {
 			cc_idx: 0,
 			cc_mox_state: false,
