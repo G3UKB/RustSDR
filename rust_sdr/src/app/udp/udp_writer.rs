@@ -116,7 +116,7 @@ impl UDPWData {
             // Send to hardware
             let r = self.p_sock.send_to(&self.udp_frame, &self.p_addr);
             match r {
-                Ok(_sz) => (), //println!("Sent prime data sz [{:?}]", sz),
+                Ok(_sz) => (),
                 Err(e) => println!("Error sending [{}]", e),
             } 
         }
@@ -135,12 +135,9 @@ impl UDPWData {
                             // Encode the next frame
                             protocol::encoder::encode(&mut self.i_seq, &mut self.i_cc.lock().unwrap(), &mut self.udp_frame, &mut self.prot_frame);
                             // Send to hardware
-                            //for i in 0..16 {
-                            //    println!("{:#0x}", self.udp_frame[i]);
-                            //}
                             let r = self.p_sock.send_to(&self.udp_frame, &self.p_addr);
                             match r {
-                                Ok(_sz) => (), //println!("{:?}", _sz),
+                                Ok(_sz) => (),
                                 Err(e) => println!("Error sending [{}]", e),
                             } 
                         }

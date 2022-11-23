@@ -116,32 +116,12 @@ impl PipelineData {
         if *locked == true {
             // We were signaled so data available
             *locked = false;
-            /*
-            if self.rb_iq.try_read().unwrap().available() >= (common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) as usize {
-                // Enough data available
-                let r = self.rb_iq.try_read();   
-                match r {
-                    Ok(mut m) => {
-                        let iq_data = m.read(&mut self.iq_data);
-                        match iq_data {
-                            Ok(_sz) => {
-                                action = ACTIONS::ActionData;
-                                //println!("Read {:?} bytes from rb_iq", _sz);
-                            }
-                            Err(e) => println!("Read error on rb_iq {:?}. Skipping cycle.", e),
-                        }
-                    }
-                    Err(e) => println!("Failed to get read lock on rb_iq [{:?}]. Skipping cycle.", e),
-                }
-            }
-            */
+            
             if self.rb_iq.read().available() >= (common_defs::DSP_BLK_SZ * common_defs::BYTES_PER_SAMPLE) as usize {
                 let read_result = self.rb_iq.read().read(&mut self.iq_data);
-                //println!("{:?}", self.iq_data);
                 match read_result {
                     Ok(_sz) => {
                         action = ACTIONS::ActionData;
-                        //println!("Read {:?} bytes from rb_iq", _sz);
                     }
                     Err(e) => println!("Read error on rb_iq {:?}. Skipping cycle.", e),
                 }
@@ -187,8 +167,9 @@ impl PipelineData {
             // Copy data to the output ring buffer 
             let r = self.rb_audio.write().write(&self.output_frame);
             match r {
-                Err(e) => {
-                    println!("Write error on rb_audio, skipping block {:?}", e);
+                Err(_e) => {
+                    // UDP writer not ready yet. Try next time.
+                    //println!("Write error on rb_audio, skipping block {:?}", e);
                 }
                 Ok(_sz) => {
                     // We could signal data available but may not be necessary
@@ -202,8 +183,9 @@ impl PipelineData {
             // Copy data to the local audio ring buffer 
             let r = self.rb_local_audio.write().write(&self.audio_frame);
             match r {
-                Err(e) => {
-                    println!("Write error on rb_local_audio, skipping block {:?}", e);
+                Err(_e) => {
+                    // Audio system not up yet. Try next time.
+                    //println!("Write error on rb_local_audio, skipping block {:?}", e);
                 }
                 Ok(_sz) => {
                     // We could signal data available but may not be necessary

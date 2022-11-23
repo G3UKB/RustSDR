@@ -43,6 +43,7 @@ extern "C" {
 		in_rate: i32, dsp_rate: i32, out_rate: i32, 
 		ch_type: i32, state: i32, tdelayup: f64, 
 		tslewup: f64, tdelaydown: f64, tslewdown: f64);
+	fn CloseChannel(disp_id: i32);
 	fn SetChannelState (ch_id: i32, state: i32, dmode: i32) -> i32;
 	fn fexchange0(ch_id: i32, in_buf: *mut f64, out_buf: *mut f64, error: *mut i32);
 
@@ -151,8 +152,8 @@ pub fn wdsp_set_ch_state(ch_id: i32, state: i32, dmode: i32) -> i32 {
 }
 
 // Close WDSP channels
-pub fn wdsp_close_ch() {
-	
+pub fn wdsp_close_ch(ch_id: i32) {
+	unsafe{CloseChannel(ch_id);}
 }
 
 // Data exchange

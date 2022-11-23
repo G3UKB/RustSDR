@@ -28,7 +28,6 @@ bob@bobcowdery.plus.com
 use std::io::{self, Read, Write};
 use std::collections::VecDeque;
 use std::sync::{Mutex, MutexGuard, PoisonError, TryLockError, TryLockResult};
-//use std::io::ReadBuf;
 
 #[derive(Default, Debug)]
 pub struct SyncByteRingBuf {
@@ -114,39 +113,3 @@ impl Write for SyncByteRingBufWriteGuard<'_> {
     }
 }
 
-/* 
-fn main() -> io::Result<()> {
-    let buf = SyncByteRingBuf::with_capacity(1024);
-    
-    for i in 0..10 {
-        let outdata: Vec<u8> = (0..=255).cycle().take(200).collect();
-        let r = buf.try_write();
-        match r {
-            Ok(mut m) => {
-                let r = m.write(&outdata);
-                match r {
-                    Err(e) => println!("Error on write {:?}", e),
-                    Ok(sz) => println!("Wrote {:?}", sz)
-                }
-            }
-            Err(e) => println!("Lock error {:?}", e),
-        }
-        
-        let mut indata = vec![0; 300];
-        let r1 = buf.try_read();   
-        match r1 {
-            Ok(mut m) => {
-                let r2 = m.read(&mut indata);
-                match r2 {
-                    Ok(sz) => println!("Read {:?}", sz),
-                    Err(e) => println!("Error on read {:?}", e),
-                    
-                }
-            }
-            Err(e) => println!("Lock error {:?}", e),
-        }
-    }
-    
-    Ok(())
-}
-*/

@@ -36,6 +36,7 @@ use crate::app::common::common_defs;
 
 use std::sync::{Arc, Mutex, Condvar};
 use std::thread;
+use std::time::Duration;
 use std::option;
 
 use socket2;
@@ -231,20 +232,25 @@ impl Appdata {
 
         // Prime the hardware.
         self.w_sender.send(common::messages::WriterMsg::PrimeHardware).unwrap();
+        thread::sleep(Duration::from_millis(100));
 
         // Start the pipeline. Waits for data available signal.
         self.pipeline_sender.send(common::messages::PipelineMsg::StartPipeline).unwrap();
+        thread::sleep(Duration::from_millis(100));
 
         // Start the UDP reader. Will wait for UDP data when hardware starts
         // then signals the pipeline
         self.r_sender.send(common::messages::ReaderMsg::StartListening).unwrap();
+        thread::sleep(Duration::from_millis(100));
 
         if self.run {
             // Start the hardware IQ stream and optional wide band data.
             self.i_hw_control.do_start(false);
+            thread::sleep(Duration::from_millis(100));
 
             // Start the local audio stream
             self.stream = Some(self.i_local_audio.run_audio());
+            thread::sleep(Duration::from_millis(100));
         }
     }
 
@@ -264,6 +270,10 @@ impl Appdata {
     // Tidy close everything
     pub fn app_close(&mut self) { 
         
+        println!("Closing DSP channels");
+        dsp::dsp_interface::wdsp_close_ch(0);
+        dsp::dsp_interface::destroy_analyzer(0);
+
         if self.run {
             // Close local audio
             self.i_local_audio.close_audio(&(self.stream.as_ref().unwrap()));

@@ -49,7 +49,3 @@ pub enum PipelineMsg {
     StopPipeline,
 }
 
-#[derive(Debug, Copy, Clone)]
-pub enum UIMsg {
-    FreqUpdate(i32),
-}

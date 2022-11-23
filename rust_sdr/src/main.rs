@@ -26,7 +26,6 @@ bob@bobcowdery.plus.com
 
 use std::thread;
 use std::time::Duration;
-use std::io::{stdin, stdout, Read, Write};
 
 pub mod app;
 
@@ -40,26 +39,18 @@ fn main() {
     // Create an instance of the Application manager type
     let mut i_app = app::Appdata::new();
 
-    // This will initialise all modules, run the back-end system
-    // and initialise the UI
+    // This will initialise all modules and run the back-end system
     i_app.app_init();
 
     // Initialise the UI
     // This runs the UI event loop and will return when the UI is closed
     i_app.ui_run();
 
-    // UI has closed but we still wait to close down so issues can be seen
-    pause();
-    println!("Starting shutdown...");
+    // Close application
+    println!("\n\nStarting shutdown...");
     i_app.app_close();
     println!("Rust console closing...");
     thread::sleep(Duration::from_millis(1000));
 }
 
-fn pause() {
-    let mut stdout = stdout();
-    stdout.write(b"\nPress Enter to close...\n\n").unwrap();
-    stdout.flush().unwrap();
-    stdin().read(&mut [0]).unwrap();
-}
 

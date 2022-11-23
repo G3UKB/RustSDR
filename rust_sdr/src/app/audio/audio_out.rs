@@ -26,7 +26,7 @@ bob@bobcowdery.plus.com
 */
 
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use cpal::{Sample, SampleFormat};
+use cpal::Sample;
 use std::vec;
 use std::io::Read;
 use std::sync::Arc;
@@ -76,28 +76,14 @@ impl AudioData {
             .with_max_sample_rate();
 
         let err_fn = |err| eprintln!("an error occurred on the output audio stream: {}", err);
-        let sample_format = supported_config.sample_format();
         let config = supported_config.into();
-        //println!("{:?}", config);
         let rb_audio = self.rb_audio.clone();
-        let stream = match sample_format {
-            SampleFormat::F32 => device.build_output_stream(
+
+        let stream = device.build_output_stream(
                 &config,
                 move |data, info| write_audio::<f32>(data, info, &rb_audio),
                 err_fn,
-            ),
-            SampleFormat::I16 => device.build_output_stream(
-                &config,
-                move |data, info| write_audio::<i16>(data, info, &rb_audio),
-                err_fn,
-            ),
-            SampleFormat::U16 => device.build_output_stream(
-                &config,
-                move |data, info| write_audio::<u16>(data, info, &rb_audio),
-                err_fn,
-            ),
-        }
-        .unwrap();
+            ).unwrap();
 
         println!("Starting audio stream");
         stream.play().unwrap();
@@ -116,14 +102,11 @@ fn write_audio<T: Sample>(data: &mut [f32], _: &cpal::OutputCallbackInfo, rb_aud
 
     // Read data from ring buffer
     let audio_data = rb_audio.read().read(&mut rb_data);
-    //println!("Audio RB {:?}", rb_data);
     match audio_data {
         Ok(_sz) => {
-            //println!("Data");
             // The U8 data in the ring buffer is ordered as LE i32 values
             // Convert from 8 i8 bytes to 2 f32 samples
             converters::i8le_to_f32le(&rb_data, &mut out_data, ((data.len())*2) as u32);
-            //println!("{:?}", out_data);
             // Copy data to audio buffer
             for sample in data.iter_mut() {
                 *sample = out_data[i];
