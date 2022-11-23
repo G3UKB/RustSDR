@@ -54,6 +54,7 @@ pub struct Appdata{
     // UDP Reader and Writer
     // Writer thread join handle
     pub opt_writer_join_handle : option::Option<thread::JoinHandle<()>>,
+
     // Channel
     pub w_sender : crossbeam_channel::Sender<common::messages::WriterMsg>,
     pub w_receiver : crossbeam_channel::Receiver<common::messages::WriterMsg>,
@@ -166,6 +167,7 @@ impl Appdata {
         let mut opt_writer_join_handle: option::Option<thread::JoinHandle<()>> = None;
         let arc3 = p_sock.clone();
         let arc4 = p_sock.clone();
+
         match p_addr {
             Some(addr) => { 
                 // Create UDP writer 
@@ -178,7 +180,9 @@ impl Appdata {
                     rb_audio.clone(), audio_cond.clone(), i_cc.clone()));
 
                 // Start the UDP reader thread
-                opt_reader_join_handle = Some(udp::udp_reader::reader_start(r_r.clone(), arc4, rb_iq.clone(), iq_cond.clone()));
+                opt_reader_join_handle = Some(
+                    udp::udp_reader::reader_start(r_r.clone(), 
+                    arc4, rb_iq.clone(), iq_cond.clone()));
 
                 // OK to run
                 l_run = true;
@@ -186,7 +190,7 @@ impl Appdata {
             None => {
                 println!("Address invalid, UDP reader and writer will not be started! Is hardware on-line?");
             }
-        }
+        }        
 
         // Start the pipeline thread
         #[allow(unused_assignments)]
@@ -263,7 +267,7 @@ impl Appdata {
         if self.run {
             // Close local audio
             self.i_local_audio.close_audio(&(self.stream.as_ref().unwrap()));
-
+        
             // Tell threads to stop
             self.r_sender.send(common::messages::ReaderMsg::StopListening).unwrap();
             self.w_sender.send(common::messages::WriterMsg::Terminate).unwrap();
