@@ -257,6 +257,7 @@ impl Appdata {
     //=========================================================================================
     // Run the UI event loop. Only returns when the UI is closed.
     pub fn ui_run(&mut self) {
+        /* 
         let options = eframe::NativeOptions::default();
         let i_cc = self.i_cc.clone();
         eframe::run_native(
@@ -264,6 +265,9 @@ impl Appdata {
             options,
             Box::new(|cc| Box::new(ui::egui_ui::UIApp::new(cc, i_cc))),
         );
+        */
+        let i_cc = self.i_cc.clone();
+        ui::egui_main::ui_run(i_cc);
     }
 
     //=========================================================================================

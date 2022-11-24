@@ -25,6 +25,6 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-//pub mod main_window;
-pub mod egui_ui;
+//pub mod egui_ui;
+pub mod egui_main;
 
