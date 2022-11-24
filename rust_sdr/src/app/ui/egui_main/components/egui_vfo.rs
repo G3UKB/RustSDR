@@ -181,8 +181,13 @@ impl UIVfo {
         }
     }
 
+    // Update the frequency
+    pub fn update_freq(&mut self, freq: u32) {
+        self.frequency = freq;
+    }
+
     // Set the display frequency
-    fn set_freq(&mut self) {
+    pub fn set_freq(&mut self) {
         // Set the digits to the new frequency
         let new_freq : String = self.frequency.to_string();
         // Need to make this a 9 digit string with leading zeros

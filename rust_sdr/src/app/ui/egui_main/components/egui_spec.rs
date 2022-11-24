@@ -27,10 +27,12 @@ bob@bobcowdery.plus.com
 
 use std::sync::{Arc, Mutex};
 use std::ops::Neg;
+use std::{cell::RefCell, rc::Rc};
 
 use crate::app::protocol;
 use crate::app::common::common_defs;
 use crate::app::dsp;
+use crate::app::ui::egui_main::components;
 
 use egui::{FontFamily, FontId, RichText, TextStyle, Color32, Pos2, pos2, emath};
 
@@ -77,12 +79,14 @@ pub struct UISpec {
     mouse_pos: Pos2,
     freq_at_ptr: f32,
     draw_at_ptr: bool,
+
+    vfo : Rc<RefCell<components::egui_vfo::UIVfo>>,
 }
 
 //===========================================================================================
 // Implementation for UIApp
 impl UISpec {
-    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>) -> Self{
+    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, vfo : Rc<RefCell<components::egui_vfo::UIVfo>>) -> Self{
 
         Self {
             i_cc: i_cc,
@@ -94,6 +98,7 @@ impl UISpec {
             mouse_pos: pos2(0.0,0.0),
             freq_at_ptr: 7.1,
             draw_at_ptr: false,
+            vfo: vfo,
         }
     }
 
@@ -237,7 +242,8 @@ impl UISpec {
                             if *pressed {
                                 let f = self.freq_at_click(*pos);
                                 self.frequency = f;
-                                //self.set_freq();
+                                self.vfo.borrow_mut().update_freq(f);
+                                self.vfo.borrow_mut().set_freq();
                                 self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
                             }
                         }
