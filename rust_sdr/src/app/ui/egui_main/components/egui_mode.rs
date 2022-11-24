@@ -26,10 +26,13 @@ bob@bobcowdery.plus.com
 */
 
 use std::sync::{Arc, Mutex};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::app::protocol;
 use crate::app::common::common_defs;
 use crate::app::dsp;
+use crate::app::ui::egui_main::components;
+use components::egui_spec::EnumModePos;
 
 use egui::{FontFamily, FontId, RichText, TextStyle, Color32, Pos2, pos2, emath};
 
@@ -50,12 +53,6 @@ enum ModeId {
     Sam,
     Drm,
 }
-#[derive(PartialEq)]
-enum EnumModePos {
-    Lower,
-    Upper,
-    Both,
-}
 
 const MODE_NORMAL_COLOR: egui::Color32 = egui::Color32::TRANSPARENT;
 const MODE_HIGHLIGHT_COLOR: egui::Color32 = egui::Color32::DARK_BLUE;
@@ -66,12 +63,13 @@ pub struct UIMode {
     i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
     mode_pos: EnumModePos,
     m_array: [(String, egui::Color32); 12],
+    spec : Rc<RefCell<components::egui_spec::UISpec>>,
 }
 
 //===========================================================================================
 // Implementation for UIApp
 impl UIMode {
-    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>) -> Self{
+    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, spec : Rc<RefCell<components::egui_spec::UISpec>>) -> Self{
 
         let m_array = [
            (String::from("LSB"), MODE_HIGHLIGHT_COLOR),
@@ -95,6 +93,7 @@ impl UIMode {
             i_cc: i_cc,
             m_array: m_array,
             mode_pos: EnumModePos::Lower,
+            spec: spec,
         }
     }
 
@@ -108,7 +107,7 @@ impl UIMode {
             if b.clicked() {
                 self.set_mode_buttons(ModeId::Lsb as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Lsb as i32);
-                self.mode_pos = EnumModePos::Lower;
+                self.spec.borrow_mut().set_mode_pos( EnumModePos::Lower);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Usb as usize].0).text_style(TextStyle::Heading)
@@ -116,7 +115,7 @@ impl UIMode {
             if b.clicked() {
                 self.set_mode_buttons(ModeId::Usb as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Usb as i32);
-                self.mode_pos = EnumModePos::Upper;
+                self.spec.borrow_mut().set_mode_pos( EnumModePos::Upper);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Dsb as usize].0).text_style(TextStyle::Heading)
@@ -124,7 +123,7 @@ impl UIMode {
             if b.clicked() {
                 self.set_mode_buttons(ModeId::Dsb as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Dsb as i32);
-                self.mode_pos = EnumModePos::Both;
+                self.spec.borrow_mut().set_mode_pos( EnumModePos::Both);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::CwL as usize].0).text_style(TextStyle::Heading)
@@ -132,7 +131,7 @@ impl UIMode {
             if b.clicked() {
                 self.set_mode_buttons(ModeId::CwL as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::CwL as i32);
-                self.mode_pos = EnumModePos::Lower;
+                self.spec.borrow_mut().set_mode_pos( EnumModePos::Lower);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::CwU as usize].0).text_style(TextStyle::Heading)
@@ -140,7 +139,7 @@ impl UIMode {
             if b.clicked() {
                 self.set_mode_buttons(ModeId::CwU as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::CwU as i32);
-                self.mode_pos = EnumModePos::Upper;
+                self.spec.borrow_mut().set_mode_pos( EnumModePos::Upper);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Fm as usize].0).text_style(TextStyle::Heading)
@@ -148,14 +147,14 @@ impl UIMode {
             if b.clicked() {
                 self.set_mode_buttons(ModeId::Fm as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Fm as i32);
-                self.mode_pos = EnumModePos::Both;
+                self.spec.borrow_mut().set_mode_pos( EnumModePos::Both);
             }
             let b = ui.button(RichText::new(&self.m_array[ModeId::Am as usize].0).text_style(TextStyle::Heading)
             .background_color(self.m_array[ModeId::Am as usize].1));
             if b.clicked() {
                 self.set_mode_buttons(ModeId::Am as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Am as i32);
-                self.mode_pos = EnumModePos::Both;
+                self.spec.borrow_mut().set_mode_pos( EnumModePos::Both);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::DigL as usize].0).text_style(TextStyle::Heading)
@@ -163,7 +162,7 @@ impl UIMode {
             if b.clicked() {
                 self.set_mode_buttons(ModeId::DigL as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::DigL as i32);
-                self.mode_pos = EnumModePos::Lower;
+                self.spec.borrow_mut().set_mode_pos( EnumModePos::Lower);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::DigU as usize].0).text_style(TextStyle::Heading)
@@ -171,7 +170,7 @@ impl UIMode {
             if b.clicked() {
                 self.set_mode_buttons(ModeId::DigU as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::DigU as i32);
-                self.mode_pos = EnumModePos::Upper;
+                self.spec.borrow_mut().set_mode_pos( EnumModePos::Upper);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Spec as usize].0).text_style(TextStyle::Heading)
@@ -179,7 +178,7 @@ impl UIMode {
             if b.clicked() {
                 self.set_mode_buttons(ModeId::Spec as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Spec as i32);
-                self.mode_pos = EnumModePos::Both;
+                self.spec.borrow_mut().set_mode_pos( EnumModePos::Both);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Sam as usize].0).text_style(TextStyle::Heading)
@@ -187,7 +186,7 @@ impl UIMode {
             if b.clicked() {
                 self.set_mode_buttons(ModeId::Sam as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Sam as i32);
-                self.mode_pos = EnumModePos::Both;
+                self.spec.borrow_mut().set_mode_pos( EnumModePos::Both);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Drm as usize].0).text_style(TextStyle::Heading)
@@ -195,7 +194,7 @@ impl UIMode {
             if b.clicked() {
                 self.set_mode_buttons(ModeId::Drm as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Drm as i32);
-                self.mode_pos = EnumModePos::Both;
+                self.spec.borrow_mut().set_mode_pos( EnumModePos::Both);
             }
         });
     }

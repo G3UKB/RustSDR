@@ -26,10 +26,12 @@ bob@bobcowdery.plus.com
 */
 
 use std::sync::{Arc, Mutex};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::app::protocol;
 use crate::app::common::common_defs;
 use crate::app::dsp;
+use crate::app::ui::egui_main::components;
 
 use egui::{FontFamily, FontId, RichText, TextStyle, Color32, Pos2, pos2, emath};
 
@@ -55,12 +57,13 @@ pub struct UIFilter {
     i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
     filter_width: i32,
     fi_array: [(String, egui::Color32); 8],
+    spec : Rc<RefCell<components::egui_spec::UISpec>>,
 }
 
 //===========================================================================================
 // Implementation for UIApp
 impl UIFilter {
-    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>) -> Self{
+    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, spec : Rc<RefCell<components::egui_spec::UISpec>>) -> Self{
 
         let fi_array = [
            (String::from("6K0"), egui::Color32::TRANSPARENT),
@@ -80,6 +83,7 @@ impl UIFilter {
             i_cc: i_cc,
             fi_array: fi_array,
             filter_width: 2400,
+            spec: spec,
         }
     }
 
@@ -92,7 +96,7 @@ impl UIFilter {
             if b.clicked() {
                 self.set_filter_buttons(FilterId::F6_0KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F6_0KHz as i32);
-                self.filter_width = 6000;
+                self.spec.borrow_mut().set_filt_width(6000);
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F4_0KHz as usize].0).text_style(TextStyle::Heading)
@@ -100,7 +104,7 @@ impl UIFilter {
             if b.clicked() {
                 self.set_filter_buttons(FilterId::F4_0KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F4_0KHz as i32);
-                self.filter_width = 4000;
+                self.spec.borrow_mut().set_filt_width(4000);
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F2_7KHz as usize].0).text_style(TextStyle::Heading)
@@ -108,7 +112,7 @@ impl UIFilter {
             if b.clicked() {
                 self.set_filter_buttons(FilterId::F2_7KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F2_7KHz as i32);
-                self.filter_width = 2700;
+                self.spec.borrow_mut().set_filt_width(2700);
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F2_4KHz as usize].0).text_style(TextStyle::Heading)
@@ -116,7 +120,7 @@ impl UIFilter {
             if b.clicked() {
                 self.set_filter_buttons(FilterId::F2_4KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F2_4KHz as i32);
-                self.filter_width = 2400;
+                self.spec.borrow_mut().set_filt_width(2400);
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F1_0KHz as usize].0).text_style(TextStyle::Heading)
@@ -124,7 +128,7 @@ impl UIFilter {
             if b.clicked() {
                 self.set_filter_buttons(FilterId::F1_0KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F1_0KHz as i32);
-                self.filter_width = 1000;
+                self.spec.borrow_mut().set_filt_width(1000);
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F500Hz as usize].0).text_style(TextStyle::Heading)
@@ -132,7 +136,7 @@ impl UIFilter {
             if b.clicked() {
                 self.set_filter_buttons(FilterId::F500Hz as i32);
                 dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F500Hz as i32);
-                self.filter_width = 500;
+                self.spec.borrow_mut().set_filt_width(500);
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F100Hz as usize].0).text_style(TextStyle::Heading)
@@ -140,7 +144,7 @@ impl UIFilter {
             if b.clicked() {
                 self.set_filter_buttons(FilterId::F100Hz as i32);
                 dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F100Hz as i32);
-                self.filter_width = 100;
+                self.spec.borrow_mut().set_filt_width(100);
             }
         });
     }

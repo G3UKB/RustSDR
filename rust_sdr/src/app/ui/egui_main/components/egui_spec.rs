@@ -40,7 +40,7 @@ use eframe::egui;
 
 // Temp
 #[derive(PartialEq)]
-enum EnumModePos {
+pub enum EnumModePos {
     Lower,
     Upper,
     Both,
@@ -100,6 +100,14 @@ impl UISpec {
             draw_at_ptr: false,
             vfo: vfo,
         }
+    }
+
+    pub fn set_mode_pos(&mut self, pos: EnumModePos) {
+        self.mode_pos = pos;
+    }
+
+    pub fn set_filt_width(&mut self, width: i32) {
+        self.filter_width = width;
     }
 
     pub fn spectrum(&mut self, ui: &mut egui::Ui) {
