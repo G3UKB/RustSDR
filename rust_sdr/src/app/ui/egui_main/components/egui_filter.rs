@@ -29,11 +29,10 @@ use std::sync::{Arc, Mutex};
 use std::{cell::RefCell, rc::Rc};
 
 use crate::app::protocol;
-use crate::app::common::common_defs;
 use crate::app::dsp;
 use crate::app::ui::egui_main::components;
 
-use egui::{FontFamily, FontId, RichText, TextStyle, Color32, Pos2, pos2, emath};
+use egui::{RichText, TextStyle};
 
 use eframe::egui;
 
@@ -54,8 +53,8 @@ const FILT_HIGHLIGHT_COLOR: egui::Color32 = egui::Color32::DARK_RED;
 //===========================================================================================
 // State for Filters
 pub struct UIFilter {
-    i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
-    filter_width: i32,
+    _i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
+    _filter_width: i32,
     fi_array: [(String, egui::Color32); 8],
     spec : Rc<RefCell<components::egui_spec::UISpec>>,
 }
@@ -63,7 +62,7 @@ pub struct UIFilter {
 //===========================================================================================
 // Implementation for UIApp
 impl UIFilter {
-    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, spec : Rc<RefCell<components::egui_spec::UISpec>>) -> Self{
+    pub fn new(_cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, spec : Rc<RefCell<components::egui_spec::UISpec>>) -> Self{
 
         let fi_array = [
            (String::from("6K0"), egui::Color32::TRANSPARENT),
@@ -80,9 +79,9 @@ impl UIFilter {
         dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F2_4KHz as i32);
 
         Self {
-            i_cc: i_cc,
+            _i_cc: i_cc,
             fi_array: fi_array,
-            filter_width: 2400,
+            _filter_width: 2400,
             spec: spec,
         }
     }

@@ -29,12 +29,11 @@ use std::sync::{Arc, Mutex};
 use std::{cell::RefCell, rc::Rc};
 
 use crate::app::protocol;
-use crate::app::common::common_defs;
 use crate::app::dsp;
 use crate::app::ui::egui_main::components;
 use components::egui_spec::EnumModePos;
 
-use egui::{FontFamily, FontId, RichText, TextStyle, Color32, Pos2, pos2, emath};
+use egui::{RichText, TextStyle};
 
 use eframe::egui;
 
@@ -60,8 +59,8 @@ const MODE_HIGHLIGHT_COLOR: egui::Color32 = egui::Color32::DARK_BLUE;
 //===========================================================================================
 // State for Modes
 pub struct UIMode {
-    i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
-    mode_pos: EnumModePos,
+    _i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
+    _mode_pos: EnumModePos,
     m_array: [(String, egui::Color32); 12],
     spec : Rc<RefCell<components::egui_spec::UISpec>>,
 }
@@ -69,7 +68,7 @@ pub struct UIMode {
 //===========================================================================================
 // Implementation for UIApp
 impl UIMode {
-    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, spec : Rc<RefCell<components::egui_spec::UISpec>>) -> Self{
+    pub fn new(_cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, spec : Rc<RefCell<components::egui_spec::UISpec>>) -> Self{
 
         let m_array = [
            (String::from("LSB"), MODE_HIGHLIGHT_COLOR),
@@ -90,9 +89,9 @@ impl UIMode {
         dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Lsb as i32);
 
         Self {
-            i_cc: i_cc,
+            _i_cc: i_cc,
             m_array: m_array,
-            mode_pos: EnumModePos::Lower,
+            _mode_pos: EnumModePos::Lower,
             spec: spec,
         }
     }

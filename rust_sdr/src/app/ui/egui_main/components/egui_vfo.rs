@@ -29,10 +29,8 @@ use std::sync::{Arc, Mutex};
 use std::ops::Neg;
 
 use crate::app::protocol;
-use crate::app::common::common_defs;
-use crate::app::dsp;
 
-use egui::{FontFamily, FontId, RichText, TextStyle, Color32, Pos2, pos2, emath};
+use egui::{RichText, TextStyle};
 
 use eframe::egui;
 
@@ -66,7 +64,7 @@ pub struct UIVfo {
 //===========================================================================================
 // Implementation for UIApp
 impl UIVfo {
-    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>) -> Self{
+    pub fn new(_cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>) -> Self{
 
         let f_array = [
            (String::from("0"), MHZ_SZ, egui::Color32::TRANSPARENT),

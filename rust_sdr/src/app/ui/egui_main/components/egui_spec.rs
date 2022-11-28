@@ -26,7 +26,6 @@ bob@bobcowdery.plus.com
 */
 
 use std::sync::{Arc, Mutex};
-use std::ops::Neg;
 use std::{cell::RefCell, rc::Rc};
 
 use crate::app::protocol;
@@ -34,7 +33,7 @@ use crate::app::common::common_defs;
 use crate::app::dsp;
 use crate::app::ui::egui_main::components;
 
-use egui::{FontFamily, FontId, RichText, TextStyle, Color32, Pos2, pos2, emath};
+use egui::{Color32, Pos2, pos2, emath};
 
 use eframe::egui;
 
@@ -86,7 +85,7 @@ pub struct UISpec {
 //===========================================================================================
 // Implementation for UIApp
 impl UISpec {
-    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, vfo : Rc<RefCell<components::egui_vfo::UIVfo>>) -> Self{
+    pub fn new(_cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, vfo : Rc<RefCell<components::egui_vfo::UIVfo>>) -> Self{
 
         Self {
             i_cc: i_cc,
