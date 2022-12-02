@@ -184,6 +184,11 @@ impl UIVfo {
         self.frequency = freq;
     }
 
+    // Get the display frequency
+    pub fn get_freq(&mut self) -> u32{
+        return self.frequency;
+    }
+
     // Set the display frequency
     pub fn set_freq(&mut self) {
         // Set the digits to the new frequency

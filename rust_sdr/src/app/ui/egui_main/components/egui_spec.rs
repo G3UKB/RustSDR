@@ -141,6 +141,8 @@ impl UISpec {
             }
 
             // Draw verticle lines and legends
+            // Get the current frequency
+            self.frequency = self.vfo.borrow_mut().get_freq();
             // Set up the parameters
             let start_freq: i32 = self.frequency as i32 - (SPAN_FREQ / 2);
             let freq_inc = SPAN_FREQ / DIVS;
