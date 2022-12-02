@@ -181,8 +181,9 @@ impl UIWaterfall {
             }
 
             // Draw spectrum
-            // Update dataset if available
-            //dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real);
+            if self.disp_width != (rect.width() - L_MARGIN + R_MARGIN) as i32 {
+                self.disp_width = (rect.width() - L_MARGIN + R_MARGIN) as i32;
+            }
             
             // The array out_real contains a set of db values, one per pixel of the horizontal display area.
             // Must be painted every iteration even when not changed otherwise it will flicker
