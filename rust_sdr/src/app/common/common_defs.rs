@@ -110,3 +110,11 @@ pub enum AvMode {
 	PanLnfLin,
 	PanLnfLog
 }
+
+// Temp
+#[derive(PartialEq)]
+pub enum EnumModePos {
+    Lower,
+    Upper,
+    Both,
+}

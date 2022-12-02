@@ -30,20 +30,12 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::app::protocol;
 use crate::app::common::common_defs;
-use crate::app::dsp;
 use crate::app::ui::egui_main::components;
+use crate::app::dsp;
 
 use egui::{Color32, Pos2, pos2, emath};
 
 use eframe::egui;
-
-// Temp
-#[derive(PartialEq)]
-pub enum EnumModePos {
-    Lower,
-    Upper,
-    Both,
-}
 
 // Graphing constants
 const LOW_DB: i32 = -140;
@@ -71,7 +63,7 @@ pub struct UISpec {
     i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
     frequency: u32,
     filter_width: i32,
-    mode_pos: EnumModePos,
+    mode_pos: common_defs::EnumModePos,
 
     out_real: [f32; (common_defs::DSP_BLK_SZ ) as usize],
     disp_width: i32,
@@ -92,7 +84,7 @@ impl UISpec {
             frequency: 7100000,
             out_real: [0.0; (common_defs::DSP_BLK_SZ ) as usize],
             disp_width: 300,
-            mode_pos: EnumModePos::Lower,
+            mode_pos: common_defs::EnumModePos::Lower,
             filter_width: 2400,
             mouse_pos: pos2(0.0,0.0),
             freq_at_ptr: 7.1,
@@ -101,7 +93,7 @@ impl UISpec {
         }
     }
 
-    pub fn set_mode_pos(&mut self, pos: EnumModePos) {
+    pub fn set_mode_pos(&mut self, pos: common_defs::EnumModePos) {
         self.mode_pos = pos;
     }
 
@@ -109,7 +101,9 @@ impl UISpec {
         self.filter_width = width;
     }
 
-    pub fn spectrum(&mut self, ui: &mut egui::Ui) {
+    pub fn spectrum(&mut self, ui: &mut egui::Ui, out_real: &mut [f32; (common_defs::DSP_BLK_SZ ) as usize]) {
+        self.out_real = *out_real;
+
         egui::Frame::canvas(ui.style()).show(ui, |ui| {
             // Ensure repaint
             ui.ctx().request_repaint();
@@ -180,8 +174,6 @@ impl UISpec {
             }
 
             // Draw spectrum
-            // Update dataset if available
-            dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real);
             // Update the display width if necessary
             if self.disp_width != (rect.width() - L_MARGIN + R_MARGIN) as i32 {
                 self.disp_width = (rect.width() - L_MARGIN + R_MARGIN) as i32;
@@ -209,10 +201,10 @@ impl UISpec {
             let pos_bottom_right: Pos2;
             // Width of filter in pixels
             let filt_pix = (self.filter_width as f32/common_defs::SMPLS_48K as f32) * self.disp_width as f32;
-            if self.mode_pos == EnumModePos::Lower {
+            if self.mode_pos == common_defs::EnumModePos::Lower {
                 pos_top_left = emath::pos2(rect.left() + L_MARGIN + (self.disp_width as f32/2.0) - filt_pix, rect.top() + T_MARGIN);
                 pos_bottom_right = emath::pos2(rect.left() + L_MARGIN + (self.disp_width as f32/2.0), rect.top() + rect.height() - B_MARGIN);
-            } else if self.mode_pos == EnumModePos::Upper{
+            } else if self.mode_pos == common_defs::EnumModePos::Upper{
                 pos_top_left = emath::pos2(rect.left() + L_MARGIN + (self.disp_width as f32/2.0), rect.top() + T_MARGIN);
                 pos_bottom_right = emath::pos2(rect.left() + L_MARGIN + (self.disp_width as f32/2.0) + filt_pix, rect.top() + rect.height() - B_MARGIN);
             } else {

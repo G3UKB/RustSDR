@@ -57,12 +57,16 @@ pub struct UIFilter {
     _filter_width: i32,
     fi_array: [(String, egui::Color32); 8],
     spec : Rc<RefCell<components::egui_spec::UISpec>>,
+    waterfall : Rc<RefCell<components::egui_waterfall::UIWaterfall>>,
 }
 
 //===========================================================================================
 // Implementation for UIApp
 impl UIFilter {
-    pub fn new(_cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, spec : Rc<RefCell<components::egui_spec::UISpec>>) -> Self{
+    pub fn new(_cc: &eframe::CreationContext<'_>, 
+        i_cc : Arc<Mutex<protocol::cc_out::CCData>>, 
+        spec : Rc<RefCell<components::egui_spec::UISpec>>,
+        waterfall : Rc<RefCell<components::egui_waterfall::UIWaterfall>>) -> Self{
 
         let fi_array = [
            (String::from("6K0"), egui::Color32::TRANSPARENT),
@@ -83,6 +87,7 @@ impl UIFilter {
             fi_array: fi_array,
             _filter_width: 2400,
             spec: spec,
+            waterfall: waterfall,
         }
     }
 
@@ -96,6 +101,7 @@ impl UIFilter {
                 self.set_filter_buttons(FilterId::F6_0KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F6_0KHz as i32);
                 self.spec.borrow_mut().set_filt_width(6000);
+                self.waterfall.borrow_mut().set_filt_width(6000);
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F4_0KHz as usize].0).text_style(TextStyle::Heading)
@@ -104,6 +110,7 @@ impl UIFilter {
                 self.set_filter_buttons(FilterId::F4_0KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F4_0KHz as i32);
                 self.spec.borrow_mut().set_filt_width(4000);
+                self.waterfall.borrow_mut().set_filt_width(4000);
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F2_7KHz as usize].0).text_style(TextStyle::Heading)
@@ -112,6 +119,7 @@ impl UIFilter {
                 self.set_filter_buttons(FilterId::F2_7KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F2_7KHz as i32);
                 self.spec.borrow_mut().set_filt_width(2700);
+                self.waterfall.borrow_mut().set_filt_width(2700);
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F2_4KHz as usize].0).text_style(TextStyle::Heading)
@@ -120,6 +128,7 @@ impl UIFilter {
                 self.set_filter_buttons(FilterId::F2_4KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F2_4KHz as i32);
                 self.spec.borrow_mut().set_filt_width(2400);
+                self.waterfall.borrow_mut().set_filt_width(2400);
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F1_0KHz as usize].0).text_style(TextStyle::Heading)
@@ -128,6 +137,7 @@ impl UIFilter {
                 self.set_filter_buttons(FilterId::F1_0KHz as i32);
                 dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F1_0KHz as i32);
                 self.spec.borrow_mut().set_filt_width(1000);
+                self.waterfall.borrow_mut().set_filt_width(1000);
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F500Hz as usize].0).text_style(TextStyle::Heading)
@@ -136,6 +146,7 @@ impl UIFilter {
                 self.set_filter_buttons(FilterId::F500Hz as i32);
                 dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F500Hz as i32);
                 self.spec.borrow_mut().set_filt_width(500);
+                self.waterfall.borrow_mut().set_filt_width(500);
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F100Hz as usize].0).text_style(TextStyle::Heading)
@@ -144,6 +155,7 @@ impl UIFilter {
                 self.set_filter_buttons(FilterId::F100Hz as i32);
                 dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F100Hz as i32);
                 self.spec.borrow_mut().set_filt_width(100);
+                self.waterfall.borrow_mut().set_filt_width(100);
             }
         });
     }
