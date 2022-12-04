@@ -35,6 +35,7 @@ use crate::app::ui::egui_main::components;
 use egui::{Color32, Pos2, pos2, emath};
 
 use eframe::egui;
+//use imgproc_rs::image::{Image, ImageInfo};
 
 // Temp
 //#[derive(PartialEq)]
@@ -77,6 +78,7 @@ pub struct UIWaterfall {
     mouse_pos: Pos2,
     freq_at_ptr: f32,
     draw_at_ptr: bool,
+    image_loaded: bool,
 
     vfo : Rc<RefCell<components::egui_vfo::UIVfo>>,
 }
@@ -97,6 +99,7 @@ impl UIWaterfall {
             freq_at_ptr: 7.1,
             draw_at_ptr: false,
             vfo: vfo,
+            image_loaded: false,
         }
     }
 
@@ -118,6 +121,10 @@ impl UIWaterfall {
             // Go with the maximum available width and keep the aspect ratio constant
             let desired_size = ui.available_width() * egui::vec2(1.0, 0.3);
             let (_id, rect) = ui.allocate_space(desired_size);
+
+            let img = egui::ColorImage::example();
+            let texture = egui::Context::load_texture(ui.ctx(), "wf", img, egui::TextureFilter::Linear);
+            ui.image(texture.id(), egui::vec2(100.0, 100.0));
 
             // Get the painter
             let painter = ui.painter();
@@ -182,14 +189,53 @@ impl UIWaterfall {
                 j += freq_inc;
             }
 
-            // Draw spectrum
+            // Draw waterfall
             if self.disp_width != (rect.width() - L_MARGIN + R_MARGIN) as i32 {
                 self.disp_width = (rect.width() - L_MARGIN + R_MARGIN) as i32;
             }
             
-            // The array out_real contains a set of db values, one per pixel of the horizontal display area.
-            // Must be painted every iteration even when not changed otherwise it will flicker
+            // The array out_real contains a set of db values
+            // We convert the db value to a color and paint a row of dots of color corresponding to signal strength
+            // As we need a memory of previous lines we maintain a 2D vector and push down the lines loosing the bottom line
+            // and adding the top line on each pass.
+
+            //let img = egui::ColorImage::example();
+            //let texture = egui::Context::load_texture(ui.ctx(), "wf", img, egui::TextureFilter::Linear);
+            //ui.image(texture.id(), egui::vec2(100.0, 100.0));
+
+            // Create an image
+            //let img_blank = Image::blank(ImageInfo::new(100, 100, 1, false));
+            //let img = egui::ColorImage::example();
+            //let texture = egui::Context::load_texture(ui.ctx(), "wf", img, egui::TextureFilter::Linear);
+            
+
+            /*
+            let img_blank: Image<u8>;
+            let im: egui::Image;
+            let mut textureh: Option<egui::TextureHandle> = None;
+            if !self.image_loaded {
+                img_blank = Image::blank(ImageInfo::new(100, 100, 1, false));
+                let texture = textureh.get_or_insert_with(|| {
+                    // Load the texture only once.
+                    ui.ctx().load_texture(
+                        "wf",
+                        //egui::ColorImage::example(),
+                        img_blank,
+                        egui::TextureFilter::Linear
+                    )
+                });
+                //im = egui::Image::new(texture, egui::vec2(100.0, 100.0));
+                //let texture = ui.ctx().load_texture("wf", egui::ColorImage::example(), egui::TextureFilter::Linear);
+                self.image_loaded = true;
+                //ui.image(im, rect);
+                //image(texture, egui::vec2(100.0, 100.0));
+                
+            }
+            */
+
+            /*
             let mut shapes = vec![];
+            let mut colors: Vec<Color32> = vec![];
             let end = (rect.width() - L_MARGIN + R_MARGIN) as i32; 
             let points: Vec<egui::Pos2> = (0..end)
                 .map(|i| {
@@ -199,7 +245,8 @@ impl UIWaterfall {
                 .collect();
             shapes.push(epaint::Shape::line(points, egui::Stroke::new(0.25, SPEC_COLOR)));
             painter.extend(shapes);
-            
+            */
+
             // Draw filter overlay
             let pos_top_left: Pos2;
             let pos_bottom_right: Pos2;
