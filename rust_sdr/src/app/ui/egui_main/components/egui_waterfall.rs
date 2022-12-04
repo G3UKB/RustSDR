@@ -122,9 +122,9 @@ impl UIWaterfall {
             let desired_size = ui.available_width() * egui::vec2(1.0, 0.3);
             let (_id, rect) = ui.allocate_space(desired_size);
 
-            let img = egui::ColorImage::example();
-            let texture = egui::Context::load_texture(ui.ctx(), "wf", img, egui::TextureFilter::Linear);
-            ui.image(texture.id(), egui::vec2(100.0, 100.0));
+            //let img = egui::ColorImage::example();
+            //let texture = egui::Context::load_texture(ui.ctx(), "wf", img, egui::TextureFilter::Linear);
+            //ui.image(texture.id(), egui::vec2(100.0, 100.0));
 
             // Get the painter
             let painter = ui.painter();
@@ -317,6 +317,9 @@ impl UIWaterfall {
                 );
             }
         });
+        let img = egui::ColorImage::example();
+        let texture = egui::Context::load_texture(ui.ctx(), "wf", img, egui::TextureFilter::Linear);
+        ui.image(texture.id(), egui::vec2(700.0, 100.0));
     }
 
     // Convert a dBM value to a Y coordinate
