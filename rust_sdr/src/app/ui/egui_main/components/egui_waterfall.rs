@@ -35,6 +35,7 @@ use crate::app::ui::egui_main::components;
 use egui::{Color32, Pos2, pos2, emath};
 
 use eframe::egui;
+use epaint::TextureHandle;
 //use imgproc_rs::image::{Image, ImageInfo};
 
 // Temp
@@ -75,10 +76,14 @@ pub struct UIWaterfall {
 
     out_real: [f32; (common_defs::DSP_BLK_SZ ) as usize],
     disp_width: i32,
+    last_disp_width: i32,
     mouse_pos: Pos2,
     freq_at_ptr: f32,
     draw_at_ptr: bool,
     image_loaded: bool,
+    //img: egui::ColorImage,
+    //texture: TextureHandle,
+    image_height: i32,
 
     vfo : Rc<RefCell<components::egui_vfo::UIVfo>>,
 }
@@ -88,11 +93,14 @@ pub struct UIWaterfall {
 impl UIWaterfall {
     pub fn new(_cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, vfo : Rc<RefCell<components::egui_vfo::UIVfo>>) -> Self{
 
+        let mut img = egui::ColorImage::new([300 as usize, 100 as usize], Color32::TRANSPARENT);
+
         Self {
             i_cc: i_cc,
             frequency: 7100000,
             out_real: [0.0; (common_defs::DSP_BLK_SZ ) as usize],
             disp_width: 300,
+            last_disp_width: 300,
             mode_pos: common_defs::EnumModePos::Lower,
             filter_width: 2400,
             mouse_pos: pos2(0.0,0.0),
@@ -100,6 +108,9 @@ impl UIWaterfall {
             draw_at_ptr: false,
             vfo: vfo,
             image_loaded: false,
+            //img: img,
+            //texture: texture,
+            image_height: 100,
         }
     }
 
@@ -113,6 +124,13 @@ impl UIWaterfall {
 
     pub fn waterfall(&mut self, ui: &mut egui::Ui, out_real: &mut [f32; (common_defs::DSP_BLK_SZ ) as usize]) {
         self.out_real = *out_real;
+
+        // Initial settings
+        //let disp_width:i32 = 300;
+        //let image_height:i32 = 100;
+        //let img = egui::ColorImage::new([disp_width as usize, image_height as usize], Color32::TRANSPARENT);
+        //let texture = egui::Context::load_texture(_cc, "wf", img, egui::TextureFilter::Linear);
+
 
         egui::Frame::canvas(ui.style()).show(ui, |ui| {
             // Ensure repaint
@@ -317,9 +335,25 @@ impl UIWaterfall {
                 );
             }
         });
-        let img = egui::ColorImage::example();
+        
+        let mut img = egui::ColorImage::new([self.disp_width as usize, self.image_height as usize], Color32::TRANSPARENT);
+        self.wf_update(&mut img);
         let texture = egui::Context::load_texture(ui.ctx(), "wf", img, egui::TextureFilter::Linear);
-        ui.image(texture.id(), egui::vec2(700.0, 100.0));
+        ui.image(texture.id(), egui::vec2(self.disp_width as f32, self.image_height as f32));
+           
+    }
+
+    fn wf_update(&mut self, img: &mut egui::ColorImage) {
+        
+        for y in 0..self.image_height {
+            for x in 0..self.disp_width {
+                let h = x as f32 / self.disp_width as f32;
+                let s = 1.0;
+                let v = 1.0;
+                let a = y as f32 / self.image_height as f32;
+                img[(x as usize, y as usize)] = egui::color::Hsva { h, s, v, a }.into();
+            }
+        }
     }
 
     // Convert a dBM value to a Y coordinate
