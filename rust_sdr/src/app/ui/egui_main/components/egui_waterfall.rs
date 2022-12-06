@@ -81,6 +81,7 @@ pub struct UIWaterfall {
     freq_at_ptr: f32,
     draw_at_ptr: bool,
     image_loaded: bool,
+    image_data: Vec<Color32>,
     //img: egui::ColorImage,
     //texture: TextureHandle,
     image_height: i32,
@@ -111,6 +112,7 @@ impl UIWaterfall {
             //img: img,
             //texture: texture,
             image_height: 100,
+            image_data: vec![Color32::TRANSPARENT; 30000],
         }
     }
 
@@ -336,6 +338,17 @@ impl UIWaterfall {
             }
         });
         
+        // Add the waterfall display.
+        if self.disp_width != self.last_disp_width {
+            // Resize the image data vector
+            // This vector is a linear representation of all pixel colors in the 2D waterfall display
+            // It serves as the backing store to set all pixels in the image.
+            self.image_data.resize((self.disp_width*self.image_height) as usize, Color32::TRANSPARENT);
+        }
+        // The vector may be newly initialised to Color32::TRANSPARENT or it may contain historical data.
+        // Whichever, the process is the same. New data is added at the top for a single pixel row and existing
+        // data is moved down by one row. This means the bottom row is lost.
+        self.create_image_data();
         let mut img = egui::ColorImage::new([self.disp_width as usize, self.image_height as usize], Color32::TRANSPARENT);
         self.wf_update(&mut img);
         let texture = egui::Context::load_texture(ui.ctx(), "wf", img, egui::TextureFilter::Linear);
@@ -343,7 +356,38 @@ impl UIWaterfall {
            
     }
 
+    // Create a new image data
+    fn create_image_data(&mut self) {
+        // Create a new vector containing one new row of data.
+        let mut new_data: Vec<Color32> = vec![Color32::BLUE; self.disp_width as usize];
+        //println!("4 {}", new_data.len());
+
+        // Truncate the image_data to remove one row of data from the end.
+        self.image_data.truncate(self.image_data.len() - self.disp_width as usize);
+        //println!("5 {}", self.image_data.len());
+
+        // Append image_data to the new row of data leaving the new row at the top
+        new_data.append(&mut self.image_data);
+        //println!("6 {}", new_data.len());
+
+        // Set this as the new image data
+        self.image_data = new_data;
+        //println!("7 {}", self.image_data.len());
+    }
+
+    // Update the waterfall image from image data
     fn wf_update(&mut self, img: &mut egui::ColorImage) {
+        //println!("1 {}, 2 {}, 3 {}", self.image_data.len(), self.disp_width, self.image_height);
+        for y in 0..self.image_height {
+            for x in 0..self.disp_width {
+                img[(x as usize, y as usize)] = self.image_data[(x*y) as usize];
+            }
+        }
+    }
+
+    /* 
+    // Update the waterfall image from image data
+    fn wf1_update(&mut self, img: &mut egui::ColorImage) {
         
         for y in 0..self.image_height {
             for x in 0..self.disp_width {
@@ -355,6 +399,7 @@ impl UIWaterfall {
             }
         }
     }
+*/
 
     // Convert a dBM value to a Y coordinate
     fn val_to_coord(&mut self, val: f32, height: f32) -> f32{
