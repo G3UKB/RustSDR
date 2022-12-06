@@ -365,7 +365,7 @@ impl UIWaterfall {
     fn wf_update(&mut self, img: &mut egui::ColorImage) {
         for y in 0..self.image_height {
             for x in 0..self.disp_width {
-                img[(x as usize, y as usize)] = self.image_data[((y*50) +x) as usize];
+                img[(x as usize, y as usize)] = self.image_data[((y*self.disp_width) +x) as usize];
             }
         }
     }
