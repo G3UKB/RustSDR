@@ -60,18 +60,33 @@ const F_X_LABEL_ADJ: f32 = 20.0;
 //===========================================================================================
 // State for spectrum
 pub struct UISpec {
+    // Parameters
     i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
+    vfo : Rc<RefCell<components::egui_vfo::UIVfo>>,
+    out_real: [f32; (common_defs::DSP_BLK_SZ ) as usize],
+
+    // Spec
     frequency: u32,
     filter_width: i32,
-    mode_pos: common_defs::EnumModePos,
-
-    out_real: [f32; (common_defs::DSP_BLK_SZ ) as usize],
+    mode_pos: common_defs::EnumModePos, 
     disp_width: i32,
     mouse_pos: Pos2,
     freq_at_ptr: f32,
     draw_at_ptr: bool,
 
-    vfo : Rc<RefCell<components::egui_vfo::UIVfo>>,
+    // Waterfall
+    last_disp_width: i32,
+    image_data: Vec<Color32>,
+    count: u32,
+    image_height: i32,
+    color_1: Color32,
+    color_2: Color32,
+    color_3: Color32,
+    color_4: Color32,
+    color_5: Color32,
+    color_6: Color32,
+    color_7: Color32,
+    color_8: Color32,
 }
 
 //===========================================================================================
@@ -81,15 +96,29 @@ impl UISpec {
 
         Self {
             i_cc: i_cc,
-            frequency: 7100000,
+            vfo: vfo,
             out_real: [0.0; (common_defs::DSP_BLK_SZ ) as usize],
+
+            frequency: 7100000,
             disp_width: 300,
             mode_pos: common_defs::EnumModePos::Lower,
             filter_width: 2400,
             mouse_pos: pos2(0.0,0.0),
             freq_at_ptr: 7.1,
             draw_at_ptr: false,
-            vfo: vfo,
+
+            last_disp_width: 300,
+            image_height: 100,
+            image_data: vec![Color32::TRANSPARENT; 30000],
+            count: 0,
+            color_1: Color32::from_rgb(0, 0, 51),
+            color_2: Color32::from_rgb(25, 0, 76),
+            color_3: Color32::from_rgb(51, 0, 102),
+            color_4: Color32::from_rgb(76, 0, 127),
+            color_5: Color32::from_rgb(127, 0, 102),
+            color_6: Color32::from_rgb(178, 0, 127),
+            color_7: Color32::from_rgb(220, 0, 25),
+            color_8: Color32::from_rgb(0255, 0, 0),
         }
     }
 
@@ -267,9 +296,32 @@ impl UISpec {
                     TEXT_COLOR,
                 );
             }
+
+            // Add the waterfall display.
+            if self.disp_width != self.last_disp_width {
+                // Resize the image data vector
+                // This vector is a linear representation of all pixel colors in the 2D waterfall display
+                // It serves as the backing store to set all pixels in the image.
+                self.image_data.resize((self.disp_width*self.image_height) as usize, Color32::TRANSPARENT);
+                self.last_disp_width = self.disp_width;
+            }
+            // The vector may be newly initialised to Color32::TRANSPARENT or it may contain historical data.
+            // Whichever, the process is the same. New data is added at the top for a single pixel row and existing
+            // data is moved down by one row. This means the bottom row is lost.
+            self.count +=1;
+            if self.count % 20 == 0 {
+                self.create_image_data();
+            }
+            let mut img = egui::ColorImage::new([self.disp_width as usize, self.image_height as usize], Color32::TRANSPARENT);
+            self.wf_update(&mut img);
+            let texture = egui::Context::load_texture(ui.ctx(), "wf", img, egui::TextureFilter::Linear);
+            //ui.add_space(100.0);
+            ui.image(texture.id(), egui::vec2(rect.width() as f32, self.image_height as f32));
         });
     }
 
+    //==================================================================================
+    // Spec helpers
     // Convert a dBM value to a Y coordinate
     fn val_to_coord(&mut self, val: f32, height: f32) -> f32{
         // y-coord = disp-height - ((abs(low-dBm) - abs(dBm)) * (disp-height/span_db))
@@ -292,5 +344,45 @@ impl UISpec {
         let x_frac = x/self.disp_width as f32;
         let f = (common_defs::SMPLS_48K as f32 * x_frac + (self.frequency - common_defs::SMPLS_48K /2 ) as f32) as u32;
         return f;
+    }
+
+    //==================================================================================
+    // Waterfall helpers
+    // Create a new image data
+    fn create_image_data(&mut self) {
+        // Create a new vector containing one new row of data.
+        let mut new_data: Vec<Color32> = vec![Color32::TRANSPARENT; self.disp_width as usize];
+        for i in 0..self.disp_width {
+            let color = self.db_to_color(self.out_real[(self.disp_width - i - 1)as usize] as i32);
+            new_data[i as usize] = color;
+        }
+        // Truncate the image_data to remove one row of data from the end.
+        self.image_data.truncate(self.image_data.len() - self.disp_width as usize);
+        // Append image_data to the new row of data leaving the new row at the top
+        new_data.append(&mut self.image_data);
+        // Set this as the new image data
+        self.image_data = new_data;
+    }
+
+    // Update the waterfall image from image data
+    fn wf_update(&mut self, img: &mut egui::ColorImage) {
+        for y in 0..self.image_height {
+            for x in L_MARGIN as i32..self.disp_width + R_MARGIN as i32  {
+                img[(x as usize, y as usize)] = self.image_data[((y*self.disp_width) +x) as usize];
+            }
+        }
+    }
+
+    // Convert a dBM value to a colour
+    fn db_to_color(&mut self, dbM: i32) -> Color32 {
+        if dbM >= -160 && dbM < -135 {return self.color_1};
+        if dbM >= -135 && dbM < -130 {return self.color_2};
+        if dbM >= -130 && dbM < -125 {return self.color_3};
+        if dbM >= -125 && dbM < -120 {return self.color_4};
+        if dbM >= -120 && dbM < -115 {return self.color_5};
+        if dbM >= -115 && dbM < -110 {return self.color_6};
+        if dbM >= -110 && dbM < -100 {return self.color_7};
+        if dbM >= -100 && dbM < 0 {return self.color_8};
+        return self.color_1;
     }
 }
