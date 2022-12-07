@@ -45,7 +45,6 @@ pub struct UIMain {
     filters : components::egui_filter::UIFilter,
     vfo : Rc<RefCell<components::egui_vfo::UIVfo>>,
     spec : Rc<RefCell<components::egui_spec::UISpec>>,
-    waterfall : Rc<RefCell<components::egui_waterfall::UIWaterfall>>,
     out_real: [f32; (common_defs::DSP_BLK_SZ ) as usize],
 }
 
@@ -57,16 +56,14 @@ impl UIMain {
         
         let vfo = Rc::new(RefCell::new(components::egui_vfo::UIVfo::new(cc, i_cc.clone())));
         let spec = Rc::new(RefCell::new(components::egui_spec::UISpec::new(cc, i_cc.clone(), vfo.clone())));
-        let waterfall = Rc::new(RefCell::new(components::egui_waterfall::UIWaterfall::new(cc, i_cc.clone(), vfo.clone())));
-        let modes = components::egui_mode::UIMode::new(cc, i_cc.clone(), spec.clone(), waterfall.clone());
-        let filters = components::egui_filter::UIFilter::new(cc, i_cc.clone(), spec.clone(), waterfall.clone());
+        let modes = components::egui_mode::UIMode::new(cc, i_cc.clone(), spec.clone());
+        let filters = components::egui_filter::UIFilter::new(cc, i_cc.clone(), spec.clone());
         Self {
             _i_cc : i_cc,
             modes : modes,
             filters : filters,
             vfo : vfo,
             spec : spec,
-            waterfall : waterfall,
             out_real: [0.0; (common_defs::DSP_BLK_SZ ) as usize],
         }
     }
@@ -98,18 +95,11 @@ impl eframe::App for UIMain {
         });
 
         // We pass the same dataset into spec and waterfall
-        egui::Window::new("Spectrum")
+        egui::Window::new("Spectrum/Waterfall")
         .auto_sized()
         .show(ctx, |ui| {
             self.spec.borrow_mut().spectrum(ui, &mut self.out_real);
         });
-
-        egui::Window::new("Waterfall")
-        .auto_sized()
-        .show(ctx, |ui| {
-            self.waterfall.borrow_mut().waterfall(ui, &mut self.out_real);
-        });
-        
     }
 }
 

@@ -63,7 +63,6 @@ pub struct UIMode {
     _mode_pos: common_defs::EnumModePos,
     m_array: [(String, egui::Color32); 12],
     spec : Rc<RefCell<components::egui_spec::UISpec>>,
-    waterfall : Rc<RefCell<components::egui_waterfall::UIWaterfall>>,
 }
 
 //===========================================================================================
@@ -71,8 +70,7 @@ pub struct UIMode {
 impl UIMode {
     pub fn new(_cc: &eframe::CreationContext<'_>, 
         i_cc : Arc<Mutex<protocol::cc_out::CCData>>, 
-        spec : Rc<RefCell<components::egui_spec::UISpec>>,
-        waterfall : Rc<RefCell<components::egui_waterfall::UIWaterfall>>) -> Self{
+        spec : Rc<RefCell<components::egui_spec::UISpec>>) -> Self{
 
         let m_array = [
            (String::from("LSB"), MODE_HIGHLIGHT_COLOR),
@@ -97,7 +95,6 @@ impl UIMode {
             m_array: m_array,
             _mode_pos: common_defs::EnumModePos::Lower,
             spec: spec,
-            waterfall: waterfall,
         }
     }
 
@@ -112,7 +109,6 @@ impl UIMode {
                 self.set_mode_buttons(ModeId::Lsb as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Lsb as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Lower);
-                self.waterfall.borrow_mut().set_mode_pos( common_defs::EnumModePos::Lower);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Usb as usize].0).text_style(TextStyle::Heading)
@@ -121,7 +117,6 @@ impl UIMode {
                 self.set_mode_buttons(ModeId::Usb as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Usb as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Upper);
-                self.waterfall.borrow_mut().set_mode_pos( common_defs::EnumModePos::Upper);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Dsb as usize].0).text_style(TextStyle::Heading)
@@ -130,7 +125,6 @@ impl UIMode {
                 self.set_mode_buttons(ModeId::Dsb as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Dsb as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
-                self.waterfall.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::CwL as usize].0).text_style(TextStyle::Heading)
@@ -139,7 +133,6 @@ impl UIMode {
                 self.set_mode_buttons(ModeId::CwL as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::CwL as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Lower);
-                self.waterfall.borrow_mut().set_mode_pos( common_defs::EnumModePos::Lower);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::CwU as usize].0).text_style(TextStyle::Heading)
@@ -148,7 +141,6 @@ impl UIMode {
                 self.set_mode_buttons(ModeId::CwU as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::CwU as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Upper);
-                self.waterfall.borrow_mut().set_mode_pos(common_defs::EnumModePos::Upper);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Fm as usize].0).text_style(TextStyle::Heading)
@@ -157,7 +149,6 @@ impl UIMode {
                 self.set_mode_buttons(ModeId::Fm as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Fm as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
-                self.waterfall.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
             }
             let b = ui.button(RichText::new(&self.m_array[ModeId::Am as usize].0).text_style(TextStyle::Heading)
             .background_color(self.m_array[ModeId::Am as usize].1));
@@ -165,7 +156,6 @@ impl UIMode {
                 self.set_mode_buttons(ModeId::Am as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Am as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
-                self.waterfall.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::DigL as usize].0).text_style(TextStyle::Heading)
@@ -174,7 +164,6 @@ impl UIMode {
                 self.set_mode_buttons(ModeId::DigL as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::DigL as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Lower);
-                self.waterfall.borrow_mut().set_mode_pos( common_defs::EnumModePos::Lower);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::DigU as usize].0).text_style(TextStyle::Heading)
@@ -183,7 +172,6 @@ impl UIMode {
                 self.set_mode_buttons(ModeId::DigU as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::DigU as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Upper);
-                self.waterfall.borrow_mut().set_mode_pos( common_defs::EnumModePos::Upper);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Spec as usize].0).text_style(TextStyle::Heading)
@@ -192,7 +180,6 @@ impl UIMode {
                 self.set_mode_buttons(ModeId::Spec as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Spec as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
-                self.waterfall.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Sam as usize].0).text_style(TextStyle::Heading)
@@ -201,7 +188,6 @@ impl UIMode {
                 self.set_mode_buttons(ModeId::Sam as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Sam as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
-                self.waterfall.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Drm as usize].0).text_style(TextStyle::Heading)
@@ -210,7 +196,6 @@ impl UIMode {
                 self.set_mode_buttons(ModeId::Drm as i32);
                 dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Drm as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
-                self.waterfall.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
             }
         });
     }

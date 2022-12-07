@@ -374,15 +374,15 @@ impl UISpec {
     }
 
     // Convert a dBM value to a colour
-    fn db_to_color(&mut self, dbM: i32) -> Color32 {
-        if dbM >= -160 && dbM < -135 {return self.color_1};
-        if dbM >= -135 && dbM < -130 {return self.color_2};
-        if dbM >= -130 && dbM < -125 {return self.color_3};
-        if dbM >= -125 && dbM < -120 {return self.color_4};
-        if dbM >= -120 && dbM < -115 {return self.color_5};
-        if dbM >= -115 && dbM < -110 {return self.color_6};
-        if dbM >= -110 && dbM < -100 {return self.color_7};
-        if dbM >= -100 && dbM < 0 {return self.color_8};
+    fn db_to_color(&mut self, db_m: i32) -> Color32 {
+        if db_m >= -160 && db_m < -135 {return self.color_1};
+        if db_m >= -135 && db_m < -130 {return self.color_2};
+        if db_m >= -130 && db_m < -125 {return self.color_3};
+        if db_m >= -125 && db_m < -120 {return self.color_4};
+        if db_m >= -120 && db_m < -115 {return self.color_5};
+        if db_m >= -115 && db_m < -110 {return self.color_6};
+        if db_m >= -110 && db_m < -100 {return self.color_7};
+        if db_m >= -100 && db_m < 0 {return self.color_8};
         return self.color_1;
     }
 }
