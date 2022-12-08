@@ -76,31 +76,37 @@ impl eframe::App for UIMain {
         // Get the latest data update
         dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real);
 
-        egui::Window::new("Modes")
+        // Run all windows
+        let w = egui::Window::new("Modes")
         .auto_sized()
         .show(ctx, |ui| {
             self.modes.modes(ui);
         });
+        let r = w.unwrap().response.rect;
         
-        egui::Window::new("Filters")
+        let w1 = egui::Window::new("Filters")
         .auto_sized()
         .show(ctx, |ui| {
             self.filters.filters(ui);
         });
+        let r1 = w1.unwrap().response.rect;
         
-        egui::Window::new("VFO")
+        let w2 = egui::Window::new("VFO")
         .auto_sized()
         .show(ctx, |ui| {
             self.vfo.borrow_mut().vfo(ui);
         });
+        let r2 = w2.unwrap().response.rect;
 
-        egui::Window::new("Spectrum/Waterfall")
+        let w3 = egui::Window::new("Spectrum/Waterfall")
         .default_size(egui::vec2(600.0,300.0))
-        .default_pos(egui::pos2(100.0,100.0))
+        .default_pos(egui::pos2(0.0,300.0))
         //.auto_sized()
         .show(ctx, |ui| {
             self.spec.borrow_mut().spectrum(ui, &mut self.out_real);
         });
+        let r3 = w3.unwrap().response.rect;
+        println!("{}, {}, {}, {}", r3.left(), r3.top(), r3.width(), r3.height());
     }
 }
 
