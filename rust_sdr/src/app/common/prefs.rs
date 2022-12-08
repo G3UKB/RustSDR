@@ -23,3 +23,32 @@ The authors can be reached by email at:
 
 bob@bobcowdery.plus.com
 */
+
+extern crate preferences;
+use preferences::{AppInfo, PreferencesMap, Preferences};
+
+const APP_INFO: AppInfo = AppInfo{name: "preferences", author: "Rust language community"};
+
+fn main() {
+
+    // Create a new preferences key-value map
+    // (Under the hood: HashMap<String, String>)
+    let mut faves: PreferencesMap<String> = PreferencesMap::new();
+
+    // Edit the preferences (std::collections::HashMap)
+    faves.insert("color".into(), "blue".into());
+    faves.insert("programming language".into(), "Rust".into());
+
+    // Store the user's preferences
+    let prefs_key = "tests/docs/basic-example";
+    let save_result = faves.save(&APP_INFO, prefs_key);
+    assert!(save_result.is_ok());
+
+    // ... Then do some stuff ...
+
+    // Retrieve the user's preferences
+    let load_result = PreferencesMap::<String>::load(&APP_INFO, prefs_key);
+    assert!(load_result.is_ok());
+    assert_eq!(load_result.unwrap(), faves);
+
+}
