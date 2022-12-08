@@ -106,7 +106,7 @@ impl eframe::App for UIMain {
             self.spec.borrow_mut().spectrum(ui, &mut self.out_real);
         });
         let r3 = w3.unwrap().response.rect;
-        println!("{}, {}, {}, {}", r3.left(), r3.top(), r3.width(), r3.height());
+        //println!("{}, {}, {}, {}", r3.left(), r3.top(), r3.width(), r3.height());
     }
 }
 
