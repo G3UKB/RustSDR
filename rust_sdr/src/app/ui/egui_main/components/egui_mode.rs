@@ -101,6 +101,7 @@ impl UIMode {
     //===========================================================================================
     // Populate modes window
     pub fn modes(&mut self, ui: &mut egui::Ui) {
+        
         ui.horizontal(|ui| {
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Lsb as usize].0).text_style(TextStyle::Heading)

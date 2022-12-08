@@ -81,7 +81,7 @@ impl eframe::App for UIMain {
         .show(ctx, |ui| {
             self.modes.modes(ui);
         });
-         
+        
         egui::Window::new("Filters")
         .auto_sized()
         .show(ctx, |ui| {
@@ -94,9 +94,10 @@ impl eframe::App for UIMain {
             self.vfo.borrow_mut().vfo(ui);
         });
 
-        // We pass the same dataset into spec and waterfall
         egui::Window::new("Spectrum/Waterfall")
-        .auto_sized()
+        .default_size(egui::vec2(600.0,300.0))
+        .default_pos(egui::pos2(100.0,100.0))
+        //.auto_sized()
         .show(ctx, |ui| {
             self.spec.borrow_mut().spectrum(ui, &mut self.out_real);
         });
