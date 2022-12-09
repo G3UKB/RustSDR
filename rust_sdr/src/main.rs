@@ -33,7 +33,7 @@ use preferences::{AppInfo, PreferencesMap, Preferences};
 pub mod app;
 
 // Prefs info
-const APP_INFO: AppInfo = AppInfo{name: "RustSDRprefs", author: "Bob Cowdery"};
+const APP_INFO: AppInfo = AppInfo{name: "RustSDRprefs", author: "BobCowdery"};
 
 /// Entry point for RustConsole SDR application
 ///
@@ -44,7 +44,9 @@ fn main() {
 
     // Manage preferences with lonest possible lifetime
     // Storage location
-    let prefs_key = "/prefs/rustsdr.prefs";
+    // Will store under prefs_base_dir()/BobCowdery/RustSDRPrefs/rustsdr.prefs
+    let prefs_key = "rustsdr.prefs";
+    
     // Try to load prefs
     let load_result = PreferencesMap::<String>::load(&APP_INFO, prefs_key);
     let mut prefs;
@@ -55,7 +57,6 @@ fn main() {
         // Create a new prefs
         prefs = PreferencesMap::new();
      }
-     prefs.insert("Time".into(), "Some time".into());
 
     // Create an instance of the Application manager type
     let mut i_app = app::Appdata::new(&mut prefs);
@@ -73,7 +74,6 @@ fn main() {
 
     // Save prefs
     let save_result = prefs.save(&APP_INFO, prefs_key);
-    println!("{:?}", save_result);
     if !save_result.is_ok() {
         println!("Failed to save preferences");
     }
