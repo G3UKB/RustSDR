@@ -39,6 +39,7 @@ use std::thread;
 use std::time::Duration;
 use std::option;
 use std::collections::HashMap;
+use std::{cell::RefCell, rc::Rc};
 
 use socket2;
 use crossbeam_channel::unbounded;
@@ -99,7 +100,7 @@ pub struct Appdata{
 // Implementation
 impl Appdata {
     // Instantiate the application modules
-    pub fn new(prefs: &mut HashMap<String, String>) -> Appdata {
+    pub fn new(prefs: Rc<RefCell<HashMap<String, String>>>) -> Appdata {
         // Local runnable
         let mut l_run = false;
 
@@ -229,7 +230,7 @@ impl Appdata {
     
     //=========================================================================================
     // Initialise system to a running state
-    pub fn app_init(&mut self) {
+    pub fn app_init(&mut self, prefs: Rc<RefCell<HashMap<String, String>>>) {
 
         // Prime the hardware.
         self.w_sender.send(common::messages::WriterMsg::PrimeHardware).unwrap();
@@ -257,7 +258,7 @@ impl Appdata {
 
     //=========================================================================================
     // Run the UI event loop. Only returns when the UI is closed.
-    pub fn ui_run(&mut self) {
+    pub fn ui_run(&mut self, prefs: Rc<RefCell<HashMap<String, String>>>) {
         /* 
         let options = eframe::NativeOptions::default();
         let i_cc = self.i_cc.clone();
@@ -268,7 +269,7 @@ impl Appdata {
         );
         */
         let i_cc = self.i_cc.clone();
-        ui::egui_main::ui_run(i_cc);
+        ui::egui_main::ui_run(i_cc, prefs);
     }
 
     //=========================================================================================

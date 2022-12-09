@@ -26,6 +26,7 @@ bob@bobcowdery.plus.com
 
 use std::thread;
 use std::time::Duration;
+use std::{cell::RefCell, rc::Rc};
 
 extern crate preferences;
 use preferences::{AppInfo, PreferencesMap, Preferences};
@@ -57,23 +58,24 @@ fn main() {
         // Create a new prefs
         prefs = PreferencesMap::new();
      }
+     let wprefs = Rc::new(RefCell::new(prefs));
 
     // Create an instance of the Application manager type
-    let mut i_app = app::Appdata::new(&mut prefs);
+    let mut i_app = app::Appdata::new(wprefs.clone());
 
     // This will initialise all modules and run the back-end system
-    i_app.app_init();
+    i_app.app_init(wprefs.clone());
 
     // Initialise the UI
     // This runs the UI event loop and will return when the UI is closed
-    i_app.ui_run();
+    i_app.ui_run(wprefs.clone());
 
     // Close application
     println!("\n\nStarting shutdown...");
     i_app.app_close();
 
     // Save prefs
-    let save_result = prefs.save(&APP_INFO, prefs_key);
+    let save_result = wprefs.borrow_mut().save(&APP_INFO, prefs_key);
     if !save_result.is_ok() {
         println!("Failed to save preferences");
     }
