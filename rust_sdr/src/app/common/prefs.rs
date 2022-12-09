@@ -27,7 +27,8 @@ bob@bobcowdery.plus.com
 extern crate preferences;
 use preferences::{AppInfo, PreferencesMap, Preferences};
 
-const APP_INFO: AppInfo = AppInfo{name: "preferences", author: "Rust language community"};
+const APP_INFO: AppInfo = AppInfo{name: "RustSDRprefs", author: "Bob Cowdery"};
+
 
 fn main() {
 

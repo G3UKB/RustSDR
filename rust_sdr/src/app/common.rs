@@ -29,3 +29,4 @@ pub mod messages;
 pub mod cc_out_defs;
 pub mod ringb;
 pub mod converters;
+pub mod prefs;

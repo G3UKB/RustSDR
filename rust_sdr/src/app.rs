@@ -38,6 +38,7 @@ use std::sync::{Arc, Mutex, Condvar};
 use std::thread;
 use std::time::Duration;
 use std::option;
+use std::collections::HashMap;
 
 use socket2;
 use crossbeam_channel::unbounded;
@@ -98,7 +99,7 @@ pub struct Appdata{
 // Implementation
 impl Appdata {
     // Instantiate the application modules
-    pub fn new() -> Appdata {
+    pub fn new(prefs: &mut HashMap<String, String>) -> Appdata {
         // Local runnable
         let mut l_run = false;
 

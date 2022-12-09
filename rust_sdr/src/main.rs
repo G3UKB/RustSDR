@@ -27,7 +27,13 @@ bob@bobcowdery.plus.com
 use std::thread;
 use std::time::Duration;
 
+extern crate preferences;
+use preferences::{AppInfo, PreferencesMap, Preferences};
+
 pub mod app;
+
+// Prefs info
+const APP_INFO: AppInfo = AppInfo{name: "RustSDRprefs", author: "Bob Cowdery"};
 
 /// Entry point for RustConsole SDR application
 ///
@@ -36,8 +42,23 @@ pub mod app;
 fn main() {
     println!("Starting Rust Console...");
 
+    // Manage preferences with lonest possible lifetime
+    // Storage location
+    let prefs_key = "/prefs/rustsdr.prefs";
+    // Try to load prefs
+    let load_result = PreferencesMap::<String>::load(&APP_INFO, prefs_key);
+    let mut prefs;
+     if load_result.is_ok() {
+        // Use these prefs
+        prefs = load_result.unwrap();
+     } else {
+        // Create a new prefs
+        prefs = PreferencesMap::new();
+     }
+     prefs.insert("Time".into(), "Some time".into());
+
     // Create an instance of the Application manager type
-    let mut i_app = app::Appdata::new();
+    let mut i_app = app::Appdata::new(&mut prefs);
 
     // This will initialise all modules and run the back-end system
     i_app.app_init();
@@ -49,6 +70,14 @@ fn main() {
     // Close application
     println!("\n\nStarting shutdown...");
     i_app.app_close();
+
+    // Save prefs
+    let save_result = prefs.save(&APP_INFO, prefs_key);
+    println!("{:?}", save_result);
+    if !save_result.is_ok() {
+        println!("Failed to save preferences");
+    }
+
     println!("Rust console closing...");
     thread::sleep(Duration::from_millis(1000));
 }
