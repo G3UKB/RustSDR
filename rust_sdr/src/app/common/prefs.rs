@@ -29,27 +29,50 @@ use preferences::{AppInfo, PreferencesMap, Preferences};
 
 const APP_INFO: AppInfo = AppInfo{name: "RustSDRprefs", author: "Bob Cowdery"};
 
+//===========================================================================================
+// State for prefs
+pub struct Prefs {
+    prefs: PreferencesMap<String>,
+    prefs_key: String,
+}
 
-fn main() {
+//===========================================================================================
+// Implementation for UIApp
+impl Prefs {
+    pub fn new() -> Self{
 
-    // Create a new preferences key-value map
-    // (Under the hood: HashMap<String, String>)
-    let mut faves: PreferencesMap<String> = PreferencesMap::new();
+        Self {
+            prefs: PreferencesMap::new(),
+            prefs_key: String::from("rustsdr.prefs"),
+        }
+    }
 
-    // Edit the preferences (std::collections::HashMap)
-    faves.insert("color".into(), "blue".into());
-    faves.insert("programming language".into(), "Rust".into());
+    pub fn restore(&mut self) {
+        
+        // Try to load prefs
+        // Will store under prefs_base_dir()/BobCowdery/RustSDRPrefs/rustsdr.prefs
+        let load_result = PreferencesMap::<String>::load(&APP_INFO, &self.prefs_key);
+        if load_result.is_ok() {
+            // Use these prefs
+            self.prefs = load_result.unwrap();
+        }
+    }
 
-    // Store the user's preferences
-    let prefs_key = "tests/docs/basic-example";
-    let save_result = faves.save(&APP_INFO, prefs_key);
-    assert!(save_result.is_ok());
+    pub fn save(&mut self) {
+        // Save prefs
+        let save_result = self.prefs.save(&APP_INFO, &self.prefs_key);
+        if !save_result.is_ok() {
+            println!("Failed to save preferences!");
+        }
+    }
 
-    // ... Then do some stuff ...
+    pub fn store(&mut self, key: String, value: String) {
+        //self.prefs.into_values(key, value);
+    }
 
-    // Retrieve the user's preferences
-    let load_result = PreferencesMap::<String>::load(&APP_INFO, prefs_key);
-    assert!(load_result.is_ok());
-    assert_eq!(load_result.unwrap(), faves);
+    pub fn read(&mut self, key: String) -> String {
+        //self.prefs.into_values(key, value);
+        return String::from("");
+    }
 
 }

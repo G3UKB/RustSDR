@@ -39,7 +39,6 @@ use eframe::egui;
 
 //===========================================================================================
 // State for UIApp
-
 pub struct UIMain {
     _i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
     modes : components::egui_mode::UIMode,
