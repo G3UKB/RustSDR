@@ -79,3 +79,15 @@ impl Prefs {
     }
 
 }
+
+// Test
+fn main() {
+    let mut p = Prefs::new();
+    p.restore();
+    p.store(String::from("Key1"), String::from("Value1"));
+    p.store(String::from("Key2"), String::from("Value2"));
+    p.save();
+    p.restore();
+    println!("{}", p.read(String::from("Key1")));
+    println!("{}", p.read(String::from("Key2")));
+}
