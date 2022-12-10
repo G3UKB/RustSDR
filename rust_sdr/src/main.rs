@@ -28,13 +28,14 @@ use std::thread;
 use std::time::Duration;
 use std::{cell::RefCell, rc::Rc};
 
-extern crate preferences;
-use preferences::{AppInfo, PreferencesMap, Preferences};
+//extern crate preferences;
+//use preferences::{AppInfo, PreferencesMap, Preferences};
+use crate ::app::common::prefs;
 
 pub mod app;
 
 // Prefs info
-const APP_INFO: AppInfo = AppInfo{name: "RustSDRprefs", author: "BobCowdery"};
+//const APP_INFO: AppInfo = AppInfo{name: "RustSDRprefs", author: "BobCowdery"};
 
 /// Entry point for RustConsole SDR application
 ///
@@ -43,22 +44,9 @@ const APP_INFO: AppInfo = AppInfo{name: "RustSDRprefs", author: "BobCowdery"};
 fn main() {
     println!("Starting Rust Console...");
 
-    // Manage preferences with lonest possible lifetime
-    // Storage location
-    // Will store under prefs_base_dir()/BobCowdery/RustSDRPrefs/rustsdr.prefs
-    let prefs_key = "rustsdr.prefs";
-    
-    // Try to load prefs
-    let load_result = PreferencesMap::<String>::load(&APP_INFO, prefs_key);
-    let mut prefs;
-     if load_result.is_ok() {
-        // Use these prefs
-        prefs = load_result.unwrap();
-     } else {
-        // Create a new prefs
-        prefs = PreferencesMap::new();
-     }
-     let wprefs = Rc::new(RefCell::new(prefs));
+    // Create a Prefs instance
+    let prefs = prefs::Prefs::new();
+    let wprefs = Rc::new(RefCell::new(prefs));
 
     // Create an instance of the Application manager type
     let mut i_app = app::Appdata::new(wprefs.clone());
@@ -75,10 +63,7 @@ fn main() {
     i_app.app_close();
 
     // Save prefs
-    let save_result = wprefs.borrow_mut().save(&APP_INFO, prefs_key);
-    if !save_result.is_ok() {
-        println!("Failed to save preferences");
-    }
+    wprefs.borrow_mut().save();
 
     println!("Rust console closing...");
     thread::sleep(Duration::from_millis(1000));

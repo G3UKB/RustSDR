@@ -32,6 +32,7 @@ use std::{cell::RefCell, rc::Rc};
 use std::collections::HashMap;
 
 use crate::app::common::common_defs;
+use crate ::app::common::prefs;
 use crate::app::protocol;
 use crate::app::dsp;
 
@@ -51,7 +52,7 @@ pub struct UIMain {
 //===========================================================================================
 // Implementation for UIApp
 impl UIMain {
-    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, prefs: Rc<RefCell<HashMap<String, String>>>) -> Self{
+    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, prefs: Rc<RefCell<prefs::Prefs>>) -> Self{
 
         
         let vfo = Rc::new(RefCell::new(components::egui_vfo::UIVfo::new(cc, i_cc.clone())));
@@ -111,7 +112,7 @@ impl eframe::App for UIMain {
 }
 
 // Instantiate the one and only main window and run the event loop
-pub fn ui_run(i_cc: Arc<Mutex<protocol::cc_out::CCData>>, prefs: Rc<RefCell<HashMap<String, String>>>) {
+pub fn ui_run(i_cc: Arc<Mutex<protocol::cc_out::CCData>>, prefs: Rc<RefCell<prefs::Prefs>>) {
     let options = eframe::NativeOptions::default();
     let i_cc = i_cc.clone();
     let prefs = prefs.clone();
