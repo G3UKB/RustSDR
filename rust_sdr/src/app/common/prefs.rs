@@ -26,6 +26,7 @@ bob@bobcowdery.plus.com
 
 extern crate preferences;
 use preferences::{AppInfo, PreferencesMap, Preferences};
+use std::collections::hash_map::Entry;
 
 const APP_INFO: AppInfo = AppInfo{name: "RustSDRprefs", author: "Bob Cowdery"};
 
@@ -67,12 +68,14 @@ impl Prefs {
     }
 
     pub fn store(&mut self, key: String, value: String) {
-        //self.prefs.into_values(key, value);
+        self.prefs.insert(key.into(), value.into());
     }
 
     pub fn read(&mut self, key: String) -> String {
-        //self.prefs.into_values(key, value);
-        return String::from("");
+        match self.prefs.entry(key) {
+            Entry::Occupied(v) => return String::from(v.get().as_str()),
+            Entry::Vacant(_) => return String::from(""),
+        }
     }
 
 }
