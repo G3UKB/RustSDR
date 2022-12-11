@@ -35,24 +35,24 @@ use std::path::Path;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Windows {
-    main_x: u32,
-    main_y: u32,
-    main_w: u32,
+    pub main_x: u32,
+    pub main_y: u32,
+    pub main_w: u32,
 
-    vfo_x: u32,
-    vfo_y: u32,
+    pub vfo_x: u32,
+    pub vfo_y: u32,
 
-    mode_x: u32,
-    mode_y: u32,
+    pub  mode_x: u32,
+    pub mode_y: u32,
 
-    filt_x: u32,
-    filt_y: u32,
+    pub filt_x: u32,
+    pub filt_y: u32,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Prefs {
-    prefs_path: String,
-    windows: Windows,
+    pub prefs_path: String,
+    pub windows: Windows,
 }
 
 //===========================================================================================
