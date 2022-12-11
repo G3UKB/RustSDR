@@ -26,6 +26,9 @@ bob@bobcowdery.plus.com
 
 use serde:: {Serialize, Deserialize};
 use std::collections::hash_map::Entry;
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::Path;
 
 //===========================================================================================
 // State for prefs
@@ -48,7 +51,7 @@ pub struct Windows {
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Prefs {
-    prefs_key: String,
+    prefs_path: String,
     windows: Windows,
 }
 
@@ -58,7 +61,7 @@ impl Prefs {
     pub fn new() -> Self{
 
         Self {
-            prefs_key: String::from("rustsdr.prefs"),
+            prefs_path: String::from("E:\\Projects\\RustSDR\\trunk\\rust_sdr\\prefs\\rustsdr.prefs"),
             
             windows: { Windows {
                     main_x: 0,
@@ -78,18 +81,76 @@ impl Prefs {
     }
 
     pub fn restore(&mut self) {
-        
-        let serialized = serde_json::to_string(&self).unwrap();
-        println!("serialized = {}", serialized);
 
-        let deserialized: Prefs = serde_json::from_str(&serialized).unwrap();
-        println!("deserialized = {:?}", deserialized);
-        
+        // Open (and initialise if not present) the prefs file
+        let mut file = self.open_file();
+        // Regardless, initialise the structure from the restored file
+        let path = Path::new(&self.prefs_path);
+        let display = path.display();
+        let mut s = String::new();
+        match file.read_to_string(&mut s) {
+            Err(why) => panic!("couldn't read prefs file! {}: {}", display, why),
+            Ok(_) => {
+                print!("{} contains:\n{}\n", display, s);
+                let mut prefs: Prefs = serde_json::from_str(&s).unwrap();
+                Prefs { 
+                    prefs_path: String::from(prefs.prefs_path),
+            
+                    windows: { Windows {
+                            main_x: prefs.windows.main_x,
+                            main_y: prefs.windows.main_y,
+                            main_w: prefs.windows.main_w,
+                            vfo_x: prefs.windows.vfo_x,
+                            vfo_y: prefs.windows.vfo_y,
+
+                            mode_x: prefs.windows.mode_x,
+                            mode_y: prefs.windows.mode_y,
+
+                            filt_x: prefs.windows.filt_x,
+                            filt_y: prefs.windows.filt_y,
+                        }
+                    }
+                } ;
+            },
+        }
     }   
     
     pub fn save(&mut self) {
-        // Save prefs
-        
+        // Write the new data
+        let _ = self.write_file();
     }
+
+    fn open_file(&mut self) -> File {
+        let path = Path::new(&self.prefs_path);
+        let display = path.display();
+        // Open the path in read-only mode, returns `io::Result<File>`
+        let mut file = match File::open(&path) {
+            Err(_why) => {
+                // File not present so initialise
+                return self.write_file();
+            },
+            Ok(file) => return file,
+        };
+    }
+
+    fn write_file(&mut self) -> File {
+        let path = Path::new(&self.prefs_path);
+        let display = path.display();
+        let serialized = serde_json::to_string(&self).unwrap();
+
+        // Open a file in write-only mode, returns `io::Result<File>`
+        let mut file = match File::create(path) {
+            Err(why) => panic!("couldn't create prefs file! {}: {}", display, why),
+            Ok(file) => file,
+        };
+
+        // Write the data to `file`, returns `io::Result<()>`
+        match file.write_all(serialized.as_bytes()) {
+            Err(why) => panic!("couldn't write defaults to prefs file! {}: {}", display, why),
+            Ok(_) => println!("successfully wrote to prefs file {}", display),
+        }
+        return file;
+    }
+
 }
 

@@ -64,7 +64,7 @@ fn main() {
     i_app.app_close();
 
     // Save prefs
-    //wprefs.borrow_mut().save();
+    wprefs.borrow_mut().save();
 
     println!("Rust console closing...");
     thread::sleep(Duration::from_millis(1000));
