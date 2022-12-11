@@ -47,6 +47,7 @@ fn main() {
     // Create a Prefs instance
     let prefs = prefs::Prefs::new();
     let wprefs = Rc::new(RefCell::new(prefs));
+    wprefs.borrow_mut().restore();
 
     // Create an instance of the Application manager type
     let mut i_app = app::Appdata::new(wprefs.clone());
@@ -63,7 +64,7 @@ fn main() {
     i_app.app_close();
 
     // Save prefs
-    wprefs.borrow_mut().save();
+    //wprefs.borrow_mut().save();
 
     println!("Rust console closing...");
     thread::sleep(Duration::from_millis(1000));

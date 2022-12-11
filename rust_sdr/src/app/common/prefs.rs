@@ -24,70 +24,72 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-extern crate preferences;
-use preferences::{AppInfo, PreferencesMap, Preferences};
+use serde:: {Serialize, Deserialize};
 use std::collections::hash_map::Entry;
-
-const APP_INFO: AppInfo = AppInfo{name: "RustSDRprefs", author: "Bob Cowdery"};
 
 //===========================================================================================
 // State for prefs
+
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
+pub struct Windows {
+    main_x: u32,
+    main_y: u32,
+    main_w: u32,
+
+    vfo_x: u32,
+    vfo_y: u32,
+
+    mode_x: u32,
+    mode_y: u32,
+
+    filt_x: u32,
+    filt_y: u32,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Prefs {
-    prefs: PreferencesMap<String>,
     prefs_key: String,
+    windows: Windows,
 }
 
 //===========================================================================================
-// Implementation for UIApp
+// Implementation for Prefs
 impl Prefs {
     pub fn new() -> Self{
 
         Self {
-            prefs: PreferencesMap::new(),
             prefs_key: String::from("rustsdr.prefs"),
+            
+            windows: { Windows {
+                    main_x: 0,
+                    main_y: 0,
+                    main_w: 500,
+                    vfo_x: 0,
+                    vfo_y: 0,
+
+                    mode_x: 0,
+                    mode_y: 0,
+
+                    filt_x: 0,
+                    filt_y: 0,
+                }
+            }
         }
     }
 
     pub fn restore(&mut self) {
         
-        // Try to load prefs
-        // Will store under prefs_base_dir()/BobCowdery/RustSDRPrefs/rustsdr.prefs
-        let load_result = PreferencesMap::<String>::load(&APP_INFO, &self.prefs_key);
-        if load_result.is_ok() {
-            // Use these prefs
-            self.prefs = load_result.unwrap();
-        }
-    }
+        let serialized = serde_json::to_string(&self).unwrap();
+        println!("serialized = {}", serialized);
 
+        let deserialized: Prefs = serde_json::from_str(&serialized).unwrap();
+        println!("deserialized = {:?}", deserialized);
+        
+    }   
+    
     pub fn save(&mut self) {
         // Save prefs
-        let save_result = self.prefs.save(&APP_INFO, &self.prefs_key);
-        if !save_result.is_ok() {
-            println!("Failed to save preferences!");
-        }
+        
     }
-
-    pub fn store(&mut self, key: String, value: String) {
-        self.prefs.insert(key.into(), value.into());
-    }
-
-    pub fn read(&mut self, key: String) -> String {
-        match self.prefs.entry(key) {
-            Entry::Occupied(v) => return String::from(v.get().as_str()),
-            Entry::Vacant(_) => return String::from(""),
-        }
-    }
-
 }
 
-// Test
-fn main() {
-    let mut p = Prefs::new();
-    p.restore();
-    p.store(String::from("Key1"), String::from("Value1"));
-    p.store(String::from("Key2"), String::from("Value2"));
-    p.save();
-    p.restore();
-    println!("{}", p.read(String::from("Key1")));
-    println!("{}", p.read(String::from("Key2")));
-}
