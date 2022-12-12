@@ -96,26 +96,19 @@ impl Prefs {
             Ok(_) => {
                 print!("{} contains:\n{}\n", display, s);
                 let mut prefs: Prefs = serde_json::from_str(&s).unwrap();
-                Prefs { 
-                    prefs_path: String::from(prefs.prefs_path),
-            
-                    windows: { Windows {
-                            main_x: prefs.windows.main_x,
-                            main_y: prefs.windows.main_y,
-                            main_w: prefs.windows.main_w,
-                            main_h: prefs.windows.main_h,
+                self.windows.main_x = prefs.windows.main_x;
+                self.windows.main_y = prefs.windows.main_y;
+                self.windows.main_w = prefs.windows.main_w;
+                self.windows.main_h = prefs.windows.main_h;
 
-                            vfo_x: prefs.windows.vfo_x,
-                            vfo_y: prefs.windows.vfo_y,
+                self.windows.vfo_x = prefs.windows.vfo_x;
+                self.windows.vfo_y = prefs.windows.vfo_y;
 
-                            mode_x: prefs.windows.mode_x,
-                            mode_y: prefs.windows.mode_y,
+                self.windows.mode_x = prefs.windows.mode_x;
+                self.windows.mode_y = prefs.windows.mode_y;
 
-                            filt_x: prefs.windows.filt_x,
-                            filt_y: prefs.windows.filt_y,
-                        }
-                    }
-                } ;
+                self.windows.filt_x = prefs.windows.filt_x;
+                self.windows.filt_y = prefs.windows.filt_y;
             },
         }
     }   

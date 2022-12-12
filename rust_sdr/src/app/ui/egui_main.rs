@@ -79,37 +79,61 @@ impl eframe::App for UIMain {
         // Get the latest data update
         dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real);
 
-        // Run all windows
+        // Modes window
+        let x = self.prefs.borrow().windows.mode_x;
+        let y = self.prefs.borrow().windows.mode_y;
         let w = egui::Window::new("Modes")
         .auto_sized()
+        .default_pos(egui::pos2(x,y))
         .show(ctx, |ui| {
             self.modes.modes(ui);
         });
         let r = w.unwrap().response.rect;
+        self.prefs.borrow_mut().windows.mode_x = r.left();
+        self.prefs.borrow_mut().windows.mode_y = r.top();
         
+        // Filters window
+        let x1 = self.prefs.borrow().windows.filt_x;
+        let y1 = self.prefs.borrow().windows.filt_y;
         let w1 = egui::Window::new("Filters")
         .auto_sized()
+        .default_pos(egui::pos2(x1,y1))
         .show(ctx, |ui| {
             self.filters.filters(ui);
         });
         let r1 = w1.unwrap().response.rect;
-        
+        self.prefs.borrow_mut().windows.filt_x = r1.left();
+        self.prefs.borrow_mut().windows.filt_y = r1.top();
+
+        //VFO Window
+        let x2 = self.prefs.borrow().windows.vfo_x;
+        let y2 = self.prefs.borrow().windows.vfo_y;
         let w2 = egui::Window::new("VFO")
         .auto_sized()
+        .default_pos(egui::pos2(x2,y2))
         .show(ctx, |ui| {
             self.vfo.borrow_mut().vfo(ui);
         });
         let r2 = w2.unwrap().response.rect;
+        self.prefs.borrow_mut().windows.vfo_x = r2.left();
+        self.prefs.borrow_mut().windows.vfo_y = r2.top();
 
+        // Spec/Waterfall window
+        let x3 = self.prefs.borrow().windows.main_x;
+        let y3 = self.prefs.borrow().windows.main_y;
+        let width3 = self.prefs.borrow().windows.main_w;
+        let height3 = self.prefs.borrow().windows.main_h;
         let w3 = egui::Window::new("Spectrum/Waterfall")
-        .default_size(egui::vec2(self.prefs.borrow().windows.main_w, self.prefs.borrow().windows.main_h))
-        .default_pos(egui::pos2(0.0,300.0))
-        //.auto_sized()
+        .default_size(egui::vec2(width3, height3))
+        .default_pos(egui::pos2(x3,y3))
         .show(ctx, |ui| {
             self.spec.borrow_mut().spectrum(ui, &mut self.out_real);
         });
         let r3 = w3.unwrap().response.rect;
-        //println!("{}, {}, {}, {}", r3.left(), r3.top(), r3.width(), r3.height());
+        self.prefs.borrow_mut().windows.main_x = r3.left();
+        self.prefs.borrow_mut().windows.main_y = r3.top();
+        self.prefs.borrow_mut().windows.main_w = r3.width();
+        self.prefs.borrow_mut().windows.main_h = r3.height();
     }
 }
 
