@@ -47,6 +47,7 @@ pub struct UIMain {
     vfo : Rc<RefCell<components::egui_vfo::UIVfo>>,
     spec : Rc<RefCell<components::egui_spec::UISpec>>,
     out_real: [f32; (common_defs::DSP_BLK_SZ ) as usize],
+    prefs: Rc<RefCell<prefs::Prefs>>,
 }
 
 //===========================================================================================
@@ -66,6 +67,7 @@ impl UIMain {
             vfo : vfo,
             spec : spec,
             out_real: [0.0; (common_defs::DSP_BLK_SZ ) as usize],
+            prefs: prefs,
         }
     }
 }
@@ -100,7 +102,7 @@ impl eframe::App for UIMain {
         let r2 = w2.unwrap().response.rect;
 
         let w3 = egui::Window::new("Spectrum/Waterfall")
-        .default_size(egui::vec2(600.0,300.0))
+        .default_size(egui::vec2(self.prefs.borrow().windows.main_w, self.prefs.borrow().windows.main_h))
         .default_pos(egui::pos2(0.0,300.0))
         //.auto_sized()
         .show(ctx, |ui| {

@@ -35,18 +35,19 @@ use std::path::Path;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Windows {
-    pub main_x: u32,
-    pub main_y: u32,
-    pub main_w: u32,
+    pub main_x: f32,
+    pub main_y: f32,
+    pub main_w: f32,
+    pub main_h: f32,
 
-    pub vfo_x: u32,
-    pub vfo_y: u32,
+    pub vfo_x: f32,
+    pub vfo_y: f32,
 
-    pub  mode_x: u32,
-    pub mode_y: u32,
+    pub mode_x: f32,
+    pub mode_y: f32,
 
-    pub filt_x: u32,
-    pub filt_y: u32,
+    pub filt_x: f32,
+    pub filt_y: f32,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
@@ -64,17 +65,19 @@ impl Prefs {
             prefs_path: String::from("E:\\Projects\\RustSDR\\trunk\\rust_sdr\\prefs\\rustsdr.prefs"),
             
             windows: { Windows {
-                    main_x: 0,
-                    main_y: 0,
-                    main_w: 500,
-                    vfo_x: 0,
-                    vfo_y: 0,
+                    main_x: 0.0,
+                    main_y: 0.0,
+                    main_w: 500.0,
+                    main_h: 300.0,
 
-                    mode_x: 0,
-                    mode_y: 0,
+                    vfo_x: 0.0,
+                    vfo_y: 0.0,
 
-                    filt_x: 0,
-                    filt_y: 0,
+                    mode_x: 0.0,
+                    mode_y: 0.0,
+
+                    filt_x: 0.0,
+                    filt_y: 0.0,
                 }
             }
         }
@@ -100,6 +103,8 @@ impl Prefs {
                             main_x: prefs.windows.main_x,
                             main_y: prefs.windows.main_y,
                             main_w: prefs.windows.main_w,
+                            main_h: prefs.windows.main_h,
+
                             vfo_x: prefs.windows.vfo_x,
                             vfo_y: prefs.windows.vfo_y,
 
