@@ -42,12 +42,18 @@ pub struct Windows {
 
     pub vfo_x: f32,
     pub vfo_y: f32,
+    pub vfo_w: f32,
+    pub vfo_h: f32,
 
     pub mode_x: f32,
     pub mode_y: f32,
+    pub mode_w: f32,
+    pub mode_h: f32,
 
     pub filt_x: f32,
     pub filt_y: f32,
+    pub filt_w: f32,
+    pub filt_h: f32,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
@@ -72,12 +78,18 @@ impl Prefs {
 
                     vfo_x: 0.0,
                     vfo_y: 0.0,
+                    vfo_w: 300.0,
+                    vfo_h: 60.0,
 
                     mode_x: 0.0,
                     mode_y: 0.0,
+                    mode_w: 300.0,
+                    mode_h: 60.0,
 
                     filt_x: 0.0,
                     filt_y: 0.0,
+                    filt_w: 300.0,
+                    filt_h: 60.0,
                 }
             }
         }
@@ -103,12 +115,18 @@ impl Prefs {
 
                 self.windows.vfo_x = prefs.windows.vfo_x;
                 self.windows.vfo_y = prefs.windows.vfo_y;
+                self.windows.vfo_w = prefs.windows.vfo_w;
+                self.windows.vfo_h = prefs.windows.vfo_h;
 
                 self.windows.mode_x = prefs.windows.mode_x;
                 self.windows.mode_y = prefs.windows.mode_y;
+                self.windows.mode_w = prefs.windows.mode_w;
+                self.windows.mode_h = prefs.windows.mode_h;
 
                 self.windows.filt_x = prefs.windows.filt_x;
                 self.windows.filt_y = prefs.windows.filt_y;
+                self.windows.filt_w = prefs.windows.filt_w;
+                self.windows.filt_h = prefs.windows.filt_h;
             },
         }
     }   
@@ -144,7 +162,7 @@ impl Prefs {
 
         // Write the data to `file`, returns `io::Result<()>`
         match file.write_all(serialized.as_bytes()) {
-            Err(why) => panic!("couldn't write defaults to prefs file! {}: {}", display, why),
+            Err(why) => panic!("couldn't write data to prefs file! {}: {}", display, why),
             Ok(_) => println!("successfully wrote to prefs file {}", display),
         }
         return file;

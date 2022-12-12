@@ -169,7 +169,7 @@ pub fn wdsp_set_rx_mode(ch_id: i32, mode: i32) {
 
 pub fn wdsp_set_rx_filter(ch_id: i32, filter: i32) {
 	// Filters are 0-7 in order
-	// 6K 4K 2.7K 2.4K 1.0K 500Hz 250Hz 100Hz
+	// 6K 4K 2.7K 2.4K 2.K1, 1.0K 500Hz 250Hz 100Hz
 	unsafe{G_FILTER = filter;}
 	set_mode_filter(ch_id);
 }
@@ -187,10 +187,11 @@ fn set_mode_filter(ch_id: i32) {
 			1 => {low = 100; high = 4100},
 			2 => {low = 300; high = 3000},
 			3 => {low = 300; high = 2700},
-			4 => {low = 300; high = 1300},
-			5 => {low = 500; high = 1000},
-			6 => {low = 600; high = 850},
-			7 => {low = 700; high = 800},
+			4 => {low = 300; high = 2400},
+			5 => {low = 300; high = 1300},
+			6 => {low = 500; high = 1000},
+			7 => {low = 600; high = 850},
+			8 => {low = 700; high = 800},
 			_ => (),
 		}
 		if mode == 0 || mode == 3 || mode == 9 {

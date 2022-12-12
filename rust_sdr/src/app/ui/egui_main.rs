@@ -82,8 +82,10 @@ impl eframe::App for UIMain {
         // Modes window
         let x = self.prefs.borrow().windows.mode_x;
         let y = self.prefs.borrow().windows.mode_y;
+        let width = self.prefs.borrow().windows.mode_w;
+        let height = self.prefs.borrow().windows.mode_h;
         let w = egui::Window::new("Modes")
-        .auto_sized()
+        .default_size(egui::vec2(width, height))
         .default_pos(egui::pos2(x,y))
         .show(ctx, |ui| {
             self.modes.modes(ui);
@@ -91,12 +93,16 @@ impl eframe::App for UIMain {
         let r = w.unwrap().response.rect;
         self.prefs.borrow_mut().windows.mode_x = r.left();
         self.prefs.borrow_mut().windows.mode_y = r.top();
+        self.prefs.borrow_mut().windows.mode_w = r.width();
+        self.prefs.borrow_mut().windows.mode_h = r.height();
         
         // Filters window
         let x1 = self.prefs.borrow().windows.filt_x;
         let y1 = self.prefs.borrow().windows.filt_y;
+        let width1 = self.prefs.borrow().windows.filt_w;
+        let height1 = self.prefs.borrow().windows.filt_h;
         let w1 = egui::Window::new("Filters")
-        .auto_sized()
+        .default_size(egui::vec2(width1, height1))
         .default_pos(egui::pos2(x1,y1))
         .show(ctx, |ui| {
             self.filters.filters(ui);
@@ -104,12 +110,16 @@ impl eframe::App for UIMain {
         let r1 = w1.unwrap().response.rect;
         self.prefs.borrow_mut().windows.filt_x = r1.left();
         self.prefs.borrow_mut().windows.filt_y = r1.top();
+        self.prefs.borrow_mut().windows.filt_w = r1.width();
+        self.prefs.borrow_mut().windows.filt_h = r1.height();
 
         //VFO Window
         let x2 = self.prefs.borrow().windows.vfo_x;
         let y2 = self.prefs.borrow().windows.vfo_y;
+        let width2 = self.prefs.borrow().windows.vfo_w;
+        let height2 = self.prefs.borrow().windows.vfo_h;
         let w2 = egui::Window::new("VFO")
-        .auto_sized()
+        .default_size(egui::vec2(width2, height2))
         .default_pos(egui::pos2(x2,y2))
         .show(ctx, |ui| {
             self.vfo.borrow_mut().vfo(ui);
@@ -117,6 +127,8 @@ impl eframe::App for UIMain {
         let r2 = w2.unwrap().response.rect;
         self.prefs.borrow_mut().windows.vfo_x = r2.left();
         self.prefs.borrow_mut().windows.vfo_y = r2.top();
+        self.prefs.borrow_mut().windows.vfo_w = r2.width();
+        self.prefs.borrow_mut().windows.vfo_h = r2.height();
 
         // Spec/Waterfall window
         let x3 = self.prefs.borrow().windows.main_x;
