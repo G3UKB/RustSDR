@@ -36,7 +36,6 @@ use crate::app::ui::egui_main::components;
 use egui::{RichText, TextStyle};
 
 use eframe::egui;
-use epaint::FontId;
 
 // Mode enumerations
 enum ModeId {

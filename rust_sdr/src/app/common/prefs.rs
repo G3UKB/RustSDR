@@ -25,7 +25,6 @@ bob@bobcowdery.plus.com
 */
 
 use serde:: {Serialize, Deserialize};
-use std::collections::hash_map::Entry;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
@@ -106,8 +105,8 @@ impl Prefs {
         match file.read_to_string(&mut s) {
             Err(why) => panic!("couldn't read prefs file! {}: {}", display, why),
             Ok(_) => {
-                print!("{} contains:\n{}\n", display, s);
-                let mut prefs: Prefs = serde_json::from_str(&s).unwrap();
+                //print!("{} contains:\n{}\n", display, s);
+                let prefs: Prefs = serde_json::from_str(&s).unwrap();
                 self.windows.main_x = prefs.windows.main_x;
                 self.windows.main_y = prefs.windows.main_y;
                 self.windows.main_w = prefs.windows.main_w;
@@ -138,9 +137,9 @@ impl Prefs {
 
     fn open_file(&mut self) -> File {
         let path = Path::new(&self.prefs_path);
-        let display = path.display();
+        let _display = path.display();
         // Open the path in read-only mode, returns `io::Result<File>`
-        let mut file = match File::open(&path) {
+        let mut _file = match File::open(&path) {
             Err(_why) => {
                 // File not present so initialise
                 return self.write_file();
@@ -163,7 +162,7 @@ impl Prefs {
         // Write the data to `file`, returns `io::Result<()>`
         match file.write_all(serialized.as_bytes()) {
             Err(why) => panic!("couldn't write data to prefs file! {}: {}", display, why),
-            Ok(_) => println!("successfully wrote to prefs file {}", display),
+            Ok(_) => (), //println!("successfully wrote to prefs file {}", display),
         }
         return file;
     }

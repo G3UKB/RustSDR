@@ -29,7 +29,6 @@ pub mod components;
 
 use std::sync::{Arc, Mutex};
 use std::{cell::RefCell, rc::Rc};
-use std::collections::HashMap;
 
 use crate::app::common::common_defs;
 use crate ::app::common::prefs;

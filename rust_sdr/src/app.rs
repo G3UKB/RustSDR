@@ -39,7 +39,6 @@ use std::sync::{Arc, Mutex, Condvar};
 use std::thread;
 use std::time::Duration;
 use std::option;
-use std::collections::HashMap;
 use std::{cell::RefCell, rc::Rc};
 
 use socket2;
@@ -101,7 +100,7 @@ pub struct Appdata{
 // Implementation
 impl Appdata {
     // Instantiate the application modules
-    pub fn new(prefs: Rc<RefCell<prefs::Prefs>>) -> Appdata {
+    pub fn new(_prefs: Rc<RefCell<prefs::Prefs>>) -> Appdata {
         // Local runnable
         let mut l_run = false;
 
@@ -231,7 +230,7 @@ impl Appdata {
     
     //=========================================================================================
     // Initialise system to a running state
-    pub fn app_init(&mut self, prefs: Rc<RefCell<prefs::Prefs>>) {
+    pub fn app_init(&mut self, _prefs: Rc<RefCell<prefs::Prefs>>) {
 
         // Prime the hardware.
         self.w_sender.send(common::messages::WriterMsg::PrimeHardware).unwrap();
