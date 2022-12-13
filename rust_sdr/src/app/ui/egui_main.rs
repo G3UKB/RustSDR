@@ -55,10 +55,10 @@ impl UIMain {
     pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, prefs: Rc<RefCell<prefs::Prefs>>) -> Self{
 
         
-        let vfo = Rc::new(RefCell::new(components::egui_vfo::UIVfo::new(cc, i_cc.clone())));
+        let vfo = Rc::new(RefCell::new(components::egui_vfo::UIVfo::new(cc, i_cc.clone(), prefs.clone())));
         let spec = Rc::new(RefCell::new(components::egui_spec::UISpec::new(cc, i_cc.clone(), vfo.clone())));
-        let modes = components::egui_mode::UIMode::new(cc, i_cc.clone(), spec.clone());
-        let filters = components::egui_filter::UIFilter::new(cc, i_cc.clone(), spec.clone());
+        let modes = components::egui_mode::UIMode::new(cc, i_cc.clone(), spec.clone(), prefs.clone());
+        let filters = components::egui_filter::UIFilter::new(cc, i_cc.clone(), spec.clone(), prefs.clone());
         Self {
             _i_cc : i_cc,
             modes : modes,

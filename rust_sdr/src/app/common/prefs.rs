@@ -29,6 +29,9 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
+use crate::app::ui::egui_main::components::egui_mode::ModeId;
+use crate::app::ui::egui_main::components::egui_filter::FilterId;
+
 //===========================================================================================
 // State for prefs
 
@@ -56,9 +59,17 @@ pub struct Windows {
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
+pub struct Radio {
+    pub frequency: u32,
+    pub mode: ModeId,
+    pub filter: FilterId,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Prefs {
     pub prefs_path: String,
     pub windows: Windows,
+    pub radio: Radio,
 }
 
 //===========================================================================================
@@ -89,6 +100,12 @@ impl Prefs {
                     filt_y: 0.0,
                     filt_w: 300.0,
                     filt_h: 60.0,
+                }
+            },
+            radio: { Radio {
+                    frequency: 7100000,
+                    mode: ModeId::Lsb,
+                    filter: FilterId::F2_4KHz,
                 }
             }
         }
@@ -126,6 +143,10 @@ impl Prefs {
                 self.windows.filt_y = prefs.windows.filt_y;
                 self.windows.filt_w = prefs.windows.filt_w;
                 self.windows.filt_h = prefs.windows.filt_h;
+
+                self.radio.frequency = prefs.radio.frequency;
+                self.radio.mode = prefs.radio.mode;
+                self.radio.filter = prefs.radio.filter;
             },
         }
     }   

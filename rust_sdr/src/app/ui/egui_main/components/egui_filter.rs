@@ -28,16 +28,18 @@ bob@bobcowdery.plus.com
 use std::sync::{Arc, Mutex};
 use std::{cell::RefCell, rc::Rc};
 
+use crate ::app::common::prefs;
 use crate::app::protocol;
 use crate::app::dsp;
 use crate::app::ui::egui_main::components;
 
 use egui::{RichText, TextStyle};
-
 use eframe::egui;
+use serde:: {Serialize, Deserialize};
 
 // Filter enumerations
-enum FilterId {
+#[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone)]
+pub enum FilterId {
     F6_0KHz,
     F4_0KHz,
     F2_7KHz,
@@ -56,9 +58,11 @@ const FILT_HIGHLIGHT_COLOR: egui::Color32 = egui::Color32::DARK_RED;
 // State for Filters
 pub struct UIFilter {
     _i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
+    filter: FilterId,
     _filter_width: i32,
     fi_array: [(String, egui::Color32); 9],
     spec : Rc<RefCell<components::egui_spec::UISpec>>,
+    prefs: Rc<RefCell<prefs::Prefs>>,
 }
 
 //===========================================================================================
@@ -66,7 +70,8 @@ pub struct UIFilter {
 impl UIFilter {
     pub fn new(_cc: &eframe::CreationContext<'_>, 
         i_cc : Arc<Mutex<protocol::cc_out::CCData>>, 
-        spec : Rc<RefCell<components::egui_spec::UISpec>>) -> Self{
+        spec : Rc<RefCell<components::egui_spec::UISpec>>,
+        prefs: Rc<RefCell<prefs::Prefs>>) -> Self{
 
         let fi_array = [
            (String::from("6K0 "), egui::Color32::TRANSPARENT),
@@ -80,13 +85,16 @@ impl UIFilter {
            (String::from("100H"), egui::Color32::TRANSPARENT),
         ];
 
-        // Set default filter
-        dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F2_4KHz as i32);
+        // Retrieve and set filter
+        let filter = prefs.borrow().radio.filter;
+        dsp::dsp_interface::wdsp_set_rx_mode(0, filter as i32);
 
         Self {
             _i_cc: i_cc,
             fi_array: fi_array,
+            filter: filter,
             _filter_width: 2400,
+            prefs: prefs,
             spec: spec,
         }
     }
@@ -99,83 +107,77 @@ impl UIFilter {
             .text_style(TextStyle::Monospace)
             .background_color(self.fi_array[FilterId::F6_0KHz as usize].1));
             if b.clicked() {
-                self.set_filter_buttons(FilterId::F6_0KHz as i32);
-                dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F6_0KHz as i32);
                 self.spec.borrow_mut().set_filt_width(6000);
+                self.filter = FilterId::F6_0KHz;
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F4_0KHz as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.fi_array[FilterId::F4_0KHz as usize].1));
             if b.clicked() {
-                self.set_filter_buttons(FilterId::F4_0KHz as i32);
-                dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F4_0KHz as i32);
                 self.spec.borrow_mut().set_filt_width(4000);
+                self.filter = FilterId::F4_0KHz;
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F2_7KHz as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.fi_array[FilterId::F2_7KHz as usize].1));
             if b.clicked() {
-                self.set_filter_buttons(FilterId::F2_7KHz as i32);
-                dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F2_7KHz as i32);
                 self.spec.borrow_mut().set_filt_width(2700);
+                self.filter = FilterId::F2_7KHz;
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F2_4KHz as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.fi_array[FilterId::F2_4KHz as usize].1));
             if b.clicked() {
-                self.set_filter_buttons(FilterId::F2_4KHz as i32);
-                dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F2_4KHz as i32);
                 self.spec.borrow_mut().set_filt_width(2400);
+                self.filter = FilterId::F2_4KHz;
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F2_1KHz as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.fi_array[FilterId::F2_1KHz as usize].1));
             if b.clicked() {
-                self.set_filter_buttons(FilterId::F2_1KHz as i32);
-                dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F2_1KHz as i32);
                 self.spec.borrow_mut().set_filt_width(2100);
+                self.filter = FilterId::F2_1KHz;
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F1_0KHz as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.fi_array[FilterId::F1_0KHz as usize].1));
             if b.clicked() {
-                self.set_filter_buttons(FilterId::F1_0KHz as i32);
-                dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F1_0KHz as i32);
                 self.spec.borrow_mut().set_filt_width(1000);
+                self.filter = FilterId::F1_0KHz;
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F500Hz as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.fi_array[FilterId::F500Hz as usize].1));
             if b.clicked() {
-                self.set_filter_buttons(FilterId::F500Hz as i32);
-                dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F500Hz as i32);
                 self.spec.borrow_mut().set_filt_width(500);
+                self.filter = FilterId::F500Hz;
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F250Hz as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.fi_array[FilterId::F250Hz as usize].1));
             if b.clicked() {
-                self.set_filter_buttons(FilterId::F250Hz as i32);
-                dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F250Hz as i32);
                 self.spec.borrow_mut().set_filt_width(250);
+                self.filter = FilterId::F250Hz;
             }
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F100Hz as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.fi_array[FilterId::F100Hz as usize].1));
             if b.clicked() {
-                self.set_filter_buttons(FilterId::F100Hz as i32);
-                dsp::dsp_interface::wdsp_set_rx_filter(0, FilterId::F100Hz as i32);
                 self.spec.borrow_mut().set_filt_width(100);
+                self.filter = FilterId::F100Hz;
             }
+            self.prefs.borrow_mut().radio.filter = self.filter;
         });
+        self.set_filter_buttons(self.filter as i32);
+        dsp::dsp_interface::wdsp_set_rx_filter(0, self.filter as i32);
     }
 
     // Highlight the selected button

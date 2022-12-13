@@ -27,11 +27,12 @@ bob@bobcowdery.plus.com
 
 use std::sync::{Arc, Mutex};
 use std::ops::Neg;
+use std::{cell::RefCell, rc::Rc};
 
+use crate ::app::common::prefs;
 use crate::app::protocol;
 
 use egui::{RichText, TextStyle};
-
 use eframe::egui;
 
 // VFO enumeration
@@ -59,12 +60,13 @@ pub struct UIVfo {
     i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
     f_array: [(String, f32, egui::Color32); 9],
     frequency: u32,
+    prefs: Rc<RefCell<prefs::Prefs>>,
 }
 
 //===========================================================================================
 // Implementation for UIApp
 impl UIVfo {
-    pub fn new(_cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>) -> Self{
+    pub fn new(_cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, prefs: Rc<RefCell<prefs::Prefs>>) -> Self{
 
         let f_array = [
            (String::from("0"), MHZ_SZ, egui::Color32::TRANSPARENT),
@@ -78,10 +80,12 @@ impl UIVfo {
            (String::from("0"), HZ_SZ, egui::Color32::TRANSPARENT), 
         ];
 
+        let f = prefs.borrow().radio.frequency;
         Self {
             i_cc: i_cc,
             f_array: f_array,
-            frequency: 7100000,
+            frequency: f,
+            prefs: prefs,
         }
     }
 
@@ -151,6 +155,9 @@ impl UIVfo {
             .strong());
             self.scroll_if(ui, VfoId::F1H, f_1_h.rect, 1);
         });
+        self.set_freq();
+        self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
+        self.prefs.borrow_mut().radio.frequency = self.frequency;
     }
 
     // If within the rectangle of a digit then highlight the digit, else normal.
@@ -168,8 +175,6 @@ impl UIVfo {
                             dir = dir.neg();
                         }
                         self.frequency = (self.frequency as i32 + dir) as u32;
-                        self.set_freq();
-                        self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
                     }
                     _ => (),
                 }
@@ -182,6 +187,7 @@ impl UIVfo {
     // Update the frequency
     pub fn update_freq(&mut self, freq: u32) {
         self.frequency = freq;
+        self.prefs.borrow_mut().radio.frequency = self.frequency;
     }
 
     // Get the display frequency

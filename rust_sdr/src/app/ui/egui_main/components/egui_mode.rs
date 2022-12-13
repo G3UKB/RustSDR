@@ -28,17 +28,19 @@ bob@bobcowdery.plus.com
 use std::sync::{Arc, Mutex};
 use std::{cell::RefCell, rc::Rc};
 
+use crate ::app::common::prefs;
 use crate::app::common::common_defs;
 use crate::app::protocol;
 use crate::app::dsp;
 use crate::app::ui::egui_main::components;
 
 use egui::{RichText, TextStyle};
-
 use eframe::egui;
+use serde:: {Serialize, Deserialize};
 
 // Mode enumerations
-enum ModeId {
+#[derive(Serialize, Deserialize, PartialEq, Debug, Copy, Clone)]
+pub enum ModeId {
     Lsb, 
     Usb,
     Dsb,
@@ -60,9 +62,11 @@ const MODE_HIGHLIGHT_COLOR: egui::Color32 = egui::Color32::DARK_BLUE;
 // State for Modes
 pub struct UIMode {
     _i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
+    mode: ModeId,
     _mode_pos: common_defs::EnumModePos,
     m_array: [(String, egui::Color32); 12],
     spec : Rc<RefCell<components::egui_spec::UISpec>>,
+    prefs: Rc<RefCell<prefs::Prefs>>,
 }
 
 //===========================================================================================
@@ -70,7 +74,8 @@ pub struct UIMode {
 impl UIMode {
     pub fn new(_cc: &eframe::CreationContext<'_>, 
         i_cc : Arc<Mutex<protocol::cc_out::CCData>>, 
-        spec : Rc<RefCell<components::egui_spec::UISpec>>) -> Self{
+        spec : Rc<RefCell<components::egui_spec::UISpec>>,
+        prefs: Rc<RefCell<prefs::Prefs>>) -> Self{
 
         let m_array = [
            (String::from("LSB "), MODE_HIGHLIGHT_COLOR),
@@ -87,14 +92,18 @@ impl UIMode {
            (String::from("DRM "), egui::Color32::TRANSPARENT),
         ];
 
-        // Set default mode
-        dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Lsb as i32);
+        // Retrieve and set mode
+        let mode = prefs.borrow().radio.mode;
+        println!("{:?}", mode);
+        dsp::dsp_interface::wdsp_set_rx_mode(0, mode as i32);
 
         Self {
             _i_cc: i_cc,
             m_array: m_array,
+            mode: mode,
             _mode_pos: common_defs::EnumModePos::Lower,
             spec: spec,
+            prefs: prefs,
         }
     }
 
@@ -107,109 +116,101 @@ impl UIMode {
             .text_style(TextStyle::Monospace)
             .background_color(self.m_array[ModeId::Lsb as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(ModeId::Lsb as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Lsb as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Lower);
+                self.mode = ModeId::Lsb;
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Usb as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.m_array[ModeId::Usb as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(ModeId::Usb as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Usb as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Upper);
+                self.mode = ModeId::Usb;
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Dsb as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.m_array[ModeId::Dsb as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(ModeId::Dsb as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Dsb as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
+                self.mode = ModeId::Dsb;
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::CwL as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.m_array[ModeId::CwL as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(ModeId::CwL as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::CwL as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Lower);
+                self.mode = ModeId::CwL;
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::CwU as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.m_array[ModeId::CwU as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(ModeId::CwU as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::CwU as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Upper);
+                self.mode = ModeId::CwU;
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Fm as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.m_array[ModeId::Fm as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(ModeId::Fm as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Fm as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
+                self.mode = ModeId::Fm;
             }
+
             let b = ui.button(RichText::new(&self.m_array[ModeId::Am as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.m_array[ModeId::Am as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(ModeId::Am as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Am as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
+                self.mode = ModeId::Am;
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::DigL as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.m_array[ModeId::DigL as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(ModeId::DigL as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::DigL as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Lower);
+                self.mode = ModeId::DigL;
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::DigU as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.m_array[ModeId::DigU as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(ModeId::DigU as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::DigU as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Upper);
+                self.mode = ModeId::DigU;
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Spec as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.m_array[ModeId::Spec as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(ModeId::Spec as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Spec as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
+                self.mode = ModeId::Spec;
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Sam as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.m_array[ModeId::Sam as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(ModeId::Sam as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Sam as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
+                self.mode = ModeId::Sam;
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Drm as usize].0)
             .text_style(TextStyle::Monospace)
             .background_color(self.m_array[ModeId::Drm as usize].1));
             if b.clicked() {
-                self.set_mode_buttons(ModeId::Drm as i32);
-                dsp::dsp_interface::wdsp_set_rx_mode(0, ModeId::Drm as i32);
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
+                self.mode = ModeId::Drm;
             }
+            self.prefs.borrow_mut().radio.mode = self.mode;
         });
+        self.set_mode_buttons(self.mode as i32);
+        dsp::dsp_interface::wdsp_set_rx_mode(0, self.mode as i32);
     }
    
     // Highlight the selected button
