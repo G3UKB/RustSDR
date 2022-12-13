@@ -53,8 +53,7 @@ pub struct UIMain {
 // Implementation for UIApp
 impl UIMain {
     pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, prefs: Rc<RefCell<prefs::Prefs>>) -> Self{
-
-        
+   
         let vfo = Rc::new(RefCell::new(components::egui_vfo::UIVfo::new(cc, i_cc.clone(), prefs.clone())));
         let spec = Rc::new(RefCell::new(components::egui_spec::UISpec::new(cc, i_cc.clone(), vfo.clone())));
         let modes = components::egui_mode::UIMode::new(cc, i_cc.clone(), spec.clone(), prefs.clone());
@@ -73,7 +72,15 @@ impl UIMain {
 
 // Create a window for each element in the UI.
 impl eframe::App for UIMain {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+
+        // Set any new frame metrics
+        let pos = frame.info().window_info.position;
+        let size = frame.info().window_info.size;
+        self.prefs.borrow_mut().frame.x = pos.unwrap().x;
+        self.prefs.borrow_mut().frame.y = pos.unwrap().y;
+        self.prefs.borrow_mut().frame.w = size.x;
+        self.prefs.borrow_mut().frame.h = size.y;
 
         // Get the latest data update
         dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real);
@@ -151,14 +158,18 @@ impl eframe::App for UIMain {
 // Instantiate the one and only main window and run the event loop
 pub fn ui_run(i_cc: Arc<Mutex<protocol::cc_out::CCData>>, prefs: Rc<RefCell<prefs::Prefs>>) {
     //let options = eframe::NativeOptions::default();
+    let x = prefs.borrow().frame.x;
+    let y = prefs.borrow().frame.y;
+    let w = prefs.borrow().frame.w;
+    let h = prefs.borrow().frame.h;
     let options = eframe::NativeOptions {
         always_on_top: false,
         maximized: false,
         decorated: true,
         drag_and_drop_support: true,
         icon_data: None,
-        initial_window_pos: None,
-        initial_window_size: Option::from(egui::Vec2::new(600.0 as f32, 600.0 as f32)),
+        initial_window_pos: Option::from(egui::Pos2::new(x, y)),
+        initial_window_size: Option::from(egui::Vec2::new(w, h)),
         min_window_size: None,
         max_window_size: None,
         resizable: true,
@@ -181,4 +192,5 @@ pub fn ui_run(i_cc: Arc<Mutex<protocol::cc_out::CCData>>, prefs: Rc<RefCell<pref
         options,
         Box::new(|cc| Box::new(UIMain::new(cc, i_cc, prefs))),
     );
+
 }

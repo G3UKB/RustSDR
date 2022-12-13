@@ -36,6 +36,14 @@ use crate::app::ui::egui_main::components::egui_filter::FilterId;
 // State for prefs
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
+pub struct Frame {
+    pub x: f32,
+    pub y: f32,
+    pub w: f32,
+    pub h: f32,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Windows {
     pub main_x: f32,
     pub main_y: f32,
@@ -68,6 +76,7 @@ pub struct Radio {
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Prefs {
     pub prefs_path: String,
+    pub frame: Frame,
     pub windows: Windows,
     pub radio: Radio,
 }
@@ -79,7 +88,14 @@ impl Prefs {
 
         Self {
             prefs_path: String::from("E:\\Projects\\RustSDR\\trunk\\rust_sdr\\prefs\\rustsdr.prefs"),
-            
+
+            frame: { Frame {
+                    x: 0.0,
+                    y: 0.0,
+                    w: 600.0,
+                    h: 600.0,
+                }
+            },
             windows: { Windows {
                     main_x: 0.0,
                     main_y: 0.0,
@@ -124,6 +140,11 @@ impl Prefs {
             Ok(_) => {
                 //print!("{} contains:\n{}\n", display, s);
                 let prefs: Prefs = serde_json::from_str(&s).unwrap();
+                self.frame.x = prefs.frame.x;
+                self.frame.y = prefs.frame.y;
+                self.frame.w = prefs.frame.w;
+                self.frame.h = prefs.frame.h;
+
                 self.windows.main_x = prefs.windows.main_x;
                 self.windows.main_y = prefs.windows.main_y;
                 self.windows.main_w = prefs.windows.main_w;
