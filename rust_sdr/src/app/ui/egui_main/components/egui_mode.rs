@@ -94,7 +94,6 @@ impl UIMode {
 
         // Retrieve and set mode
         let mode = prefs.borrow().radio.mode;
-        println!("{:?}", mode);
         dsp::dsp_interface::wdsp_set_rx_mode(0, mode as i32);
 
         Self {
