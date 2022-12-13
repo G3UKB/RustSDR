@@ -150,7 +150,30 @@ impl eframe::App for UIMain {
 
 // Instantiate the one and only main window and run the event loop
 pub fn ui_run(i_cc: Arc<Mutex<protocol::cc_out::CCData>>, prefs: Rc<RefCell<prefs::Prefs>>) {
-    let options = eframe::NativeOptions::default();
+    //let options = eframe::NativeOptions::default();
+    let options = eframe::NativeOptions {
+        always_on_top: false,
+        maximized: false,
+        decorated: true,
+        drag_and_drop_support: true,
+        icon_data: None,
+        initial_window_pos: None,
+        initial_window_size: Option::from(egui::Vec2::new(600.0 as f32, 600.0 as f32)),
+        min_window_size: None,
+        max_window_size: None,
+        resizable: true,
+        transparent: false,
+        vsync: true,
+        multisampling: 0,
+        depth_buffer: 0,
+        stencil_buffer: 0,
+        fullscreen: false,
+        hardware_acceleration: eframe::HardwareAcceleration::Preferred,
+        renderer: eframe::Renderer::Glow,
+        follow_system_theme: true,
+        default_theme: eframe::Theme::Dark,
+        run_and_return: true
+    };
     let i_cc = i_cc.clone();
     let prefs = prefs.clone();
     eframe::run_native(

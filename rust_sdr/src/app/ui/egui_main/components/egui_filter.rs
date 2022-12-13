@@ -105,6 +105,7 @@ impl UIFilter {
         ui.horizontal_wrapped(|ui| {
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F6_0KHz as usize].0)
             .text_style(TextStyle::Monospace)
+            .size(16.0)
             .background_color(self.fi_array[FilterId::F6_0KHz as usize].1));
             if b.clicked() {
                 self.spec.borrow_mut().set_filt_width(6000);
@@ -113,6 +114,7 @@ impl UIFilter {
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F4_0KHz as usize].0)
             .text_style(TextStyle::Monospace)
+            .size(16.0)
             .background_color(self.fi_array[FilterId::F4_0KHz as usize].1));
             if b.clicked() {
                 self.spec.borrow_mut().set_filt_width(4000);
@@ -121,6 +123,7 @@ impl UIFilter {
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F2_7KHz as usize].0)
             .text_style(TextStyle::Monospace)
+            .size(16.0)
             .background_color(self.fi_array[FilterId::F2_7KHz as usize].1));
             if b.clicked() {
                 self.spec.borrow_mut().set_filt_width(2700);
@@ -129,6 +132,7 @@ impl UIFilter {
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F2_4KHz as usize].0)
             .text_style(TextStyle::Monospace)
+            .size(16.0)
             .background_color(self.fi_array[FilterId::F2_4KHz as usize].1));
             if b.clicked() {
                 self.spec.borrow_mut().set_filt_width(2400);
@@ -137,6 +141,7 @@ impl UIFilter {
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F2_1KHz as usize].0)
             .text_style(TextStyle::Monospace)
+            .size(16.0)
             .background_color(self.fi_array[FilterId::F2_1KHz as usize].1));
             if b.clicked() {
                 self.spec.borrow_mut().set_filt_width(2100);
@@ -145,6 +150,7 @@ impl UIFilter {
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F1_0KHz as usize].0)
             .text_style(TextStyle::Monospace)
+            .size(16.0)
             .background_color(self.fi_array[FilterId::F1_0KHz as usize].1));
             if b.clicked() {
                 self.spec.borrow_mut().set_filt_width(1000);
@@ -153,6 +159,7 @@ impl UIFilter {
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F500Hz as usize].0)
             .text_style(TextStyle::Monospace)
+            .size(16.0)
             .background_color(self.fi_array[FilterId::F500Hz as usize].1));
             if b.clicked() {
                 self.spec.borrow_mut().set_filt_width(500);
@@ -161,6 +168,7 @@ impl UIFilter {
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F250Hz as usize].0)
             .text_style(TextStyle::Monospace)
+            .size(16.0)
             .background_color(self.fi_array[FilterId::F250Hz as usize].1));
             if b.clicked() {
                 self.spec.borrow_mut().set_filt_width(250);
@@ -169,6 +177,7 @@ impl UIFilter {
 
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F100Hz as usize].0)
             .text_style(TextStyle::Monospace)
+            .size(16.0)
             .background_color(self.fi_array[FilterId::F100Hz as usize].1));
             if b.clicked() {
                 self.spec.borrow_mut().set_filt_width(100);
