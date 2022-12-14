@@ -102,7 +102,8 @@ impl UIFilter {
     //===========================================================================================
     // Populate filters window
     pub fn filters(&mut self, ui: &mut egui::Ui) {
-        ui.horizontal_wrapped(|ui| {
+        //ui.horizontal_wrapped(|ui| {
+        ui.with_layout(egui::Layout::top_down_justified(egui::Align::Center), |ui| {
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F6_0KHz as usize].0)
             .text_style(TextStyle::Monospace)
             .size(16.0)

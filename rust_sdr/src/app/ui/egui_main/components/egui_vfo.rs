@@ -48,9 +48,9 @@ enum VfoId {
     F1H,
 }
 
-const MHZ_SZ: f32 = 35.0;
-const KHZ_SZ: f32 = 35.0;
-const HZ_SZ: f32 = 25.0;
+const MHZ_SZ: f32 = 55.0;
+const KHZ_SZ: f32 = 55.0;
+const HZ_SZ: f32 = 35.0;
 const VFO_NORMAL_COLOR: egui::Color32 = egui::Color32::TRANSPARENT;
 const VFO_HIGHLIGHT_COLOR: egui::Color32 = egui::Color32::DARK_GREEN;
 
@@ -92,7 +92,8 @@ impl UIVfo {
     //===========================================================================================
     // Populate VFO window
     pub fn vfo(&mut self, ui: &mut egui::Ui) {
-        ui.horizontal(|ui| {
+        //ui.horizontal(|ui| {
+        ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
             ui.style_mut().spacing.item_spacing = egui::vec2(14.0,5.0);
             
             let f_100_m = ui.label(RichText::new(&self.f_array[VfoId::F100M as usize].0).text_style(TextStyle::Heading)
