@@ -74,14 +74,6 @@ impl UIMain {
 impl eframe::App for UIMain {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
 
-        // Set any new frame metrics
-        let pos = frame.info().window_info.position;
-        let size = frame.info().window_info.size;
-        self.prefs.borrow_mut().frame.x = pos.unwrap().x;
-        self.prefs.borrow_mut().frame.y = pos.unwrap().y;
-        self.prefs.borrow_mut().frame.w = size.x;
-        self.prefs.borrow_mut().frame.h = size.y;
-
         // Get the latest data update
         dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real);
 
@@ -152,6 +144,14 @@ impl eframe::App for UIMain {
         self.prefs.borrow_mut().windows.main_y = r3.top();
         self.prefs.borrow_mut().windows.main_w = r3.width();
         self.prefs.borrow_mut().windows.main_h = r3.height();
+
+        // Set any new frame metrics
+        let pos = frame.info().window_info.position;
+        let size = frame.info().window_info.size;
+        self.prefs.borrow_mut().frame.x = pos.unwrap().x;
+        self.prefs.borrow_mut().frame.y = pos.unwrap().y;
+        self.prefs.borrow_mut().frame.w = size.x;
+        self.prefs.borrow_mut().frame.h = size.y;
     }
 }
 
