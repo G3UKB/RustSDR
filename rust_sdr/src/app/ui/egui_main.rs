@@ -80,8 +80,9 @@ impl eframe::App for UIMain {
         // Modes window
         let x = self.prefs.borrow().windows.mode_x;
         let y = self.prefs.borrow().windows.mode_y;
-        let width = self.prefs.borrow().windows.mode_w;
+        let width = self.prefs.borrow().windows.mode_w - 12.0;
         let height = self.prefs.borrow().windows.mode_h;
+        //println!("Before: {},{},{},{},",x,y,width,height);
         let w = egui::Window::new("Modes")
         .default_size(egui::vec2(width, height))
         .default_pos(egui::pos2(x,y))
@@ -89,6 +90,7 @@ impl eframe::App for UIMain {
             self.modes.modes(ui);
         });
         let r = w.unwrap().response.rect;
+        //println!("After: {},{},{},{},",r.left(),r.top(),r.width(),r.height());
         self.prefs.borrow_mut().windows.mode_x = r.left();
         self.prefs.borrow_mut().windows.mode_y = r.top();
         self.prefs.borrow_mut().windows.mode_w = r.width();
@@ -97,7 +99,7 @@ impl eframe::App for UIMain {
         // Filters window
         let x1 = self.prefs.borrow().windows.filt_x;
         let y1 = self.prefs.borrow().windows.filt_y;
-        let width1 = self.prefs.borrow().windows.filt_w;
+        let width1 = self.prefs.borrow().windows.filt_w - 12.0;
         let height1 = self.prefs.borrow().windows.filt_h;
         let w1 = egui::Window::new("Filters")
         .default_size(egui::vec2(width1, height1))
@@ -115,7 +117,8 @@ impl eframe::App for UIMain {
         let x2 = self.prefs.borrow().windows.vfo_x;
         let y2 = self.prefs.borrow().windows.vfo_y;
         let width2 = self.prefs.borrow().windows.vfo_w;
-        let height2 = self.prefs.borrow().windows.vfo_h;
+        let height2 = self.prefs.borrow().windows.vfo_h - 35.0;
+        //println!("Before: {},{},{},{},",x2,y2,width2,height2);
         let w2 = egui::Window::new("VFO")
         .default_size(egui::vec2(width2, height2))
         .default_pos(egui::pos2(x2,y2))
@@ -123,6 +126,7 @@ impl eframe::App for UIMain {
             self.vfo.borrow_mut().vfo(ui);
         });
         let r2 = w2.unwrap().response.rect;
+        //println!("After: {},{},{},{},",r2.left(),r2.top(),r2.width(),r2.height());
         self.prefs.borrow_mut().windows.vfo_x = r2.left();
         self.prefs.borrow_mut().windows.vfo_y = r2.top();
         self.prefs.borrow_mut().windows.vfo_w = r2.width();
@@ -131,8 +135,9 @@ impl eframe::App for UIMain {
         // Spec/Waterfall window
         let x3 = self.prefs.borrow().windows.main_x;
         let y3 = self.prefs.borrow().windows.main_y;
-        let width3 = self.prefs.borrow().windows.main_w;
-        let height3 = self.prefs.borrow().windows.main_h;
+        let width3 = self.prefs.borrow().windows.main_w - 12.0;
+        let height3 = self.prefs.borrow().windows.main_h - 4.0;
+        //println!("Before: {},{},{},{},",x3,y3,width3,height3);
         let w3 = egui::Window::new("Spectrum/Waterfall")
         .default_size(egui::vec2(width3, height3))
         .default_pos(egui::pos2(x3,y3))
@@ -140,6 +145,7 @@ impl eframe::App for UIMain {
             self.spec.borrow_mut().spectrum(ui, &mut self.out_real);
         });
         let r3 = w3.unwrap().response.rect;
+        //println!("After: {},{},{},{},",r3.left(),r3.top(),r3.width(),r3.height());
         self.prefs.borrow_mut().windows.main_x = r3.left();
         self.prefs.borrow_mut().windows.main_y = r3.top();
         self.prefs.borrow_mut().windows.main_w = r3.width();
