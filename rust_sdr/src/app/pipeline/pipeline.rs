@@ -152,6 +152,17 @@ impl PipelineData {
          //println!("{:?}", self.dec_iq_data);
         let mut error: i32 = 0;
         dsp::dsp_interface::wdsp_exchange(0, &mut self.dec_iq_data,  &mut self.proc_iq_data, &mut error );
+
+        for i in 0..self.proc_iq_data.len() {
+            self.proc_iq_data[i] = self.proc_iq_data[i] * 0.2;
+            if self.proc_iq_data[i]  > 1.0 {
+                self.proc_iq_data[i] = 1.0;
+            }
+            if self.proc_iq_data[i]  < -1.0 {
+                self.proc_iq_data[i] = -1.0;
+            }
+        }
+
         // Pass data to spectrum
         for i in 0..self.dec_iq_data.len() {
             self.disp_iq_data[i] = self.dec_iq_data[i] as f32;

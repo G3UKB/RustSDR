@@ -82,6 +82,10 @@ pub const SAMPLE_RATE: i32 = 48000;
 pub const IN_SZ: i32 = 1024;
 pub const DISPLAY_WIDTH: i32 = 300;
 
+// Audio
+// Gain factor for local audio
+pub const AUDIO_GAIN: f32 = 10.0;
+
 // Block size
 pub const DSP_BLK_SZ : u32 = 1024;
 // Channel type

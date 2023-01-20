@@ -45,12 +45,10 @@ pub fn frame_decode(
 	*	iq					--	IQ output data
 	*	mic					--	Mic output data
 	*/
-
-	// Data exchange operates on the ring buffers.
-	// 	if there is room to add the data the data is written, else the block is skipped
-	//
-	// The data is pre-processed such that only contiguous data is written to the ring buffers
-	// separated into IQ and Mic data.
+	
+	// Input data is interleaved I/Q  ( 2 x 24 bit samples) interspersed
+	// with a 16 bit Mic sample. [IIIQQQMMIIIQQQMM ...] 
+	// Contiguous IQ and Mic data is written to the output buffers
 
 	// The Mic data is repeated at higher sampling rates
 	// 48K = 1, 96K = 2, 192K = 4, 384K = 8
@@ -59,13 +57,14 @@ pub fn frame_decode(
 	// at 4 we take every 4th block
 	// at 8 we take every 8th block
 
-	// Current state
+	// State variables
 	const IQ: u32 = 0;
 	const MIC: u32 = 1;
 
 	// Depends on relative rate
 	let mic_blk_sel = rate / 48000;
 	// This is a count of blocks to skip and must be static
+	// Assume 48K for now so no skip
 	static mut _SKIP_MIC_DATA: i32 = 0;
 
 	// Reset the peak input level
@@ -73,7 +72,7 @@ pub fn frame_decode(
 	let _peak_input_inst: i16 = 0;
 
 	// The total number of IQ bytes to be concatenated
-	let total_iq_bytes: u32 = n_smpls * n_rx * 6;	// 6 bytes per sample (2 x 24 bit)
+	let total_iq_bytes: u32 = n_smpls * n_rx * common_defs::BYTES_PER_SAMPLE;	// 6 bytes per sample (2 x 24 bit)
 	let mut total_iq_bytes_ct: u32 = total_iq_bytes;		// iteration counter
 
 	// Determine if we are using HPSDR or local mic input
