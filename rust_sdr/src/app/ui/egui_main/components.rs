@@ -25,6 +25,7 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
+pub mod egui_control;
 pub mod egui_mode;
 pub mod egui_filter;
 pub mod egui_vfo;

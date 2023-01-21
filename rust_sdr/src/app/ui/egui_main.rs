@@ -42,6 +42,7 @@ use eframe::egui;
 // State for UIApp
 pub struct UIMain {
     _i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
+    control : components::egui_control::UIControl,
     modes : components::egui_mode::UIMode,
     filters : components::egui_filter::UIFilter,
     vfo : Rc<RefCell<components::egui_vfo::UIVfo>>,
@@ -58,12 +59,16 @@ impl UIMain {
     pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, cache: Rc<RefCell<cache::ObjCache>>) -> Self{
    
         let prefs = cache.borrow_mut().prefs_ref();
+
+        let control = components::egui_control::UIControl::new(cache.clone());
         let vfo = Rc::new(RefCell::new(components::egui_vfo::UIVfo::new(cc, i_cc.clone(), prefs.clone())));
         let spec = Rc::new(RefCell::new(components::egui_spec::UISpec::new(cc, i_cc.clone(), vfo.clone())));
         let modes = components::egui_mode::UIMode::new(cc, i_cc.clone(), spec.clone(), prefs.clone());
         let filters = components::egui_filter::UIFilter::new(cc, i_cc.clone(), spec.clone(), prefs.clone());
+        
         Self {
             _i_cc : i_cc,
+            control: control,
             modes : modes,
             filters : filters,
             vfo : vfo,
@@ -81,6 +86,12 @@ impl eframe::App for UIMain {
 
         // Get the latest data update
         dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real);
+
+        // Control window
+        let w = egui::Window::new("Control")
+        .show(ctx, |ui| {
+            self.control.control(ui);
+        });
 
         // Modes window
         let x = self.prefs.borrow().windows.mode_x;
