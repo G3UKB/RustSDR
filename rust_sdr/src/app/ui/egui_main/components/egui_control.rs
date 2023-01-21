@@ -27,32 +27,29 @@ bob@bobcowdery.plus.com
 
 use std::{cell::RefCell, rc::Rc};
 
-use crate ::app::common::cache;
 use crate ::app::common::prefs;
 use crate::app::udp::hw_control;
 
 use egui::{RichText, TextStyle};
 use eframe::egui;
-use serde:: {Serialize, Deserialize};
+//use serde:: {Serialize, Deserialize};
 
 
 //===========================================================================================
 // State for Control
 pub struct UIControl {
-    cache: Rc<RefCell<cache::ObjCache>>,
     hw: Rc<RefCell<hw_control::HWData>>,
-    //prefs: Rc<RefCell<prefs::Prefs>>,
+    _prefs: Rc<RefCell<prefs::Prefs>>,
 }
 
 //===========================================================================================
 // Implementation for UIApp
 impl UIControl {
-    pub fn new(cache: Rc<RefCell<cache::ObjCache>>, hw: Rc<RefCell<hw_control::HWData>>) -> Self{
-        //let prefs = cache.borrow_mut().prefs_ref();
+    pub fn new(prefs: Rc<RefCell<prefs::Prefs>>, hw: Rc<RefCell<hw_control::HWData>>) -> Self{
+        
         Self {
-            cache: cache,
             hw: hw,
-            //prefs: prefs,
+            _prefs: prefs,
         }
     }
 
@@ -60,7 +57,6 @@ impl UIControl {
     // Populate control window
     pub fn control(&mut self, ui: &mut egui::Ui) {
         
-        //ui.horizontal_wrapped(|ui| {
         ui.with_layout(egui::Layout::top_down_justified(egui::Align::Center), |ui| {
 
             let b = ui.button(RichText::new("Start")
@@ -68,7 +64,6 @@ impl UIControl {
             .size(16.0)
             .background_color(egui::Color32::DARK_GRAY));
             if b.clicked() {
-                //self.cache.borrow_mut().app_ref().borrow_mut().app_init();
                 self.hw.borrow_mut().do_start(false);
             }
 
@@ -77,7 +72,6 @@ impl UIControl {
             .size(16.0)
             .background_color(egui::Color32::DARK_GRAY));
             if b.clicked() {
-                //self.cache.borrow_mut().app_ref().borrow_mut().app_close();
                 self.hw.borrow_mut().do_stop();
             }
         });

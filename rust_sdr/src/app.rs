@@ -34,7 +34,6 @@ pub mod audio;
 pub mod ui;
 use crate::app::common::common_defs;
 use crate ::app::common::prefs;
-use crate ::app::common::cache;
 
 use std::sync::{Arc, Mutex, Condvar};
 use std::thread;
@@ -231,7 +230,7 @@ impl Appdata {
     
     //=========================================================================================
     // Initialise system to a running state
-    pub fn app_init(&mut self ) { //}, _prefs: Rc<RefCell<prefs::Prefs>>) {
+    pub fn app_init(&mut self ) {
 
         // Prime the hardware.
         self.w_sender.send(common::messages::WriterMsg::PrimeHardware).unwrap();
@@ -247,10 +246,6 @@ impl Appdata {
         thread::sleep(Duration::from_millis(100));
 
         if self.run {
-            // Start the hardware IQ stream and optional wide band data.
-            //self.i_hw_control.do_start(false);
-            //thread::sleep(Duration::from_millis(100));
-
             // Start the local audio stream
             self.stream = Some(self.i_local_audio.run_audio());
             thread::sleep(Duration::from_millis(100));
@@ -260,19 +255,10 @@ impl Appdata {
     //=========================================================================================
     // Run the UI event loop. Only returns when the UI is closed.
     //pub fn ui_run(&mut self, prefs: Rc<RefCell<prefs::Prefs>>) {
-    pub fn ui_run(&mut self, cache: Rc<RefCell<cache::ObjCache>>) {
-        /* 
-        let options = eframe::NativeOptions::default();
+    pub fn ui_run(&mut self, prefs: Rc<RefCell<prefs::Prefs>>) {
+        
         let i_cc = self.i_cc.clone();
-        eframe::run_native(
-            "Rust SDR",
-            options,
-            Box::new(|cc| Box::new(ui::egui_ui::UIApp::new(cc, i_cc))),
-        );
-        */
-        let i_cc = self.i_cc.clone();
-        //let hw = Rc::new(RefCell::new(self.i_hw_control.clone()));
-        ui::egui_main::ui_run(i_cc, cache, self.i_hw_control.clone());
+        ui::egui_main::ui_run(i_cc, prefs, self.i_hw_control.clone());
     }
 
     //=========================================================================================

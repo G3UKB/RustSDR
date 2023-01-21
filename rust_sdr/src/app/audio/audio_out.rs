@@ -114,13 +114,13 @@ fn write_audio<T: Sample>(data: &mut [f32], _: &cpal::OutputCallbackInfo, rb_aud
                 i += 1;
             }
         }
-        Err(e) => {
-            // Copy data to audio buffer
+        Err(_e) => {
+            // Output silence
             for sample in data.iter_mut() {
                 *sample = 0.0;
                 i += 1;
             }
-        }, //println!("Read error on rb_audio {:?}. Skipping cycle.", e),
+        }, //println!("Read error on rb_audio {:?}. Skipping cycle.", _e),
     } 
 }
 

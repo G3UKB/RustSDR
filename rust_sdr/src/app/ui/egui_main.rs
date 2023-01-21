@@ -30,7 +30,6 @@ pub mod components;
 use std::sync::{Arc, Mutex};
 use std::{cell::RefCell, rc::Rc};
 
-use crate ::app::common::cache;
 use crate::app::common::common_defs;
 use crate ::app::common::prefs;
 use crate::app::protocol;
@@ -50,19 +49,15 @@ pub struct UIMain {
     spec : Rc<RefCell<components::egui_spec::UISpec>>,
     out_real: [f32; (common_defs::DSP_BLK_SZ ) as usize],
     prefs: Rc<RefCell<prefs::Prefs>>,
-    cache: Rc<RefCell<cache::ObjCache>>,
-    hw: Rc<RefCell<hw_control::HWData>>
+    _hw: Rc<RefCell<hw_control::HWData>>
 }
 
 //===========================================================================================
 // Implementation for UIApp
 impl UIMain {
-   //pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, prefs: Rc<RefCell<prefs::Prefs>>) -> Self{
-    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, cache: Rc<RefCell<cache::ObjCache>>, hw: Rc<RefCell<hw_control::HWData>>) -> Self{
-   
-        let prefs = cache.borrow().prefs_ref();
+    pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, prefs: Rc<RefCell<prefs::Prefs>>, hw: Rc<RefCell<hw_control::HWData>>) -> Self{
 
-        let control = components::egui_control::UIControl::new(cache.clone(), hw.clone());
+        let control = components::egui_control::UIControl::new(prefs.clone(), hw.clone());
         let vfo = Rc::new(RefCell::new(components::egui_vfo::UIVfo::new(cc, i_cc.clone(), prefs.clone())));
         let spec = Rc::new(RefCell::new(components::egui_spec::UISpec::new(cc, i_cc.clone(), vfo.clone())));
         let modes = components::egui_mode::UIMode::new(cc, i_cc.clone(), spec.clone(), prefs.clone());
@@ -77,8 +72,7 @@ impl UIMain {
             spec : spec,
             out_real: [0.0; (common_defs::DSP_BLK_SZ ) as usize],
             prefs: prefs,
-            cache: cache,
-            hw: hw,
+            _hw: hw,
         }
     }
 }
@@ -181,9 +175,8 @@ impl eframe::App for UIMain {
 }
 
 // Instantiate the one and only main window and run the event loop
-//pub fn ui_run(i_cc: Arc<Mutex<protocol::cc_out::CCData>>, prefs: Rc<RefCell<prefs::Prefs>>) {
-pub fn ui_run(i_cc: Arc<Mutex<protocol::cc_out::CCData>>, cache: Rc<RefCell<cache::ObjCache>>, hw: Rc<RefCell<hw_control::HWData>>) {
-    let prefs = cache.borrow().prefs_ref();
+pub fn ui_run(i_cc: Arc<Mutex<protocol::cc_out::CCData>>, prefs: Rc<RefCell<prefs::Prefs>>, hw: Rc<RefCell<hw_control::HWData>>) {
+    
     let x = prefs.borrow().frame.x;
     let y = prefs.borrow().frame.y;
     let w = prefs.borrow().frame.w;
@@ -212,14 +205,12 @@ pub fn ui_run(i_cc: Arc<Mutex<protocol::cc_out::CCData>>, cache: Rc<RefCell<cach
         run_and_return: true
     };
     let i_cc = i_cc.clone();
-    //let prefs = prefs.clone();
-    let cache = cache.clone();
+    let prefs = prefs.clone();
     let hw = hw.clone();
     eframe::run_native(
         "Rust SDR",
         options,
-        //Box::new(|cc| Box::new(UIMain::new(cc, i_cc, prefs))),
-        Box::new(|cc| Box::new(UIMain::new(cc, i_cc, cache, hw))),
+        Box::new(|cc| Box::new(UIMain::new(cc, i_cc, prefs, hw))),
     );
 
 }

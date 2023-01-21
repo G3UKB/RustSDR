@@ -28,7 +28,6 @@ use std::thread;
 use std::time::Duration;
 use std::{cell::RefCell, rc::Rc};
 
-use crate::app::common::cache; 
 use crate::app::common::prefs;
 
 pub mod app;
@@ -45,23 +44,18 @@ fn main() {
 
     // Create an instance of the Application manager type
     let mut i_app = app::Appdata::new(wprefs.clone());
-    let wapp = Rc::new(RefCell::new(i_app));
-
-    // Create a cache instance and cache the main objects
-    let cache = cache::ObjCache::new(wapp.clone(), wprefs.clone());
-    let wcache = Rc::new(RefCell::new(cache));
 
     // This will initialise all modules and run the back-end and DSP system
-    wapp.borrow_mut().app_init();
+    i_app.app_init();
 
     // Initialise the UI
     // This runs the UI event loop and will return only when the UI is closed
-    wapp.borrow_mut().ui_run(wcache.clone());
+    i_app.ui_run(wprefs.clone());
 
     // Tidy up
     // Close application
     println!("\n\nStarting shutdown...");
-    wapp.borrow_mut().app_close();
+    i_app.app_close();
 
     // Save prefs
     wprefs.borrow_mut().save();
