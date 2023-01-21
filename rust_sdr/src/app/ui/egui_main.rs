@@ -85,10 +85,22 @@ impl eframe::App for UIMain {
         dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real);
 
         // Control window
+        let x = self.prefs.borrow().windows.ctrl_x;
+        let y = self.prefs.borrow().windows.ctrl_y;
+        let width = self.prefs.borrow().windows.ctrl_w - 12.0;
+        let height = self.prefs.borrow().windows.ctrl_h;
         let w = egui::Window::new("Control")
+        .default_size(egui::vec2(width, height))
+        .default_pos(egui::pos2(x,y))
         .show(ctx, |ui| {
             self.control.control(ui);
         });
+        let r = w.unwrap().response.rect;
+        //println!("After: {},{},{},{},",r.left(),r.top(),r.width(),r.height());
+        self.prefs.borrow_mut().windows.ctrl_x = r.left();
+        self.prefs.borrow_mut().windows.ctrl_y = r.top();
+        self.prefs.borrow_mut().windows.ctrl_w = r.width();
+        self.prefs.borrow_mut().windows.ctrl_h = r.height();
 
         // Modes window
         let x = self.prefs.borrow().windows.mode_x;
