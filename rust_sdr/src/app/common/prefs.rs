@@ -50,6 +50,11 @@ pub struct Windows {
     pub main_w: f32,
     pub main_h: f32,
 
+    pub ctrl_x: f32,
+    pub ctrl_y: f32,
+    pub ctrl_w: f32,
+    pub ctrl_h: f32,
+
     pub vfo_x: f32,
     pub vfo_y: f32,
     pub vfo_w: f32,
@@ -103,6 +108,11 @@ impl Prefs {
                     main_w: 500.0,
                     main_h: 300.0,
 
+                    ctrl_x: 0.0,
+                    ctrl_y: 0.0,
+                    ctrl_w: 200.0,
+                    ctrl_h: 30.0,
+
                     vfo_x: 0.0,
                     vfo_y: 0.0,
                     vfo_w: 300.0,
@@ -150,6 +160,11 @@ impl Prefs {
                 self.windows.main_y = prefs.windows.main_y;
                 self.windows.main_w = prefs.windows.main_w;
                 self.windows.main_h = prefs.windows.main_h;
+
+                self.windows.ctrl_x = prefs.windows.ctrl_x;
+                self.windows.ctrl_y = prefs.windows.ctrl_y;
+                self.windows.ctrl_w = prefs.windows.ctrl_w;
+                self.windows.ctrl_h = prefs.windows.ctrl_h;
 
                 self.windows.vfo_x = prefs.windows.vfo_x;
                 self.windows.vfo_y = prefs.windows.vfo_y;
