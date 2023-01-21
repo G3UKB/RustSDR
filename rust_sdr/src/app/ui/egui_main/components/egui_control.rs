@@ -1,0 +1,80 @@
+/*
+egui_control.rs
+
+Module - egui_control
+Mode sub-window
+
+Copyright (C) 2023 by G3UKB Bob Cowdery
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+The authors can be reached by email at:
+
+bob@bobcowdery.plus.com
+*/
+
+use std::{cell::RefCell, rc::Rc};
+
+use crate ::app::common::cache;
+use crate ::app::common::prefs;
+
+use egui::{RichText, TextStyle};
+use eframe::egui;
+use serde:: {Serialize, Deserialize};
+
+
+//===========================================================================================
+// State for Control
+pub struct UIControl {
+    cache: Rc<RefCell<cache::ObjCache>>,
+    prefs: Rc<RefCell<prefs::Prefs>>,
+}
+
+//===========================================================================================
+// Implementation for UIApp
+impl UIControl {
+    pub fn new(cache: Rc<RefCell<cache::ObjCache>>) -> Self{
+        let prefs = cache.borrow_mut().prefs_ref();
+        Self {
+            cache: cache,
+            prefs: prefs,
+        }
+    }
+
+    //===========================================================================================
+    // Populate control window
+    pub fn control(&mut self, ui: &mut egui::Ui) {
+        
+        //ui.horizontal_wrapped(|ui| {
+        ui.with_layout(egui::Layout::top_down_justified(egui::Align::Center), |ui| {
+            
+            let b = ui.button(RichText::new("Start")
+            .text_style(TextStyle::Monospace)
+            .size(16.0)
+            .background_color(egui::Color32::DARK_GRAY));
+            if b.clicked() {
+                self.cache.borrow_mut().app_ref().borrow_mut().app_init(self.prefs.clone());
+            }
+
+            let b = ui.button(RichText::new("Stop")
+            .text_style(TextStyle::Monospace)
+            .size(16.0)
+            .background_color(egui::Color32::DARK_GRAY));
+            if b.clicked() {
+                self.cache.borrow_mut().app_ref().borrow_mut().app_close();
+            }
+        });
+    }
+}
