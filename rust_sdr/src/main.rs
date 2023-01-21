@@ -28,40 +28,40 @@ use std::thread;
 use std::time::Duration;
 use std::{cell::RefCell, rc::Rc};
 
-//extern crate preferences;
-//use preferences::{AppInfo, PreferencesMap, Preferences};
-use crate ::app::common::prefs;
+use crate::app::common::cache; 
+use crate::app::common::prefs;
 
 pub mod app;
 
-// Prefs info
-//const APP_INFO: AppInfo = AppInfo{name: "RustSDRprefs", author: "BobCowdery"};
-
 /// Entry point for RustConsole SDR application
-///
-/// # Examples
-///
 fn main() {
     println!("Starting Rust Console...");
 
     // Create a Prefs instance
+    // This is passed to anything that requires persistent data
     let prefs = prefs::Prefs::new();
     let wprefs = Rc::new(RefCell::new(prefs));
     wprefs.borrow_mut().restore();
 
     // Create an instance of the Application manager type
     let mut i_app = app::Appdata::new(wprefs.clone());
+    let wapp = Rc::new(RefCell::new(i_app));
 
-    // This will initialise all modules and run the back-end system
-    i_app.app_init(wprefs.clone());
+    // Create a cache instance and cache the main objects
+    let cache = cache::ObjCache::new(wapp.clone(), wprefs.clone());
+    let wcache = Rc::new(RefCell::new(cache));
+
+    // This will initialise all modules and run the back-end and DSP system
+    wapp.borrow_mut().app_init(wprefs.clone());
 
     // Initialise the UI
-    // This runs the UI event loop and will return when the UI is closed
-    i_app.ui_run(wprefs.clone());
+    // This runs the UI event loop and will return only when the UI is closed
+    wapp.borrow_mut().ui_run(wcache.clone());
 
+    // Tidy up
     // Close application
     println!("\n\nStarting shutdown...");
-    i_app.app_close();
+    wapp.borrow_mut().app_close();
 
     // Save prefs
     wprefs.borrow_mut().save();

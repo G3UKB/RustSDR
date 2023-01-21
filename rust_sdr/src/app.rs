@@ -34,6 +34,7 @@ pub mod audio;
 pub mod ui;
 use crate::app::common::common_defs;
 use crate ::app::common::prefs;
+use crate ::app::common::cache;
 
 use std::sync::{Arc, Mutex, Condvar};
 use std::thread;
@@ -258,7 +259,8 @@ impl Appdata {
 
     //=========================================================================================
     // Run the UI event loop. Only returns when the UI is closed.
-    pub fn ui_run(&mut self, prefs: Rc<RefCell<prefs::Prefs>>) {
+    //pub fn ui_run(&mut self, prefs: Rc<RefCell<prefs::Prefs>>) {
+    pub fn ui_run(&mut self, cache: Rc<RefCell<cache::ObjCache>>) {
         /* 
         let options = eframe::NativeOptions::default();
         let i_cc = self.i_cc.clone();
@@ -269,7 +271,7 @@ impl Appdata {
         );
         */
         let i_cc = self.i_cc.clone();
-        ui::egui_main::ui_run(i_cc, prefs);
+        ui::egui_main::ui_run(i_cc, cache);
     }
 
     //=========================================================================================

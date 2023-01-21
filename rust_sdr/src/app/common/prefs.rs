@@ -89,6 +89,7 @@ impl Prefs {
         Self {
             prefs_path: String::from("E:\\Projects\\RustSDR\\trunk\\rust_sdr\\prefs\\rustsdr.prefs"),
 
+            // Set sensible defaults
             frame: { Frame {
                     x: 0.0,
                     y: 0.0,
