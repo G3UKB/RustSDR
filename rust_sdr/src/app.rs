@@ -69,7 +69,7 @@ pub struct Appdata{
     pub r_receiver : crossbeam_channel::Receiver<common::messages::ReaderMsg>,
 
     // Hardware controller
-    pub i_hw_control : udp::hw_control::HWData,
+    pub i_hw_control : Rc<RefCell<udp::hw_control::HWData>>,
     // Channel
     pub hw_sender : crossbeam_channel::Sender<common::messages::HWMsg>,
     pub hw_receiver : crossbeam_channel::Receiver<common::messages::HWMsg>,
@@ -215,7 +215,7 @@ impl Appdata {
             r_receiver : r_r,
             w_sender : w_s,
             w_receiver : w_r,
-            i_hw_control : i_hw_control,
+            i_hw_control : Rc::new(RefCell::new(i_hw_control)),
             hw_sender : hw_s,
             hw_receiver : hw_r,
             pipeline_sender : pipeline_s,
@@ -231,7 +231,7 @@ impl Appdata {
     
     //=========================================================================================
     // Initialise system to a running state
-    pub fn app_init(&mut self, _prefs: Rc<RefCell<prefs::Prefs>>) {
+    pub fn app_init(&mut self ) { //}, _prefs: Rc<RefCell<prefs::Prefs>>) {
 
         // Prime the hardware.
         self.w_sender.send(common::messages::WriterMsg::PrimeHardware).unwrap();
@@ -248,8 +248,8 @@ impl Appdata {
 
         if self.run {
             // Start the hardware IQ stream and optional wide band data.
-            self.i_hw_control.do_start(false);
-            thread::sleep(Duration::from_millis(100));
+            //self.i_hw_control.do_start(false);
+            //thread::sleep(Duration::from_millis(100));
 
             // Start the local audio stream
             self.stream = Some(self.i_local_audio.run_audio());
@@ -271,7 +271,8 @@ impl Appdata {
         );
         */
         let i_cc = self.i_cc.clone();
-        ui::egui_main::ui_run(i_cc, cache);
+        //let hw = Rc::new(RefCell::new(self.i_hw_control.clone()));
+        ui::egui_main::ui_run(i_cc, cache, self.i_hw_control.clone());
     }
 
     //=========================================================================================
@@ -317,8 +318,8 @@ impl Appdata {
         
         if self.run {
             // Stop the hardware
-            self.i_hw_control.do_stop();
-            println!("Hardware stopped");
+            //self.i_hw_control.do_stop();
+            //println!("Hardware stopped");
         }
        
     }

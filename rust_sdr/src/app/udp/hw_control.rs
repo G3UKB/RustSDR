@@ -109,6 +109,7 @@ impl HWData {
         self.data_out[0] = 0xEF;
         self.data_out[1] = 0xFE;
         self.data_out[2] = 0x04;
+        self.data_out[3] = 0x00;
         match &self.addr {
             None => println!("Can't stop hardware as the socket address has not been obtained. Run Discover()"),
             Some(addr) => {

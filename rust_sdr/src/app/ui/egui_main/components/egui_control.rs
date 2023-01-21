@@ -29,6 +29,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate ::app::common::cache;
 use crate ::app::common::prefs;
+use crate::app::udp::hw_control;
 
 use egui::{RichText, TextStyle};
 use eframe::egui;
@@ -39,17 +40,19 @@ use serde:: {Serialize, Deserialize};
 // State for Control
 pub struct UIControl {
     cache: Rc<RefCell<cache::ObjCache>>,
-    prefs: Rc<RefCell<prefs::Prefs>>,
+    hw: Rc<RefCell<hw_control::HWData>>,
+    //prefs: Rc<RefCell<prefs::Prefs>>,
 }
 
 //===========================================================================================
 // Implementation for UIApp
 impl UIControl {
-    pub fn new(cache: Rc<RefCell<cache::ObjCache>>) -> Self{
-        let prefs = cache.borrow_mut().prefs_ref();
+    pub fn new(cache: Rc<RefCell<cache::ObjCache>>, hw: Rc<RefCell<hw_control::HWData>>) -> Self{
+        //let prefs = cache.borrow_mut().prefs_ref();
         Self {
             cache: cache,
-            prefs: prefs,
+            hw: hw,
+            //prefs: prefs,
         }
     }
 
@@ -59,13 +62,14 @@ impl UIControl {
         
         //ui.horizontal_wrapped(|ui| {
         ui.with_layout(egui::Layout::top_down_justified(egui::Align::Center), |ui| {
-            
+
             let b = ui.button(RichText::new("Start")
             .text_style(TextStyle::Monospace)
             .size(16.0)
             .background_color(egui::Color32::DARK_GRAY));
             if b.clicked() {
-                self.cache.borrow_mut().app_ref().borrow_mut().app_init(self.prefs.clone());
+                //self.cache.borrow_mut().app_ref().borrow_mut().app_init();
+                self.hw.borrow_mut().do_start(false);
             }
 
             let b = ui.button(RichText::new("Stop")
@@ -73,7 +77,8 @@ impl UIControl {
             .size(16.0)
             .background_color(egui::Color32::DARK_GRAY));
             if b.clicked() {
-                self.cache.borrow_mut().app_ref().borrow_mut().app_close();
+                //self.cache.borrow_mut().app_ref().borrow_mut().app_close();
+                self.hw.borrow_mut().do_stop();
             }
         });
     }

@@ -52,7 +52,7 @@ fn main() {
     let wcache = Rc::new(RefCell::new(cache));
 
     // This will initialise all modules and run the back-end and DSP system
-    wapp.borrow_mut().app_init(wprefs.clone());
+    wapp.borrow_mut().app_init();
 
     // Initialise the UI
     // This runs the UI event loop and will return only when the UI is closed
