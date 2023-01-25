@@ -40,6 +40,7 @@ use eframe::egui;
 pub struct UIControl {
     hw: Rc<RefCell<hw_control::HWData>>,
     _prefs: Rc<RefCell<prefs::Prefs>>,
+    running: bool,
 }
 
 //===========================================================================================
@@ -50,6 +51,7 @@ impl UIControl {
         Self {
             hw: hw,
             _prefs: prefs,
+            running: false,
         }
     }
 
@@ -59,20 +61,29 @@ impl UIControl {
         
         ui.with_layout(egui::Layout::top_down_justified(egui::Align::Center), |ui| {
 
+            let mut bcolor = egui::Color32::RED;
+            if self.running {
+                bcolor = egui::Color32::GREEN;
+            }
             let b = ui.button(RichText::new("Start")
             .text_style(TextStyle::Monospace)
             .size(16.0)
-            .background_color(egui::Color32::DARK_GRAY));
+            .background_color(egui::Color32::TRANSPARENT)
+            .color(bcolor));
             if b.clicked() {
                 self.hw.borrow_mut().do_start(false);
+                self.running = true;
             }
 
             let b = ui.button(RichText::new("Stop")
             .text_style(TextStyle::Monospace)
             .size(16.0)
-            .background_color(egui::Color32::DARK_GRAY));
+            .background_color(egui::Color32::TRANSPARENT));
             if b.clicked() {
-                self.hw.borrow_mut().do_stop();
+                if self.running {
+                    self.hw.borrow_mut().do_stop();
+                    self.running = false;
+                }
             }
         });
     }
