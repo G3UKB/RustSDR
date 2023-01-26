@@ -1,8 +1,8 @@
 /*
 cache.rs
 
-Module - cache
-Cache for object refs
+Module - globals
+Global objects
 
 Copyright (C) 2023 by G3UKB Bob Cowdery
 
@@ -25,38 +25,22 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use std::{cell::RefCell, rc::Rc};
+use std::sync::atomic::{AtomicU32, Ordering};
 
-use crate::app;
-use crate::app::common::prefs;
+use crate::app::common::common_defs;
 
 //========================================================================
-// Implementations
+// Globals are not a generally good idea but sometimes the best way to solve a problem.
+// We require a easy means for the UI to communicate some dynamic settings to the rest
+// of the program. These settings might be used in a number of modules. The linkages would 
+// be pretty horrendous to manage. This is neat and easy to manage.
 
-// The arrays that are modified by several threads/callers are wrapped in an Arc
-// allowing safe sharing.
+static AUDIO_GAIN: AtomicU32 = AtomicU32::new(common_defs::AUDIO_GAIN);
 
-pub struct ObjCache{
-	iapp: Rc<RefCell<app::Appdata>>,
-    iprefs: Rc<RefCell<prefs::Prefs>>,
+pub fn get_audio_gain() -> u32 {
+    AUDIO_GAIN.load(Ordering::Relaxed)
 }
 
-// Implementation methods on ObjCache
-impl ObjCache {
-	// Create a new instance and initialise the default arrays
-	pub fn new(iapp: Rc<RefCell<app::Appdata>>, iprefs: Rc<RefCell<prefs::Prefs>>) -> ObjCache {
-		
-        ObjCache {
-            iapp: iapp,
-            iprefs: iprefs,
-        }
-	}
-
-    pub fn app_ref(&self) -> Rc<RefCell<app::Appdata>>{
-        return self.iapp.clone();
-    }
-
-    pub fn prefs_ref(&self) -> Rc<RefCell<prefs::Prefs>>{
-        return self.iprefs.clone();
-    }
-}
+pub fn set_audio_gain(gain: u32) {
+    AUDIO_GAIN.store(gain, Ordering::Relaxed);
+} 
