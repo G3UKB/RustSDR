@@ -30,4 +30,4 @@ pub mod cc_out_defs;
 pub mod ringb;
 pub mod converters;
 pub mod prefs;
-pub mod cache;
+pub mod globals;

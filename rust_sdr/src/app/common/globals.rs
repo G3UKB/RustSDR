@@ -1,5 +1,5 @@
 /*
-cache.rs
+globals.rs
 
 Module - globals
 Global objects

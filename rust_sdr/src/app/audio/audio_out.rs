@@ -31,7 +31,7 @@ use std::vec;
 use std::io::Read;
 use std::sync::Arc;
 
-use crate::app::common::common_defs;
+use crate::app::common::globals;
 use crate::app::common::converters;
 use crate::app::common::ringb;
 
@@ -110,7 +110,7 @@ fn write_audio<T: Sample>(data: &mut [f32], _: &cpal::OutputCallbackInfo, rb_aud
             converters::i8le_to_f32le(&rb_data, &mut out_data, ((data.len())*2) as u32);
             // Copy data to audio buffer
             for sample in data.iter_mut() {
-                *sample = out_data[i] * common_defs::AUDIO_GAIN as f32;
+                *sample = out_data[i] * globals::get_audio_gain() as f32;
                 i += 1;
             }
         }
