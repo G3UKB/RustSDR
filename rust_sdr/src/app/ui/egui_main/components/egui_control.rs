@@ -28,6 +28,7 @@ bob@bobcowdery.plus.com
 use std::{cell::RefCell, rc::Rc};
 
 use crate ::app::common::prefs;
+use crate::app::common::globals;
 use crate::app::udp::hw_control;
 
 use egui::{RichText, TextStyle};
@@ -41,6 +42,7 @@ pub struct UIControl {
     hw: Rc<RefCell<hw_control::HWData>>,
     _prefs: Rc<RefCell<prefs::Prefs>>,
     running: bool,
+    gain: f32,
 }
 
 //===========================================================================================
@@ -52,6 +54,7 @@ impl UIControl {
             hw: hw,
             _prefs: prefs,
             running: false,
+            gain: 30.0,
         }
     }
 
@@ -85,6 +88,10 @@ impl UIControl {
                     self.running = false;
                 }
             }
+
+            ui.add(egui::Slider::new(&mut self.gain, 0.0..=100.0).suffix("%"));
+            globals::set_audio_gain(self.gain as u32);
+
         });
     }
 }

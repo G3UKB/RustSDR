@@ -270,6 +270,9 @@ impl Appdata {
         dsp::dsp_interface::destroy_analyzer(0);
 
         if self.run {
+            // Stop the hardware
+            self.i_hw_control.borrow_mut().do_stop();
+
             // Close local audio
             self.i_local_audio.close_audio(&(self.stream.as_ref().unwrap()));
         
@@ -300,12 +303,6 @@ impl Appdata {
             println!("Waiting for pipeline to terminate...");
             h.join().expect("Join Pipeline failed!");
             println!("Pipeline terminated")
-        }
-        
-        if self.run {
-            // Stop the hardware
-            //self.i_hw_control.do_stop();
-            //println!("Hardware stopped");
         }
        
     }
