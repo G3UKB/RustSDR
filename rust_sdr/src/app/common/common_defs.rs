@@ -84,7 +84,7 @@ pub const DISPLAY_WIDTH: i32 = 300;
 
 // Audio
 // Gain factor for local audio
-pub const AUDIO_GAIN: u32 = 10;
+pub const AUDIO_GAIN: f32 = 10.0;
 
 // Block size
 pub const DSP_BLK_SZ : u32 = 1024;

@@ -25,7 +25,9 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use std::sync::atomic::{AtomicU32, Ordering};
+use lazy_static::lazy_static;
+use std::sync::Mutex;
+use std::collections::HashMap;
 
 use crate::app::common::common_defs;
 
@@ -35,12 +37,19 @@ use crate::app::common::common_defs;
 // of the program. These settings might be used in a number of modules. The linkages would 
 // be pretty horrendous to manage. This is neat and easy to manage.
 
-static AUDIO_GAIN: AtomicU32 = AtomicU32::new(common_defs::AUDIO_GAIN);
-
-pub fn get_audio_gain() -> u32 {
-    AUDIO_GAIN.load(Ordering::Relaxed)
+lazy_static! {
+    static ref INT_SETTINGS: Mutex<HashMap<String, u32>> = Mutex::new(HashMap::new());
+    static ref FLOAT_SETTINGS: Mutex<HashMap<String, f32>> = Mutex::new(HashMap::new());
+    static ref STR_SETTINGS: Mutex<HashMap<String, String>> = Mutex::new(HashMap::new());
 }
 
-pub fn set_audio_gain(gain: u32) {
-    AUDIO_GAIN.store(gain, Ordering::Relaxed);
+pub fn get_audio_gain() -> f32 {
+    match FLOAT_SETTINGS.lock().unwrap().get("AUDIO_GAIN") {
+        Some(gain) => return gain.clone(),
+        None => return common_defs::AUDIO_GAIN,
+    }
+}
+
+pub fn set_audio_gain(gain: f32) {
+    FLOAT_SETTINGS.lock().unwrap().insert("AUDIO_GAIN".to_string(), gain);
 } 

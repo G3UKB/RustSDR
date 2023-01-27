@@ -90,7 +90,7 @@ impl UIControl {
             }
 
             ui.add(egui::Slider::new(&mut self.gain, 0.0..=100.0).suffix("%"));
-            globals::set_audio_gain(self.gain as u32);
+            globals::set_audio_gain(self.gain);
 
         });
     }
