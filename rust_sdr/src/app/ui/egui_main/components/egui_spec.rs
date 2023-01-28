@@ -29,6 +29,7 @@ use std::sync::{Arc, Mutex};
 use std::{cell::RefCell, rc::Rc};
 
 use crate::app::protocol;
+use crate::app::common::globals;
 use crate::app::common::common_defs;
 use crate::app::ui::egui_main::components;
 use crate::app::dsp;
@@ -216,17 +217,18 @@ impl UISpec {
             }
             // The array out_real contains a set of db values, one per pixel of the horizontal display area.
             // Must be painted every iteration even when not changed otherwise it will flicker
-            let mut shapes = vec![];
-            let end = (rect.width() - L_MARGIN + R_MARGIN) as i32; 
-            let points: Vec<egui::Pos2> = (0..end)
-                .map(|i| {
-                    egui::pos2(rect.left() + L_MARGIN as f32 + i as f32, 
-                        rect.top() + self.val_to_coord(self.out_real[(end - i - 1) as usize], rect.height()))
-                })
-                .collect();
-            shapes.push(epaint::Shape::line(points, egui::Stroke::new(0.25, SPEC_COLOR)));
-            painter.extend(shapes);
-            
+            if globals::get_run_state() {
+                let mut shapes = vec![];
+                let end = (rect.width() - L_MARGIN + R_MARGIN) as i32; 
+                let points: Vec<egui::Pos2> = (0..end)
+                    .map(|i| {
+                        egui::pos2(rect.left() + L_MARGIN as f32 + i as f32, 
+                            rect.top() + self.val_to_coord(self.out_real[(end - i - 1) as usize], rect.height()))
+                    })
+                    .collect();
+                shapes.push(epaint::Shape::line(points, egui::Stroke::new(0.25, SPEC_COLOR)));
+                painter.extend(shapes);
+            }
             // Draw filter overlay
             let pos_top_left: Pos2;
             let pos_bottom_right: Pos2;
@@ -298,25 +300,27 @@ impl UISpec {
             }
 
             // Add the waterfall display.
-            if self.disp_width != self.last_disp_width {
-                // Resize the image data vector
-                // This vector is a linear representation of all pixel colors in the 2D waterfall display
-                // It serves as the backing store to set all pixels in the image.
-                self.image_data.resize((self.disp_width*self.image_height) as usize, Color32::TRANSPARENT);
-                self.last_disp_width = self.disp_width;
+            if globals::get_run_state() {
+                if self.disp_width != self.last_disp_width {
+                    // Resize the image data vector
+                    // This vector is a linear representation of all pixel colors in the 2D waterfall display
+                    // It serves as the backing store to set all pixels in the image.
+                    self.image_data.resize((self.disp_width*self.image_height) as usize, Color32::TRANSPARENT);
+                    self.last_disp_width = self.disp_width;
+                }
+                // The vector may be newly initialised to Color32::TRANSPARENT or it may contain historical data.
+                // Whichever, the process is the same. New data is added at the top for a single pixel row and existing
+                // data is moved down by one row. This means the bottom row is lost.
+                self.count +=1;
+                if self.count % 20 == 0 {
+                    self.create_image_data();
+                }
+                let mut img = egui::ColorImage::new([self.disp_width as usize, self.image_height as usize], Color32::TRANSPARENT);
+                self.wf_update(&mut img);
+                let texture = egui::Context::load_texture(ui.ctx(), "wf", img, egui::TextureFilter::Linear);
+                //ui.add_space(100.0);
+                ui.image(texture.id(), egui::vec2(rect.width() as f32, self.image_height as f32));
             }
-            // The vector may be newly initialised to Color32::TRANSPARENT or it may contain historical data.
-            // Whichever, the process is the same. New data is added at the top for a single pixel row and existing
-            // data is moved down by one row. This means the bottom row is lost.
-            self.count +=1;
-            if self.count % 20 == 0 {
-                self.create_image_data();
-            }
-            let mut img = egui::ColorImage::new([self.disp_width as usize, self.image_height as usize], Color32::TRANSPARENT);
-            self.wf_update(&mut img);
-            let texture = egui::Context::load_texture(ui.ctx(), "wf", img, egui::TextureFilter::Linear);
-            //ui.add_space(100.0);
-            ui.image(texture.id(), egui::vec2(rect.width() as f32, self.image_height as f32));
         });
     }
 

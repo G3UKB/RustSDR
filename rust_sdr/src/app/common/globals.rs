@@ -33,23 +33,33 @@ use crate::app::common::common_defs;
 
 //========================================================================
 // Globals are not a generally good idea but sometimes the best way to solve a problem.
-// We require a easy means for the UI to communicate some dynamic settings to the rest
-// of the program. These settings might be used in a number of modules. The linkages would 
-// be pretty horrendous to manage. This is neat and easy to manage.
+// We require a easy means for the global state to be set and accessed by any module.
 
 lazy_static! {
+    static ref BOOL_SETTINGS: Mutex<HashMap<String, bool>> = Mutex::new(HashMap::new());
     static ref INT_SETTINGS: Mutex<HashMap<String, u32>> = Mutex::new(HashMap::new());
     static ref FLOAT_SETTINGS: Mutex<HashMap<String, f32>> = Mutex::new(HashMap::new());
     static ref STR_SETTINGS: Mutex<HashMap<String, String>> = Mutex::new(HashMap::new());
 }
 
-pub fn get_audio_gain() -> f32 {
+pub fn get_run_state() -> bool {
+    match BOOL_SETTINGS.lock().unwrap().get("RUN_STATE") {
+        Some(state) => return state.clone(),
+        None => return false,
+    }
+}
+
+pub fn set_run_state(state: bool) {
+    BOOL_SETTINGS.lock().unwrap().insert("RUN_STATE".to_string(), state);
+}
+
+pub fn get_af_gain() -> f32 {
     match FLOAT_SETTINGS.lock().unwrap().get("AUDIO_GAIN") {
         Some(gain) => return gain.clone(),
         None => return common_defs::AUDIO_GAIN,
     }
 }
 
-pub fn set_audio_gain(gain: f32) {
+pub fn set_af_gain(gain: f32) {
     FLOAT_SETTINGS.lock().unwrap().insert("AUDIO_GAIN".to_string(), gain);
 } 

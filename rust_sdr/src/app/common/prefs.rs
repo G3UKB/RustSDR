@@ -29,6 +29,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
+use crate::app::common::common_defs;
 use crate::app::ui::egui_main::components::egui_mode::ModeId;
 use crate::app::ui::egui_main::components::egui_filter::FilterId;
 
@@ -76,6 +77,7 @@ pub struct Radio {
     pub frequency: u32,
     pub mode: ModeId,
     pub filter: FilterId,
+    pub af_gain: f32,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
@@ -133,6 +135,7 @@ impl Prefs {
                     frequency: 7100000,
                     mode: ModeId::Lsb,
                     filter: FilterId::F2_4KHz,
+                    af_gain: common_defs::AUDIO_GAIN,
                 }
             }
         }
@@ -184,6 +187,7 @@ impl Prefs {
                 self.radio.frequency = prefs.radio.frequency;
                 self.radio.mode = prefs.radio.mode;
                 self.radio.filter = prefs.radio.filter;
+                self.radio.af_gain = prefs.radio.af_gain;
             },
         }
     }   

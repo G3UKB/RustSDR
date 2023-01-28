@@ -40,7 +40,7 @@ use eframe::egui;
 // State for Control
 pub struct UIControl {
     hw: Rc<RefCell<hw_control::HWData>>,
-    _prefs: Rc<RefCell<prefs::Prefs>>,
+    prefs: Rc<RefCell<prefs::Prefs>>,
     running: bool,
     gain: f32,
 }
@@ -50,11 +50,12 @@ pub struct UIControl {
 impl UIControl {
     pub fn new(prefs: Rc<RefCell<prefs::Prefs>>, hw: Rc<RefCell<hw_control::HWData>>) -> Self{
         
+        let af_gain = prefs.borrow().radio.af_gain;
         Self {
             hw: hw,
-            _prefs: prefs,
+            prefs: prefs,
             running: false,
-            gain: 30.0,
+            gain: af_gain,
         }
     }
 
@@ -76,6 +77,7 @@ impl UIControl {
             if b.clicked() {
                 self.hw.borrow_mut().do_start(false);
                 self.running = true;
+                globals::set_run_state(true);
             }
 
             let b = ui.button(RichText::new("Stop")
@@ -86,11 +88,13 @@ impl UIControl {
                 if self.running {
                     self.hw.borrow_mut().do_stop();
                     self.running = false;
+                    globals::set_run_state(false);
                 }
             }
 
             ui.add(egui::Slider::new(&mut self.gain, 0.0..=100.0).suffix("%"));
-            globals::set_audio_gain(self.gain);
+            self.prefs.borrow_mut().radio.af_gain = self.gain;
+            globals::set_af_gain(self.gain);
 
         });
     }
