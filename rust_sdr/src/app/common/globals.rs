@@ -62,4 +62,15 @@ pub fn get_af_gain() -> f32 {
 
 pub fn set_af_gain(gain: f32) {
     FLOAT_SETTINGS.lock().unwrap().insert("AUDIO_GAIN".to_string(), gain);
+}
+
+pub fn get_num_rx() -> u32 {
+    match INT_SETTINGS.lock().unwrap().get("NUM_RX") {
+        Some(num_rx) => return num_rx.clone(),
+        None => return common_defs::NUM_RX,
+    }
+}
+
+pub fn set_num_rx(num_rx: u32) {
+    INT_SETTINGS.lock().unwrap().insert("NUM_RX".to_string(), num_rx);
 } 

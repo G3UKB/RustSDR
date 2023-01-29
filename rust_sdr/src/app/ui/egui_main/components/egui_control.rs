@@ -35,12 +35,15 @@ use egui::{RichText, TextStyle};
 use eframe::egui;
 //use serde:: {Serialize, Deserialize};
 
+#[derive(PartialEq)]
+enum Radios { RX1, RX2, RX3 }
 
 //===========================================================================================
 // State for Control
 pub struct UIControl {
     hw: Rc<RefCell<hw_control::HWData>>,
     prefs: Rc<RefCell<prefs::Prefs>>,
+    num_radios: Radios,
     running: bool,
     gain: f32,
 }
@@ -54,6 +57,7 @@ impl UIControl {
         Self {
             hw: hw,
             prefs: prefs,
+            num_radios: Radios::RX1,
             running: false,
             gain: af_gain,
         }
@@ -65,10 +69,13 @@ impl UIControl {
         
         ui.with_layout(egui::Layout::top_down_justified(egui::Align::Center), |ui| {
 
+            // Set start button color
             let mut bcolor = egui::Color32::RED;
             if self.running {
                 bcolor = egui::Color32::GREEN;
             }
+
+            // Start button
             let b = ui.button(RichText::new("Start")
             .text_style(TextStyle::Monospace)
             .size(16.0)
@@ -80,6 +87,7 @@ impl UIControl {
                 globals::set_run_state(true);
             }
 
+            // Stop button
             let b = ui.button(RichText::new("Stop")
             .text_style(TextStyle::Monospace)
             .size(16.0)
@@ -92,9 +100,23 @@ impl UIControl {
                 }
             }
 
+            // Audio gain
             ui.add(egui::Slider::new(&mut self.gain, 0.0..=100.0).suffix("%"));
             self.prefs.borrow_mut().radio.af_gain = self.gain;
             globals::set_af_gain(self.gain);
+
+            // Num RX
+            ui.horizontal_wrapped(|ui| {
+                if ui.add(egui::RadioButton::new(self.num_radios == Radios::RX1, "RX1")).clicked() {
+                    self.num_radios = Radios::RX1
+                }
+                if ui.add(egui::RadioButton::new(self.num_radios == Radios::RX2, "RX2")).clicked() {
+                    self.num_radios = Radios::RX2
+                }
+                if ui.add(egui::RadioButton::new(self.num_radios == Radios::RX3, "RX3")).clicked() {
+                    self.num_radios = Radios::RX3
+                }
+            });
 
         });
     }

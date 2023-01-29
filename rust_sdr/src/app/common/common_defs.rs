@@ -69,6 +69,7 @@ pub const SMPLS_384K : u32 = 384000;
 
 // Misc
 pub const MAX_RADIOS : u32 = 3;
+pub const NUM_RX : u32 = 1;
 pub const BYTES_PER_SAMPLE : u32 = 6;   // 2*24 bits
 pub const FRAMES_IN_RING : u32 = 8;     // Number of frames to accommodate in the IQ ring buffer
 
