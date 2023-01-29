@@ -74,7 +74,7 @@ pub struct Windows {
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Radio {
-    pub num_rx: u32,
+    pub num_rx: common_defs::NumRadios,
     pub frequency: u32,
     pub mode: ModeId,
     pub filter: FilterId,
@@ -133,7 +133,7 @@ impl Prefs {
                 }
             },
             radio: { Radio {
-                    num_rx: 1,
+                    num_rx: common_defs::NumRadios::RX1,
                     frequency: 7100000,
                     mode: ModeId::Lsb,
                     filter: FilterId::F2_4KHz,
