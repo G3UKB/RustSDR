@@ -75,6 +75,7 @@ pub struct Windows {
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Radio {
     pub num_rx: common_defs::NumRadios,
+    pub smpl_rate: u32,
     pub frequency: u32,
     pub mode: ModeId,
     pub filter: FilterId,
@@ -134,6 +135,7 @@ impl Prefs {
             },
             radio: { Radio {
                     num_rx: common_defs::NumRadios::RX1,
+                    smpl_rate: common_defs::SAMPLE_RATE,
                     frequency: 7100000,
                     mode: ModeId::Lsb,
                     filter: FilterId::F2_4KHz,
@@ -187,6 +189,7 @@ impl Prefs {
                 self.windows.filt_h = prefs.windows.filt_h;
 
                 self.radio.num_rx = prefs.radio.num_rx;
+                self.radio.smpl_rate = prefs.radio.smpl_rate;
                 self.radio.frequency = prefs.radio.frequency;
                 self.radio.mode = prefs.radio.mode;
                 self.radio.filter = prefs.radio.filter;

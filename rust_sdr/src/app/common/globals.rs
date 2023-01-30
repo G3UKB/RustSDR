@@ -74,3 +74,14 @@ pub fn get_num_rx() -> u32 {
 pub fn set_num_rx(num_rx: u32) {
     INT_SETTINGS.lock().unwrap().insert("NUM_RX".to_string(), num_rx);
 } 
+
+pub fn get_smpl_rate() -> u32 {
+    match INT_SETTINGS.lock().unwrap().get("SMPL_RATE") {
+        Some(rate) => return rate.clone(),
+        None => return common_defs::SAMPLE_RATE,
+    }
+}
+
+pub fn set_smpl_rate(rate: u32) {
+    INT_SETTINGS.lock().unwrap().insert("SMPL_RATE".to_string(), rate);
+} 

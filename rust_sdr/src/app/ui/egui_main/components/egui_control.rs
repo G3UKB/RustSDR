@@ -42,6 +42,7 @@ pub struct UIControl {
     hw: Rc<RefCell<hw_control::HWData>>,
     prefs: Rc<RefCell<prefs::Prefs>>,
     num_radios: common_defs::NumRadios,
+    smpl_rate: u32,
     running: bool,
     gain: f32,
 }
@@ -53,10 +54,12 @@ impl UIControl {
         
         let num_rx = prefs.borrow().radio.num_rx;
         let af_gain = prefs.borrow().radio.af_gain;
+        let smpl_rate = prefs.borrow().radio.smpl_rate;
         Self {
             hw: hw,
             prefs: prefs,
             num_radios: num_rx,
+            smpl_rate: smpl_rate,
             running: false,
             gain: af_gain,
         }
@@ -120,6 +123,25 @@ impl UIControl {
                     self.num_radios = common_defs::NumRadios::RX3;
                     self.prefs.borrow_mut().radio.num_rx = common_defs::NumRadios::RX3;
                     globals::set_num_rx(3);
+                }
+            });
+
+            // Sample rate
+            ui.horizontal_wrapped(|ui| {
+                if ui.add(egui::RadioButton::new(self.smpl_rate == common_defs::SMPLS_48K, "48K")).clicked() {
+                    self.smpl_rate = common_defs::SMPLS_48K;
+                    self.prefs.borrow_mut().radio.smpl_rate = common_defs::SMPLS_48K;
+                    globals::set_smpl_rate(common_defs::SMPLS_48K);
+                }
+                if ui.add(egui::RadioButton::new(self.smpl_rate == common_defs::SMPLS_96K, "96K")).clicked() {
+                    self.smpl_rate = common_defs::SMPLS_96K;
+                    self.prefs.borrow_mut().radio.smpl_rate = common_defs::SMPLS_96K;
+                    globals::set_smpl_rate(common_defs::SMPLS_96K);
+                }
+                if ui.add(egui::RadioButton::new(self.smpl_rate == common_defs::SMPLS_192K, "192K")).clicked() {
+                    self.smpl_rate = common_defs::SMPLS_192K;
+                    self.prefs.borrow_mut().radio.smpl_rate = common_defs::SMPLS_192K;
+                    globals::set_smpl_rate(common_defs::SMPLS_192K);
                 }
             });
 

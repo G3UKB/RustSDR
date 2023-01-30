@@ -213,7 +213,7 @@ impl UISpec {
                     0, common_defs::FFT_SZ, common_defs::WindowTypes::Rectangular as i32, 
                     common_defs::SUB_SPANS, common_defs::IN_SZ, self.disp_width, 
                     common_defs::AvMode::PanTimeAvLin as i32, common_defs::OVER_FRAMES, 
-                    common_defs::SAMPLE_RATE, common_defs::FRAME_RATE);
+                    globals::get_smpl_rate() as i32, common_defs::FRAME_RATE);
             }
             // The array out_real contains a set of db values, one per pixel of the horizontal display area.
             // Must be painted every iteration even when not changed otherwise it will flicker

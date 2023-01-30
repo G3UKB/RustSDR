@@ -31,6 +31,7 @@ use std::sync::{Arc, Mutex};
 use std::ops::Neg;
 
 use crate::app::protocol;
+use crate::app::common::globals;
 use crate::app::common::common_defs;
 use crate::app::dsp;
 
@@ -109,7 +110,7 @@ const GRID_COLOR: Color32 = Color32::from_rgba_premultiplied(0,50,0,10);
 const SPEC_COLOR: Color32 = Color32::from_rgba_premultiplied(150,150,0,70);
 const OVERLAY_COLOR: Color32 = Color32::from_rgba_premultiplied(0,30,0,10);
 const CENTRE_COLOR: Color32 = Color32::RED;
-const SPAN_FREQ: i32 = 48000;
+const SPAN_FREQ: u32 = 48000;
 const DIVS: i32 = 6;
 const F_X_MARGIN: f32 = 15.0;
 const F_X_LABEL_ADJ: f32 = 20.0;
