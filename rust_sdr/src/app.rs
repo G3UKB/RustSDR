@@ -32,6 +32,7 @@ pub mod pipeline;
 pub mod dsp;
 pub mod audio;
 pub mod ui;
+use crate::app::common::globals;
 use crate::app::common::common_defs;
 use crate ::app::common::prefs;
 
@@ -134,7 +135,7 @@ impl Appdata {
 
         // Create ring buffers 
         // Buffer for read IQ data to DSP
-        let num_rx = 1; // Until this is set
+        let num_rx = globals::get_num_rx();
         let rb_capacity: usize = (num_rx * common::common_defs::PROT_SZ * 2 * common::common_defs::BYTES_PER_SAMPLE * common::common_defs::FRAMES_IN_RING ) as usize;
         let rb_iq = Arc::new(common::ringb::SyncByteRingBuf::with_capacity(rb_capacity));
         // Buffer to write audio data from DSP

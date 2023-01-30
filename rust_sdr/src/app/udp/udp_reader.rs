@@ -35,6 +35,7 @@ use socket2;
 
 use crate::app::protocol;
 use crate::app::common::ringb;
+use crate::app::common::globals;
 use crate::app::common::common_defs;
 use crate::app::common::messages;
 
@@ -125,7 +126,7 @@ impl UDPRData {
     fn split_frame(&mut self) { 
         
         // Assume 1 radio for now
-        let num_rx = 1;
+        let num_rx = globals::get_num_rx();
         let mut j: usize = 0;
         let mut ep6_seq : [u8; 4] = [0,0,0,0];
         let mut end_frame_1 = common_defs::END_FRAME_1;

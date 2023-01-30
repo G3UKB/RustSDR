@@ -30,6 +30,7 @@ use std::sync::{Arc, Mutex, Condvar};
 use std::io::{Read, Write};
 
 use crate::app::common::messages;
+use crate::app::common::globals;
 use crate::app::common::common_defs;
 use crate::app::common::ringb;
 use crate::app::common::converters;
@@ -86,7 +87,7 @@ impl PipelineData {
             audio_frame : [0; (common_defs::DSP_BLK_SZ as usize * 4) as usize],
             run: false,
             // Until we have data set to 1
-            num_rx: 1,
+            num_rx: globals::get_num_rx(),
 		}
 	}
 
