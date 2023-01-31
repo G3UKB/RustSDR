@@ -78,7 +78,7 @@ impl UIControl {
 
             // Set start button color
             let mut bcolor = egui::Color32::RED;
-            if self.running {
+            if self.running && globals::get_discover_state() {
                 bcolor = egui::Color32::GREEN;
             }
 
@@ -89,9 +89,11 @@ impl UIControl {
             .background_color(egui::Color32::TRANSPARENT)
             .color(bcolor));
             if b.clicked() {
-                self.hw.borrow_mut().do_start(false);
-                self.running = true;
-                globals::set_run_state(true);
+                if globals::get_discover_state() {
+                    self.hw.borrow_mut().do_start(false);
+                    self.running = true;
+                    globals::set_run_state(true);
+                }
             }
 
             // Stop button

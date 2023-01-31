@@ -156,8 +156,11 @@ impl Appdata {
         let arc1 = p_sock.clone();
         let mut i_hw_control = udp::hw_control::HWData::new(arc1);
         // Do discovery and get address of the hardware unit
-        if !i_hw_control.do_discover() {
+        if i_hw_control.do_discover() {
+            globals::set_discover_state(true);
+        } else {
             println!("Discovery failed, reader and writer will not be operational!");
+            globals::set_discover_state(false);
         }
         let p_addr: option::Option<Arc<socket2::SockAddr>> = i_hw_control.udp_addr_ref();
         // Revert the socket to non-broadcast and set buffer size

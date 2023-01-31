@@ -24,14 +24,13 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
+use crate::app::common::globals;
+
 use std::ffi:: {CString};
 use std::os::raw::c_char;
 use std::ops::Neg;
 
 use crate::app::common::common_defs;
-
-static mut G_MODE: i32 = 0;
-static mut G_FILTER: i32 = 0;
 
 // External interfaces exposed through the WDSP library
 #[link(name = "wdsp_win")]
@@ -121,7 +120,6 @@ pub fn wdsp_open_ch(
 	** The channel is not automatically started. Call set_ch_state() to start the channel.
 	*/
 
-
 	let input_sz: i32;
 	let dsp_rate: i32;
 
@@ -163,55 +161,57 @@ pub fn wdsp_exchange(ch_id: i32, in_buf: &mut [f64; (common_defs::DSP_BLK_SZ * 2
 
 // Modes and filters
 pub fn wdsp_set_rx_mode(ch_id: i32, mode: i32) {
-	unsafe{G_MODE = mode;}
+	globals::set_mode(mode as u32);
 	set_mode_filter(ch_id);
 }
 
 pub fn wdsp_set_rx_filter(ch_id: i32, filter: i32) {
 	// Filters are 0-7 in order
 	// 6K 4K 2.7K 2.4K 2.K1, 1.0K 500Hz 250Hz 100Hz
-	unsafe{G_FILTER = filter;}
+	globals::set_filter(filter as u32);
 	set_mode_filter(ch_id);
 }
 
 fn set_mode_filter(ch_id: i32) {
 	let mut low: i32 = 0;
 	let mut high: i32 = 0;
-	unsafe{
-		let filter = G_FILTER;
-		let mode = G_MODE;
-		let new_low;
-		let new_high;
-		match filter {
-			0 => {low = 100; high = 6100},
-			1 => {low = 100; high = 4100},
-			2 => {low = 300; high = 3000},
-			3 => {low = 300; high = 2700},
-			4 => {low = 300; high = 2400},
-			5 => {low = 300; high = 1300},
-			6 => {low = 500; high = 1000},
-			7 => {low = 600; high = 850},
-			8 => {low = 700; high = 800},
-			_ => (),
-		}
-		if mode == 0 || mode == 3 || mode == 9 {
-			// Low sideband so move filter to low side
-			new_low = high.neg();
-			new_high = low.neg();
-		} else if mode == 1 || mode == 4 || mode == 7 {
-			// High sideband so leave
-			new_low = low;
-			new_high = high;
-		} else {
-			// Both sidebands required
-			new_low = high.neg();
-			new_high = high;
-		}
 	
+	let filter = globals::get_filter() as i32;
+	let mode = globals::get_mode() as i32;
+	let new_low;
+	let new_high;
+	match filter {
+		0 => {low = 100; high = 6100},
+		1 => {low = 100; high = 4100},
+		2 => {low = 300; high = 3000},
+		3 => {low = 300; high = 2700},
+		4 => {low = 300; high = 2400},
+		5 => {low = 300; high = 1300},
+		6 => {low = 500; high = 1000},
+		7 => {low = 600; high = 850},
+		8 => {low = 700; high = 800},
+		_ => (),
+	}
+	if mode == 0 || mode == 3 || mode == 9 {
+		// Low sideband so move filter to low side
+		new_low = high.neg();
+		new_high = low.neg();
+	} else if mode == 1 || mode == 4 || mode == 7 {
+		// High sideband so leave
+		new_low = low;
+		new_high = high;
+	} else {
+		// Both sidebands required
+		new_low = high.neg();
+		new_high = high;
+	}
+
+	unsafe {
 		SetRXAMode(ch_id, mode);
 		SetRXABandpassRun(ch_id, 1);
 		SetRXABandpassFreqs(ch_id, new_low as f64, new_high as f64);
 	}
+	
 }
 
 // Open WDSP display
