@@ -25,10 +25,13 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
+use std::sync::{Arc, Mutex};
 use std::{cell::RefCell, rc::Rc};
 
+use crate::app::protocol;
 use crate ::app::common::prefs;
 use crate::app::common::common_defs;
+use crate::app::common::cc_out_defs;
 use crate::app::common::globals;
 use crate::app::udp::hw_control;
 
@@ -39,6 +42,7 @@ use eframe::egui;
 //===========================================================================================
 // State for Control
 pub struct UIControl {
+    i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
     hw: Rc<RefCell<hw_control::HWData>>,
     prefs: Rc<RefCell<prefs::Prefs>>,
     num_radios: common_defs::NumRadios,
@@ -50,12 +54,13 @@ pub struct UIControl {
 //===========================================================================================
 // Implementation for UIApp
 impl UIControl {
-    pub fn new(prefs: Rc<RefCell<prefs::Prefs>>, hw: Rc<RefCell<hw_control::HWData>>) -> Self{
+    pub fn new(i_cc : Arc<Mutex<protocol::cc_out::CCData>>, prefs: Rc<RefCell<prefs::Prefs>>, hw: Rc<RefCell<hw_control::HWData>>) -> Self{
         
         let num_rx = prefs.borrow().radio.num_rx;
         let af_gain = prefs.borrow().radio.af_gain;
         let smpl_rate = prefs.borrow().radio.smpl_rate;
         Self {
+            i_cc: i_cc,
             hw: hw,
             prefs: prefs,
             num_radios: num_rx,
@@ -132,16 +137,19 @@ impl UIControl {
                     self.smpl_rate = common_defs::SMPLS_48K;
                     self.prefs.borrow_mut().radio.smpl_rate = common_defs::SMPLS_48K;
                     globals::set_smpl_rate(common_defs::SMPLS_48K);
+                    self.i_cc.lock().unwrap().cc_speed(cc_out_defs::CCOSpeed::S48kHz)
                 }
                 if ui.add(egui::RadioButton::new(self.smpl_rate == common_defs::SMPLS_96K, "96K")).clicked() {
                     self.smpl_rate = common_defs::SMPLS_96K;
                     self.prefs.borrow_mut().radio.smpl_rate = common_defs::SMPLS_96K;
                     globals::set_smpl_rate(common_defs::SMPLS_96K);
+                    self.i_cc.lock().unwrap().cc_speed(cc_out_defs::CCOSpeed::S96kHz)
                 }
                 if ui.add(egui::RadioButton::new(self.smpl_rate == common_defs::SMPLS_192K, "192K")).clicked() {
                     self.smpl_rate = common_defs::SMPLS_192K;
                     self.prefs.borrow_mut().radio.smpl_rate = common_defs::SMPLS_192K;
                     globals::set_smpl_rate(common_defs::SMPLS_192K);
+                    self.i_cc.lock().unwrap().cc_speed(cc_out_defs::CCOSpeed::S192kHz)
                 }
             });
 

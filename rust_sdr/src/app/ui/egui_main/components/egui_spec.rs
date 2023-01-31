@@ -53,7 +53,6 @@ const GRID_COLOR: Color32 = Color32::from_rgba_premultiplied(0,50,0,10);
 const SPEC_COLOR: Color32 = Color32::from_rgba_premultiplied(150,150,0,70);
 const OVERLAY_COLOR: Color32 = Color32::from_rgba_premultiplied(0,30,0,10);
 const CENTRE_COLOR: Color32 = Color32::RED;
-const SPAN_FREQ: i32 = 48000;
 const DIVS: i32 = 6;
 const F_X_MARGIN: f32 = 15.0;
 const F_X_LABEL_ADJ: f32 = 20.0;
@@ -67,6 +66,7 @@ pub struct UISpec {
     out_real: [f32; (common_defs::DSP_BLK_SZ ) as usize],
 
     // Spec
+    _span_freq: u32,
     frequency: u32,
     filter_width: i32,
     mode_pos: common_defs::EnumModePos, 
@@ -100,6 +100,7 @@ impl UISpec {
             vfo: vfo,
             out_real: [0.0; (common_defs::DSP_BLK_SZ ) as usize],
 
+            _span_freq: globals::get_smpl_rate(),
             frequency: 7100000,
             disp_width: 300,
             mode_pos: common_defs::EnumModePos::Lower,
@@ -174,8 +175,8 @@ impl UISpec {
             // Get the current frequency
             self.frequency = self.vfo.borrow_mut().get_freq();
             // Set up the parameters
-            let start_freq: i32 = self.frequency as i32 - (SPAN_FREQ / 2);
-            let freq_inc = SPAN_FREQ / DIVS;
+            let start_freq: i32 = self.frequency as i32 - (globals::get_smpl_rate() as i32 / 2);
+            let freq_inc = globals::get_smpl_rate() as i32 / DIVS;
             let pixels_per_div: f32 = (rect.width() - L_MARGIN - R_MARGIN - F_X_LABEL_ADJ) as f32 / DIVS as f32;
             let mut j = start_freq;
             for i in 0..=DIVS {
