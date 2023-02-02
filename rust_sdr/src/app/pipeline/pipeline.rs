@@ -151,9 +151,9 @@ impl PipelineData {
          // Convert and scale input to output data.
          converters::i8be_to_f64le(&self.iq_data, &mut self.dec_iq_data);
          //println!("{:?}", self.dec_iq_data);
-        let mut error: i32 = 0;
-        dsp::dsp_interface::wdsp_exchange(0, &mut self.dec_iq_data,  &mut self.proc_iq_data, &mut error );
-
+        let error: i32;
+        error = dsp::dsp_interface::wdsp_exchange(0, &mut self.dec_iq_data,  &mut self.proc_iq_data);
+        //println!("{}", error);
         for i in 0..self.proc_iq_data.len() {
             self.proc_iq_data[i] = self.proc_iq_data[i] * 0.2;
             if self.proc_iq_data[i]  > 1.0 {

@@ -167,8 +167,11 @@ pub fn wdsp_set_dsp_rate(ch_id: i32, dsp_rate: i32) {
 }
 
 // Data exchange
-pub fn wdsp_exchange(ch_id: i32, in_buf: &mut [f64; (common_defs::DSP_BLK_SZ * 2) as usize],  out_buf: &mut [f64; (common_defs::DSP_BLK_SZ * 2) as usize], error: &mut i32) {	
-	unsafe{fexchange0(ch_id,  in_buf.as_mut_ptr(),  out_buf.as_mut_ptr(),  error)}	
+pub fn wdsp_exchange(ch_id: i32, in_buf: &mut [f64; (common_defs::DSP_BLK_SZ * 2) as usize],  out_buf: &mut [f64; (common_defs::DSP_BLK_SZ * 2) as usize]) -> i32{	
+	let mut error: i32;
+	unsafe{fexchange0(ch_id,  in_buf.as_mut_ptr(),  out_buf.as_mut_ptr(), &mut error)}
+	//println!("{}", error);
+	return error;	
 }
 
 // Modes and filters

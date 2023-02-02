@@ -339,7 +339,7 @@ impl UISpec {
     fn freq_at_ptr(&mut self) {
         let x = self.mouse_pos.x - L_MARGIN;
         let x_frac = x/self.disp_width as f32;
-        self.freq_at_ptr = (globals::get_smpl_rate() as f32 * x_frac + (self.frequency - common_defs::SMPLS_48K /2 ) as f32)/1000000.0;
+        self.freq_at_ptr = (globals::get_smpl_rate() as f32 * x_frac + (self.frequency - globals::get_smpl_rate() /2 ) as f32)/1000000.0;
         self.freq_at_ptr = (self.freq_at_ptr * 1000.0).round() / 1000.0;
     }
 
@@ -347,7 +347,7 @@ impl UISpec {
     fn freq_at_click(&mut self, pos: Pos2) -> u32{
         let x = pos.x - L_MARGIN;
         let x_frac = x/self.disp_width as f32;
-        let f = (globals::get_smpl_rate() as f32 * x_frac + (self.frequency - common_defs::SMPLS_48K /2 ) as f32) as u32;
+        let f = (globals::get_smpl_rate() as f32 * x_frac + (self.frequency - globals::get_smpl_rate() /2 ) as f32) as u32;
         return f;
     }
 
