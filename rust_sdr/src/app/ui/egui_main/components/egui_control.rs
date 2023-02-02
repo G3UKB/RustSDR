@@ -34,6 +34,7 @@ use crate::app::common::common_defs;
 use crate::app::common::cc_out_defs;
 use crate::app::common::globals;
 use crate::app::udp::hw_control;
+use crate::app::dsp::dsp_interface;
 
 use egui::{RichText, TextStyle};
 use eframe::egui;
@@ -139,19 +140,25 @@ impl UIControl {
                     self.smpl_rate = common_defs::SMPLS_48K;
                     self.prefs.borrow_mut().radio.smpl_rate = common_defs::SMPLS_48K;
                     globals::set_smpl_rate(common_defs::SMPLS_48K);
-                    self.i_cc.lock().unwrap().cc_speed(cc_out_defs::CCOSpeed::S48kHz)
+                    self.i_cc.lock().unwrap().cc_speed(cc_out_defs::CCOSpeed::S48kHz);
+                    dsp_interface::wdsp_set_input_rate(0, common_defs::SMPLS_48K as i32);
+                    dsp_interface::wdsp_set_dsp_rate(0, common_defs::SMPLS_48K as i32);
                 }
                 if ui.add(egui::RadioButton::new(self.smpl_rate == common_defs::SMPLS_96K, "96K")).clicked() {
                     self.smpl_rate = common_defs::SMPLS_96K;
                     self.prefs.borrow_mut().radio.smpl_rate = common_defs::SMPLS_96K;
                     globals::set_smpl_rate(common_defs::SMPLS_96K);
-                    self.i_cc.lock().unwrap().cc_speed(cc_out_defs::CCOSpeed::S96kHz)
+                    self.i_cc.lock().unwrap().cc_speed(cc_out_defs::CCOSpeed::S96kHz);
+                    dsp_interface::wdsp_set_input_rate(0, common_defs::SMPLS_96K as i32);
+                    dsp_interface::wdsp_set_dsp_rate(0, common_defs::SMPLS_96K as i32);
                 }
                 if ui.add(egui::RadioButton::new(self.smpl_rate == common_defs::SMPLS_192K, "192K")).clicked() {
                     self.smpl_rate = common_defs::SMPLS_192K;
                     self.prefs.borrow_mut().radio.smpl_rate = common_defs::SMPLS_192K;
                     globals::set_smpl_rate(common_defs::SMPLS_192K);
-                    self.i_cc.lock().unwrap().cc_speed(cc_out_defs::CCOSpeed::S192kHz)
+                    self.i_cc.lock().unwrap().cc_speed(cc_out_defs::CCOSpeed::S192kHz);
+                    dsp_interface::wdsp_set_input_rate(0, common_defs::SMPLS_192K as i32);
+                    dsp_interface::wdsp_set_dsp_rate(0, common_defs::SMPLS_192K as i32);
                 }
             });
 

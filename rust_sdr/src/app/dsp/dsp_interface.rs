@@ -44,6 +44,8 @@ extern "C" {
 		tslewup: f64, tdelaydown: f64, tslewdown: f64);
 	fn CloseChannel(disp_id: i32);
 	fn SetChannelState (ch_id: i32, state: i32, dmode: i32) -> i32;
+	fn SetInputSamplerate (ch_id: i32, in_rate: i32);
+	fn SetDSPSamplerate (ch_id: i32, dsp_rate: i32);
 	fn fexchange0(ch_id: i32, in_buf: *mut f64, out_buf: *mut f64, error: *mut i32);
 
 	fn XCreateAnalyzer ( 
@@ -152,6 +154,16 @@ pub fn wdsp_set_ch_state(ch_id: i32, state: i32, dmode: i32) -> i32 {
 // Close WDSP channels
 pub fn wdsp_close_ch(ch_id: i32) {
 	unsafe{CloseChannel(ch_id);}
+}
+
+// Set input sample rate
+pub fn wdsp_set_input_rate(ch_id: i32, in_rate: i32) {
+	unsafe{SetInputSamplerate(ch_id, in_rate);}
+}
+
+// Set DSP sample rate
+pub fn wdsp_set_dsp_rate(ch_id: i32, dsp_rate: i32) {
+	unsafe{SetDSPSamplerate(ch_id, dsp_rate);}
 }
 
 // Data exchange

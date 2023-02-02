@@ -25,7 +25,6 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use crate::app::common::globals;
 use crate::app::common::common_defs;
 
 // Decode the IQ frame
@@ -63,7 +62,7 @@ pub fn frame_decode(
 	const MIC: u32 = 1;
 
 	// Depends on relative rate
-	let mic_blk_sel = rate / globals::get_smpl_rate();
+	let mic_blk_sel = rate / common_defs::SMPLS_48K;
 	// This is a count of blocks to skip and must be static
 	// Assume 48K for now so no skip
 	static mut _SKIP_MIC_DATA: i32 = 0;

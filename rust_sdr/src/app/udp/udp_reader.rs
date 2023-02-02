@@ -193,7 +193,7 @@ impl UDPRData {
         // We now have contiguous IQ data and Mic data from both protocol frames in prot_frame
         // Now decode the frame
         protocol::decoder::frame_decode(
-                num_smpls, num_rx, common_defs::SMPLS_48K, data_sz, 
+                num_smpls, num_rx, globals::get_smpl_rate(), data_sz, 
                 self.prot_frame, &mut self.iq, &mut self.mic);
 
         //================================================================================
