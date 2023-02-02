@@ -234,7 +234,7 @@ impl UISpec {
             let pos_top_left: Pos2;
             let pos_bottom_right: Pos2;
             // Width of filter in pixels
-            let filt_pix = (self.filter_width as f32/common_defs::SMPLS_48K as f32) * self.disp_width as f32;
+            let filt_pix = (self.filter_width as f32/globals::get_smpl_rate() as f32) * self.disp_width as f32;
             if self.mode_pos == common_defs::EnumModePos::Lower {
                 pos_top_left = emath::pos2(rect.left() + L_MARGIN + (self.disp_width as f32/2.0) - filt_pix, rect.top() + T_MARGIN);
                 pos_bottom_right = emath::pos2(rect.left() + L_MARGIN + (self.disp_width as f32/2.0), rect.top() + rect.height() - B_MARGIN);
@@ -339,7 +339,7 @@ impl UISpec {
     fn freq_at_ptr(&mut self) {
         let x = self.mouse_pos.x - L_MARGIN;
         let x_frac = x/self.disp_width as f32;
-        self.freq_at_ptr = (common_defs::SMPLS_48K as f32 * x_frac + (self.frequency - common_defs::SMPLS_48K /2 ) as f32)/1000000.0;
+        self.freq_at_ptr = (globals::get_smpl_rate() as f32 * x_frac + (self.frequency - common_defs::SMPLS_48K /2 ) as f32)/1000000.0;
         self.freq_at_ptr = (self.freq_at_ptr * 1000.0).round() / 1000.0;
     }
 
@@ -347,7 +347,7 @@ impl UISpec {
     fn freq_at_click(&mut self, pos: Pos2) -> u32{
         let x = pos.x - L_MARGIN;
         let x_frac = x/self.disp_width as f32;
-        let f = (common_defs::SMPLS_48K as f32 * x_frac + (self.frequency - common_defs::SMPLS_48K /2 ) as f32) as u32;
+        let f = (globals::get_smpl_rate() as f32 * x_frac + (self.frequency - common_defs::SMPLS_48K /2 ) as f32) as u32;
         return f;
     }
 
