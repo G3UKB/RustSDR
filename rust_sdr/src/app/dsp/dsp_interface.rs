@@ -169,8 +169,7 @@ pub fn wdsp_set_dsp_rate(ch_id: i32, dsp_rate: i32) {
 // Data exchange
 pub fn wdsp_exchange(ch_id: i32, in_buf: &mut [f64; (common_defs::DSP_BLK_SZ * 2) as usize],  out_buf: &mut [f64; (common_defs::DSP_BLK_SZ * 2) as usize]) -> i32{	
 	let mut error: i32 = 0;
-	unsafe{fexchange0(ch_id,  in_buf.as_mut_ptr(),  out_buf.as_mut_ptr(), &mut error as *mut i32)}
-	//println!("{}", error);
+	unsafe{fexchange0(ch_id,  in_buf.as_mut_ptr(),  out_buf.as_mut_ptr(), &mut error)}
 	return error;	
 }
 

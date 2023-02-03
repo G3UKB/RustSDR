@@ -148,12 +148,21 @@ impl PipelineData {
     // Run the pipeline sequence
     fn sequence(&mut self) {
         // We just exchange for now
-         // Convert and scale input to output data.
-         converters::i8be_to_f64le(&self.iq_data, &mut self.dec_iq_data);
-         //println!("{:?}", self.dec_iq_data);
+        // Convert and scale input to output data.
+        converters::i8be_to_f64le(&self.iq_data, &mut self.dec_iq_data);
         let error: i32;
+
+        // At 48K : 1024 in 1024 out
+        // At 96K : 1024 in 512 out
+        // At 102K : 1024 in 256 out
+        let mut sz = self.proc_iq_data.len();
+        if globals::get_smpl_rate() == common_defs::SMPLS_96K {
+            sz = sz/2;
+        } else if globals::get_smpl_rate() == common_defs::SMPLS_192K {
+            sz = sz/4;
+        }
+        
         error = dsp::dsp_interface::wdsp_exchange(0, &mut self.dec_iq_data,  &mut self.proc_iq_data);
-        //println!("{}", error);
         for i in 0..self.proc_iq_data.len() {
             self.proc_iq_data[i] = self.proc_iq_data[i] * 0.2;
             if self.proc_iq_data[i]  > 1.0 {
@@ -169,13 +178,13 @@ impl PipelineData {
             self.disp_iq_data[i] = self.dec_iq_data[i] as f32;
         }
         dsp::dsp_interface::wdsp_write_spec_data(0, &mut self.disp_iq_data);
-        //println!("{:?}", self.proc_iq_data);
-         if error == 0 {
+        
+        // Process IQ data
+        if error == 0 {
             // We have output data from the DSP
             // Encode the data into a form suitable for the hardware
             // Convert and scale input to output data.
             converters::f64le_to_i8be(&self.proc_iq_data, &mut self.output_frame);
-            //println!("{:?}", self.output_frame);
             // Copy data to the output ring buffer 
             let r = self.rb_audio.write().write(&self.output_frame);
             match r {
@@ -204,7 +213,9 @@ impl PipelineData {
                     // At the moment the writer thread just takes data when available
                 }
             }
-         }
+        } else {
+            println!("DSP returned an error, starvation!");
+        }
     }
 }
 
