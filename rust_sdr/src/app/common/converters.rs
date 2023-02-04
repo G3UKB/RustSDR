@@ -73,13 +73,12 @@ pub fn i8be_to_f64le(in_data: &Vec<u8>, out_data: &mut [f64; (common_defs::DSP_B
 
 // Convert input buffer in f64 LE to output buffer i8 BE
 // Output side of DSP to hardware
-pub fn f64le_to_i8be(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], out_data: &mut [u8; common_defs::DSP_BLK_SZ as usize * 8]) {
+pub fn f64le_to_i8be(sample_sz: usize, in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], out_data: &mut [u8; common_defs::DSP_BLK_SZ as usize * 8]) {
     // This conversion is the opposite of the i8be_to_f64le() and is the output side of the DSP.
     // The converted data is suitable for insertion into the ring buffer to the UDP writer.
 
     let base: i32 = 2;
     let scale: f64 = base.pow(15) as f64;
-    let sz: u32 = common_defs::DSP_BLK_SZ * 4 * 2;
 
     let mut dest: usize = 0;
     let mut src: usize = 0;
@@ -95,7 +94,7 @@ pub fn f64le_to_i8be(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], ou
     // Both in and out are interleaved
 
     // We iterate on the output side starting at the LSB
-    while dest <= (sz - 8) as usize {
+    while dest <= (sample_sz - 8) as usize {
         l = (in_data[src] * scale) as i16;
         r = (in_data[src+1] * scale) as i16;
         i = 0 as i16;
@@ -117,7 +116,7 @@ pub fn f64le_to_i8be(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], ou
 
 // Convert input buffer in f64 LE to output buffer i8 LE as f32 values
 // Output side of DSP to local audio
-pub fn f64le_to_i8le(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], out_data: &mut [u8; common_defs::DSP_BLK_SZ as usize * 4]) {
+pub fn f64le_to_i8le(sample_sz: usize, in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], out_data: &mut [u8; common_defs::DSP_BLK_SZ as usize * 4]) {
      /*
     * The output data is structured as follows:
     * <L0><L1><L2><L3><R0><R1><R2><R3>...
@@ -127,8 +126,6 @@ pub fn f64le_to_i8le(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], ou
     */
 
     // Copy and encode the samples
-    
-    let out_sz: usize = (common_defs::DSP_BLK_SZ * 4) as usize;
     let mut dest: usize = 0;
     let mut src: usize = 0;
     let mut l: i16;
@@ -137,7 +134,7 @@ pub fn f64le_to_i8le(in_data: &[f64; (common_defs::DSP_BLK_SZ * 2) as usize], ou
     let scale: f64 = base.pow(15) as f64;
 
     // We iterate on the output side starting at the MSB
-    while dest <= out_sz - 4 {
+    while dest <= sample_sz - 4 {
         l = (in_data[src] * scale) as i16;
         r = (in_data[src+1] * scale) as i16;
         

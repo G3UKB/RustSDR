@@ -155,15 +155,21 @@ impl PipelineData {
         // At 48K : 1024 in 1024 out
         // At 96K : 1024 in 512 out
         // At 102K : 1024 in 256 out
-        let mut sz = self.proc_iq_data.len();
+        let mut proc_iq_sz = self.proc_iq_data.len();
+        let mut output_sz = self.output_frame.len();
+        let mut audio_sz = self.audio_frame.len();
         if globals::get_smpl_rate() == common_defs::SMPLS_96K {
-            sz = sz/2;
+            proc_iq_sz = proc_iq_sz/2;
+            output_sz = output_sz/2;
+            audio_sz = audio_sz/2;
         } else if globals::get_smpl_rate() == common_defs::SMPLS_192K {
-            sz = sz/4;
+            proc_iq_sz = proc_iq_sz/4;
+            output_sz = output_sz/4;
+            audio_sz = audio_sz/4;
         }
         
         error = dsp::dsp_interface::wdsp_exchange(0, &mut self.dec_iq_data,  &mut self.proc_iq_data);
-        for i in 0..self.proc_iq_data.len() {
+        for i in 0..proc_iq_sz {
             self.proc_iq_data[i] = self.proc_iq_data[i] * 0.2;
             if self.proc_iq_data[i]  > 1.0 {
                 self.proc_iq_data[i] = 1.0;
@@ -184,9 +190,11 @@ impl PipelineData {
             // We have output data from the DSP
             // Encode the data into a form suitable for the hardware
             // Convert and scale input to output data.
-            converters::f64le_to_i8be(&self.proc_iq_data, &mut self.output_frame);
-            // Copy data to the output ring buffer 
-            let r = self.rb_audio.write().write(&self.output_frame);
+            converters::f64le_to_i8be(output_sz, &self.proc_iq_data, &mut self.output_frame);
+            // Copy data to the output ring buffer
+            let mut v_output_frame: Vec<u8> = self.output_frame.to_vec();
+            v_output_frame.resize(output_sz, 0);
+            let r = self.rb_audio.write().write(&v_output_frame);
             match r {
                 Err(_e) => {
                     // UDP writer not ready yet. Try next time.
@@ -199,10 +207,11 @@ impl PipelineData {
             }
             // Now encode and copy data for local audio output
             // Convert and scale input to output data.
-            converters::f64le_to_i8le(&self.proc_iq_data, &mut self.audio_frame);
-            //println!("{:?}", self.audio_frame);
+            converters::f64le_to_i8le(audio_sz, &self.proc_iq_data, &mut self.audio_frame);
             // Copy data to the local audio ring buffer 
-            let r = self.rb_local_audio.write().write(&self.audio_frame);
+            let mut v_audio_frame = self.audio_frame.to_vec();
+            v_audio_frame.resize(audio_sz, 0);
+            let r = self.rb_local_audio.write().write(&v_audio_frame);
             match r {
                 Err(_e) => {
                     // Audio system not up yet. Try next time.
