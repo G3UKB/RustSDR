@@ -29,6 +29,7 @@ use std::sync::{Arc, Mutex};
 use std::{cell::RefCell, rc::Rc};
 
 use crate ::app::common::prefs;
+use crate::app::common::globals;
 use crate::app::common::common_defs;
 use crate::app::protocol;
 use crate::app::dsp;
@@ -61,6 +62,7 @@ const MODE_HIGHLIGHT_COLOR: egui::Color32 = egui::Color32::DARK_BLUE;
 //===========================================================================================
 // State for Modes
 pub struct UIMode {
+    rx : i32,
     _i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
     mode: ModeId,
     _mode_pos: common_defs::EnumModePos,
@@ -92,11 +94,19 @@ impl UIMode {
            (String::from("DRM "), egui::Color32::TRANSPARENT),
         ];
 
+        // Which RX are we
+        let rx = globals::get_sel_rx();
         // Retrieve and set mode
-        let mode = prefs.borrow().radio.mode;
-        dsp::dsp_interface::wdsp_set_rx_mode(0, mode as i32);
+        let mode = prefs.borrow().radio.rx1.mode;
+        match rx {
+            1 => mode = prefs.borrow().radio.rx1.mode,
+            2 => mode = prefs.borrow().radio.rx2.mode,
+            3 => mode = prefs.borrow().radio.rx3.mode,
+        }
+        dsp::dsp_interface::wdsp_set_rx_mode(rx as i32 -1, mode as i32);
 
         Self {
+            rx: rx as i32,
             _i_cc: i_cc,
             m_array: m_array,
             mode: mode,
@@ -220,10 +230,11 @@ impl UIMode {
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
                 self.mode = ModeId::Drm;
             }
-            self.prefs.borrow_mut().radio.mode = self.mode;
         });
+
         self.set_mode_buttons(self.mode as i32);
-        dsp::dsp_interface::wdsp_set_rx_mode(0, self.mode as i32);
+        self.set_mode();
+        
     }
    
     // Highlight the selected button
@@ -233,4 +244,29 @@ impl UIMode {
         }
         self.m_array[id as usize].1 = MODE_HIGHLIGHT_COLOR;
     }
+
+    // Set mode according to which radio we are at the moment
+    fn set_mode(&mut self) {
+        // Which RX are we
+        self.rx = globals::get_sel_rx() as i32;
+        // Retrieve and set mode
+        self.mode = self.prefs.borrow().radio.rx1.mode;
+        match self.rx {
+            1 => {
+                self.mode = self.prefs.borrow().radio.rx1.mode;
+                self.prefs.borrow_mut().radio.rx1.mode = self.mode;
+            },
+            2 => {
+                self.mode = self.prefs.borrow().radio.rx1.mode;
+                self.prefs.borrow_mut().radio.rx2.mode = self.mode;
+            },
+            3 => {
+                self.mode = self.prefs.borrow().radio.rx1.mode;
+                self.prefs.borrow_mut().radio.rx3.mode = self.mode;
+            }
+        }
+        globals::set_mode(self.rx, self.mode as u32);
+        dsp::dsp_interface::wdsp_set_rx_mode(self.rx as i32 -1, self.mode as i32);
+    }
+
 }

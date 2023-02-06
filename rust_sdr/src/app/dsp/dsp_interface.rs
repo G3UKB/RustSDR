@@ -175,14 +175,14 @@ pub fn wdsp_exchange(ch_id: i32, in_buf: &mut [f64; (common_defs::DSP_BLK_SZ * 2
 
 // Modes and filters
 pub fn wdsp_set_rx_mode(ch_id: i32, mode: i32) {
-	globals::set_mode(mode as u32);
+	globals::set_mode(ch_id+1, mode as u32);
 	set_mode_filter(ch_id);
 }
 
 pub fn wdsp_set_rx_filter(ch_id: i32, filter: i32) {
 	// Filters are 0-7 in order
 	// 6K 4K 2.7K 2.4K 2.K1, 1.0K 500Hz 250Hz 100Hz
-	globals::set_filter(filter as u32);
+	globals::set_filter(ch_id+1, filter as u32);
 	set_mode_filter(ch_id);
 }
 
@@ -190,8 +190,8 @@ fn set_mode_filter(ch_id: i32) {
 	let mut low: i32 = 0;
 	let mut high: i32 = 0;
 	
-	let filter = globals::get_filter() as i32;
-	let mode = globals::get_mode() as i32;
+	let filter = globals::get_filter(ch_id+1) as i32;
+	let mode = globals::get_mode(ch_id+1) as i32;
 	let new_low;
 	let new_high;
 	match filter {

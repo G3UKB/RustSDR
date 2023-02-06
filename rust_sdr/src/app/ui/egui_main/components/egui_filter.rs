@@ -28,6 +28,7 @@ bob@bobcowdery.plus.com
 use std::sync::{Arc, Mutex};
 use std::{cell::RefCell, rc::Rc};
 
+use crate ::app::common::globals;
 use crate ::app::common::prefs;
 use crate::app::protocol;
 use crate::app::dsp;
@@ -57,6 +58,7 @@ const FILT_HIGHLIGHT_COLOR: egui::Color32 = egui::Color32::DARK_RED;
 //===========================================================================================
 // State for Filters
 pub struct UIFilter {
+    rx : i32,
     _i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
     filter: FilterId,
     _filter_width: i32,
@@ -85,11 +87,19 @@ impl UIFilter {
            (String::from("100H"), egui::Color32::TRANSPARENT),
         ];
 
+        // Which RX are we
+        let rx = globals::get_sel_rx();
         // Retrieve and set filter
-        let filter = prefs.borrow().radio.filter;
-        dsp::dsp_interface::wdsp_set_rx_mode(0, filter as i32);
+        let filter = prefs.borrow().radio.rx1.filter;
+        match rx {
+            1 => filter = prefs.borrow().radio.rx1.filter,
+            2 => filter = prefs.borrow().radio.rx2.filter,
+            3 => filter = prefs.borrow().radio.rx3.filter,
+        }
+        dsp::dsp_interface::wdsp_set_rx_filter(rx as i32 -1, filter as i32);
 
         Self {
+            rx: rx as i32,
             _i_cc: i_cc,
             fi_array: fi_array,
             filter: filter,
@@ -184,10 +194,10 @@ impl UIFilter {
                 self.spec.borrow_mut().set_filt_width(100);
                 self.filter = FilterId::F100Hz;
             }
-            self.prefs.borrow_mut().radio.filter = self.filter;
         });
+
         self.set_filter_buttons(self.filter as i32);
-        dsp::dsp_interface::wdsp_set_rx_filter(0, self.filter as i32);
+        self.set_filter();
     }
 
     // Highlight the selected button
@@ -197,4 +207,29 @@ impl UIFilter {
         }
         self.fi_array[id as usize].1 = FILT_HIGHLIGHT_COLOR;
     }
+
+    // Set mode according to which radio we are at the moment
+    fn set_filter(&mut self) {
+        // Which RX are we
+        self.rx = globals::get_sel_rx() as i32;
+        // Retrieve and set filter
+        self.filter = self.prefs.borrow().radio.rx1.filter;
+        match self.rx {
+            1 => {
+                self.filter = self.prefs.borrow().radio.rx1.filter;
+                self.prefs.borrow_mut().radio.rx1.filter = self.filter;
+            },
+            2 => {
+                self.filter = self.prefs.borrow().radio.rx1.filter;
+                self.prefs.borrow_mut().radio.rx2.filter = self.filter;
+            },
+            3 => {
+                self.filter = self.prefs.borrow().radio.rx1.filter;
+                self.prefs.borrow_mut().radio.rx3.filter = self.filter;
+            }
+        }
+        globals::set_filter(self.rx, self.filter as u32);
+        dsp::dsp_interface::wdsp_set_rx_filter(self.rx as i32 -1, self.filter as i32);
+    }
+
 }

@@ -50,11 +50,11 @@ pub struct UIControl {
     i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
     hw: Rc<RefCell<hw_control::HWData>>,
     prefs: Rc<RefCell<prefs::Prefs>>,
-    selected_radio: common_defs::NumRadios,
+    selected_radio: u32,
+    num_radios: NumRadiosEnum,
     smpl_rate: u32,
     running: bool,
     gain: f32,
-    num_radios: NumRadiosEnum,
 }
 
 //===========================================================================================
@@ -69,11 +69,11 @@ impl UIControl {
             i_cc: i_cc,
             hw: hw,
             prefs: prefs,
-            selected_radio: num_rx,
+            selected_radio: 1,
+            num_radios: NumRadiosEnum::One,
             smpl_rate: smpl_rate,
             running: false,
             gain: af_gain,
-            num_radios: NumRadiosEnum::One,
         }
     }
 
@@ -130,23 +130,37 @@ impl UIControl {
                     ui.selectable_value(&mut self.num_radios, NumRadiosEnum::Three, "Three");
                 }
             );
+            match self.num_radios {
+                NumRadiosEnum::One => {
+                    self.prefs.borrow_mut().radio.num_rx = 1;
+                    globals::set_num_rx(1);
+                },
+                NumRadiosEnum::Two => {
+                    self.prefs.borrow_mut().radio.num_rx = 2;
+                    globals::set_num_rx(2);
+                },
+                NumRadiosEnum::Three => {
+                    self.prefs.borrow_mut().radio.num_rx = 3;
+                    globals::set_num_rx(3);
+                }
+            }
 
             // Selected RX
             ui.horizontal_wrapped(|ui| {
-                if ui.add(egui::RadioButton::new(self.selected_radio == common_defs::NumRadios::RX1, "RX1")).clicked() {
-                    self.selected_radio = common_defs::NumRadios::RX1;
-                    self.prefs.borrow_mut().radio.num_rx = common_defs::NumRadios::RX1;
-                    globals::set_num_rx(1);
+                if ui.add(egui::RadioButton::new(self.selected_radio == 1, "RX1")).clicked() {
+                    self.selected_radio = 1;
+                    self.prefs.borrow_mut().radio.sel_rx = 1;
+                    globals::set_sel_rx(1);
                 }
-                if ui.add(egui::RadioButton::new(self.selected_radio == common_defs::NumRadios::RX2, "RX2")).clicked() {
-                    self.selected_radio = common_defs::NumRadios::RX2;
-                    self.prefs.borrow_mut().radio.num_rx = common_defs::NumRadios::RX2;
-                    globals::set_num_rx(2);
+                if ui.add(egui::RadioButton::new(self.selected_radio == 2, "RX2")).clicked() {
+                    self.selected_radio = 2;
+                    self.prefs.borrow_mut().radio.sel_rx = 2;
+                    globals::set_sel_rx(2);
                 }
-                if ui.add(egui::RadioButton::new(self.selected_radio == common_defs::NumRadios::RX3, "RX3")).clicked() {
-                    self.selected_radio = common_defs::NumRadios::RX3;
-                    self.prefs.borrow_mut().radio.num_rx = common_defs::NumRadios::RX3;
-                    globals::set_num_rx(3);
+                if ui.add(egui::RadioButton::new(self.selected_radio == 3, "RX3")).clicked() {
+                    self.selected_radio = 3;
+                    self.prefs.borrow_mut().radio.sel_rx = 3;
+                    globals::set_sel_rx(3);
                 }
             });
 

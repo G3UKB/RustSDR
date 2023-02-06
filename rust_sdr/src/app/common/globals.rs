@@ -91,6 +91,18 @@ pub fn set_num_rx(num_rx: u32) {
 } 
 
 //========================================
+pub fn get_sel_rx() -> u32 {
+    match INT_SETTINGS.lock().unwrap().get("SEL_RX") {
+        Some(num_rx) => return num_rx.clone(),
+        None => return common_defs::SEL_RX,
+    }
+}
+
+pub fn set_sel_rx(sel_rx: u32) {
+    INT_SETTINGS.lock().unwrap().insert("SEL_RX".to_string(), sel_rx);
+} 
+
+//========================================
 pub fn get_smpl_rate() -> u32 {
     match INT_SETTINGS.lock().unwrap().get("SMPL_RATE") {
         Some(rate) => return rate.clone(),
@@ -103,25 +115,49 @@ pub fn set_smpl_rate(rate: u32) {
 }
 
 //========================================
-pub fn get_mode() -> u32 {
-    match INT_SETTINGS.lock().unwrap().get("MODE") {
+pub fn get_mode(rx_id: i32) -> u32 {
+    let mut s = "MODE";
+    match rx_id {
+        1 => s = "MODE_RX1",
+        2 => s = "MODE_RX2",
+        3 => s = "MODE_RX3",
+    }
+    match INT_SETTINGS.lock().unwrap().get(s) {
         Some(mode) => return mode.clone(),
         None => return 0,
     }
 }
 
-pub fn set_mode(mode: u32) {
-    INT_SETTINGS.lock().unwrap().insert("MODE".to_string(), mode);
+pub fn set_mode(rx_id: i32, mode: u32) {
+    let mut s = "MODE";
+    match rx_id {
+        1 => s = "MODE_RX1",
+        2 => s = "MODE_RX2",
+        3 => s = "MODE_RX3",
+    }
+    INT_SETTINGS.lock().unwrap().insert(s.to_string(), mode);
 }
 
 //========================================
-pub fn get_filter() -> u32 {
-    match INT_SETTINGS.lock().unwrap().get("FILTER") {
+pub fn get_filter(rx_id: i32) -> u32 {
+    let mut s = "FILTER";
+    match rx_id {
+        1 => s = "FILTER_RX1",
+        2 => s = "FILTER_RX2",
+        3 => s = "FILTER_RX3",
+    }
+    match INT_SETTINGS.lock().unwrap().get(s) {
         Some(filter) => return filter.clone(),
         None => return 0,
     }
 }
 
-pub fn set_filter(filter: u32) {
-    INT_SETTINGS.lock().unwrap().insert("FILTER".to_string(), filter);
+pub fn set_filter(rx_id: i32, filter: u32) {
+    let mut s = "FILTER";
+    match rx_id {
+        1 => s = "FILTER_RX1",
+        2 => s = "FILTER_RX2",
+        3 => s = "FILTER_RX3",
+    }
+    INT_SETTINGS.lock().unwrap().insert(s.to_string(), filter);
 }

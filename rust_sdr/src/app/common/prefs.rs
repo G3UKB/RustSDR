@@ -73,13 +73,21 @@ pub struct Windows {
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
-pub struct Radio {
-    pub num_rx: common_defs::NumRadios,
-    pub smpl_rate: u32,
+pub struct Interacts {
     pub frequency: u32,
     pub mode: ModeId,
     pub filter: FilterId,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
+pub struct Radio {
+    pub num_rx: u32,
+    pub sel_rx: u32,
     pub af_gain: f32,
+    pub smpl_rate: u32,
+    pub rx1: Interacts,
+    pub rx2: Interacts,
+    pub rx3: Interacts,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
@@ -134,12 +142,25 @@ impl Prefs {
                 }
             },
             radio: { Radio {
-                    num_rx: common_defs::NumRadios::RX1,
+                    num_rx: 1,
+                    sel_rx: 1,
                     smpl_rate: common_defs::SAMPLE_RATE,
-                    frequency: 7100000,
-                    mode: ModeId::Lsb,
-                    filter: FilterId::F2_4KHz,
                     af_gain: common_defs::AUDIO_GAIN,
+                    rx1: {Interacts {
+                        frequency: 7100000,
+                        mode: ModeId::Lsb,
+                        filter: FilterId::F2_4KHz,
+                    }},
+                    rx2: {Interacts {
+                        frequency: 7100000,
+                        mode: ModeId::Lsb,
+                        filter: FilterId::F2_4KHz,
+                    }},
+                    rx3: {Interacts {
+                        frequency: 7100000,
+                        mode: ModeId::Lsb,
+                        filter: FilterId::F2_4KHz,
+                    }},
                 }
             }
         }
@@ -189,11 +210,20 @@ impl Prefs {
                 self.windows.filt_h = prefs.windows.filt_h;
 
                 self.radio.num_rx = prefs.radio.num_rx;
+                self.radio.sel_rx = prefs.radio.sel_rx;
                 self.radio.smpl_rate = prefs.radio.smpl_rate;
-                self.radio.frequency = prefs.radio.frequency;
-                self.radio.mode = prefs.radio.mode;
-                self.radio.filter = prefs.radio.filter;
                 self.radio.af_gain = prefs.radio.af_gain;
+
+                self.radio.rx1.frequency = prefs.radio.rx1.frequency;
+                self.radio.rx1.mode = prefs.radio.rx1.mode;
+                self.radio.rx1.filter = prefs.radio.rx1.filter;
+                self.radio.rx2.frequency = prefs.radio.rx2.frequency;
+                self.radio.rx2.mode = prefs.radio.rx2.mode;
+                self.radio.rx2.filter = prefs.radio.rx2.filter;
+                self.radio.rx3.frequency = prefs.radio.rx3.frequency;
+                self.radio.rx3.mode = prefs.radio.rx3.mode;
+                self.radio.rx3.filter = prefs.radio.rx3.filter;
+                
             },
         }
     }   
