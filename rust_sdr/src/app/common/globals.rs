@@ -121,6 +121,7 @@ pub fn get_mode(rx_id: i32) -> u32 {
         1 => s = "MODE_RX1",
         2 => s = "MODE_RX2",
         3 => s = "MODE_RX3",
+        _ => (),
     }
     match INT_SETTINGS.lock().unwrap().get(s) {
         Some(mode) => return mode.clone(),
@@ -134,6 +135,7 @@ pub fn set_mode(rx_id: i32, mode: u32) {
         1 => s = "MODE_RX1",
         2 => s = "MODE_RX2",
         3 => s = "MODE_RX3",
+        _ => (),
     }
     INT_SETTINGS.lock().unwrap().insert(s.to_string(), mode);
 }
@@ -145,6 +147,7 @@ pub fn get_filter(rx_id: i32) -> u32 {
         1 => s = "FILTER_RX1",
         2 => s = "FILTER_RX2",
         3 => s = "FILTER_RX3",
+        _ => (),
     }
     match INT_SETTINGS.lock().unwrap().get(s) {
         Some(filter) => return filter.clone(),
@@ -158,6 +161,7 @@ pub fn set_filter(rx_id: i32, filter: u32) {
         1 => s = "FILTER_RX1",
         2 => s = "FILTER_RX2",
         3 => s = "FILTER_RX3",
+        _ => (),
     }
     INT_SETTINGS.lock().unwrap().insert(s.to_string(), filter);
 }

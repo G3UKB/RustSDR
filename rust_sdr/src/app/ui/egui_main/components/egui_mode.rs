@@ -97,11 +97,12 @@ impl UIMode {
         // Which RX are we
         let rx = globals::get_sel_rx();
         // Retrieve and set mode
-        let mode = prefs.borrow().radio.rx1.mode;
+        let mut mode = prefs.borrow().radio.rx1.mode;
         match rx {
             1 => mode = prefs.borrow().radio.rx1.mode,
             2 => mode = prefs.borrow().radio.rx2.mode,
             3 => mode = prefs.borrow().radio.rx3.mode,
+            _ => (),
         }
         dsp::dsp_interface::wdsp_set_rx_mode(rx as i32 -1, mode as i32);
 
@@ -263,7 +264,8 @@ impl UIMode {
             3 => {
                 self.mode = self.prefs.borrow().radio.rx1.mode;
                 self.prefs.borrow_mut().radio.rx3.mode = self.mode;
-            }
+            },
+            _ => (),
         }
         globals::set_mode(self.rx, self.mode as u32);
         dsp::dsp_interface::wdsp_set_rx_mode(self.rx as i32 -1, self.mode as i32);

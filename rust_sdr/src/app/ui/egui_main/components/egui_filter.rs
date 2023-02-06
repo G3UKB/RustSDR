@@ -90,11 +90,12 @@ impl UIFilter {
         // Which RX are we
         let rx = globals::get_sel_rx();
         // Retrieve and set filter
-        let filter = prefs.borrow().radio.rx1.filter;
+        let mut filter = prefs.borrow().radio.rx1.filter;
         match rx {
             1 => filter = prefs.borrow().radio.rx1.filter,
             2 => filter = prefs.borrow().radio.rx2.filter,
             3 => filter = prefs.borrow().radio.rx3.filter,
+            _ => (),
         }
         dsp::dsp_interface::wdsp_set_rx_filter(rx as i32 -1, filter as i32);
 
@@ -226,7 +227,8 @@ impl UIFilter {
             3 => {
                 self.filter = self.prefs.borrow().radio.rx1.filter;
                 self.prefs.borrow_mut().radio.rx3.filter = self.filter;
-            }
+            },
+            _ => (),
         }
         globals::set_filter(self.rx, self.filter as u32);
         dsp::dsp_interface::wdsp_set_rx_filter(self.rx as i32 -1, self.filter as i32);

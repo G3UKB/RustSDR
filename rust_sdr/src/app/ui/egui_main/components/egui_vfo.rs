@@ -29,6 +29,7 @@ use std::sync::{Arc, Mutex};
 use std::ops::Neg;
 use std::{cell::RefCell, rc::Rc};
 
+use crate ::app::common::globals;
 use crate ::app::common::prefs;
 use crate::app::protocol;
 
@@ -57,6 +58,7 @@ const VFO_HIGHLIGHT_COLOR: egui::Color32 = egui::Color32::DARK_GREEN;
 //===========================================================================================
 // State for VFO
 pub struct UIVfo {
+    rx : i32,
     i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
     f_array: [(String, f32, egui::Color32); 9],
     frequency: u32,
@@ -80,11 +82,32 @@ impl UIVfo {
            (String::from("0"), HZ_SZ, egui::Color32::TRANSPARENT), 
         ];
 
-        let f = prefs.borrow().radio.frequency;
+        // Which RX are we
+        let rx = globals::get_sel_rx();
+        // Retrieve and set freq
+        let mut freq = prefs.borrow().radio.rx1.frequency;
+        match rx {
+            1 => {
+                freq = prefs.borrow().radio.rx1.frequency;
+                i_cc.lock().unwrap().cc_set_rx_tx_freq(freq);
+            },
+            2 => {
+                freq = prefs.borrow().radio.rx2.frequency;
+                i_cc.lock().unwrap().cc_set_rx2_freq(freq);
+            },
+            3 => {
+                freq = prefs.borrow().radio.rx3.frequency;
+                i_cc.lock().unwrap().cc_set_rx3_freq(freq);
+            },
+            _ => (),
+
+        }
+
         Self {
+            rx: rx as i32,
             i_cc: i_cc,
             f_array: f_array,
-            frequency: f,
+            frequency: freq,
             prefs: prefs,
         }
     }
@@ -157,8 +180,9 @@ impl UIVfo {
             self.scroll_if(ui, VfoId::F1H, f_1_h.rect, 1);
         });
         self.set_freq();
-        self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
-        self.prefs.borrow_mut().radio.frequency = self.frequency;
+        self.freq_updated();
+        //self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
+        //self.prefs.borrow_mut().radio.frequency = self.frequency;
     }
 
     // If within the rectangle of a digit then highlight the digit, else normal.
@@ -188,7 +212,30 @@ impl UIVfo {
     // Update the frequency
     pub fn update_freq(&mut self, freq: u32) {
         self.frequency = freq;
-        self.prefs.borrow_mut().radio.frequency = self.frequency;
+        //self.prefs.borrow_mut().radio.frequency = self.frequency;
+        self.freq_updated();
+    }
+
+    // After an update set the new frequency in the system
+    pub fn freq_updated(&mut self) {
+        // Which RX are we
+        let rx = globals::get_sel_rx();
+        match rx {
+            1 => {
+                self.prefs.borrow_mut().radio.rx1.frequency = self.frequency;
+                self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
+            },
+            2 => {
+                self.prefs.borrow_mut().radio.rx2.frequency = self.frequency;
+                self.i_cc.lock().unwrap().cc_set_rx2_freq(self.frequency);
+            },
+            3 => {
+                self.prefs.borrow_mut().radio.rx3.frequency = self.frequency;;
+                self.i_cc.lock().unwrap().cc_set_rx3_freq(self.frequency);
+            },
+            _ => (),
+        }
+
     }
 
     // Get the display frequency

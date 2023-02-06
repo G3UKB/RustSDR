@@ -168,7 +168,7 @@ impl PipelineData {
             audio_sz = audio_sz/4;
         }
         
-        error = dsp::dsp_interface::wdsp_exchange(0, &mut self.dec_iq_data,  &mut self.proc_iq_data);
+        error = dsp::dsp_interface::wdsp_exchange(globals::get_sel_rx() as i32 -1, &mut self.dec_iq_data,  &mut self.proc_iq_data);
         for i in 0..proc_iq_sz {
             self.proc_iq_data[i] = self.proc_iq_data[i] * 0.2;
             if self.proc_iq_data[i]  > 1.0 {
@@ -183,7 +183,7 @@ impl PipelineData {
         for i in 0..self.dec_iq_data.len() {
             self.disp_iq_data[i] = self.dec_iq_data[i] as f32;
         }
-        dsp::dsp_interface::wdsp_write_spec_data(0, &mut self.disp_iq_data);
+        dsp::dsp_interface::wdsp_write_spec_data(globals::get_sel_rx() as i32 -1, &mut self.disp_iq_data);
         
         // Process IQ data
         if error == 0 {
