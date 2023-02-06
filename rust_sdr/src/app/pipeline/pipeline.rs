@@ -86,7 +86,7 @@ impl PipelineData {
             // Local audio out
             audio_frame : [0; (common_defs::DSP_BLK_SZ as usize * 4) as usize],
             run: false,
-            // Until we have data set to 1
+            // Current number of receivers
             num_rx: globals::get_num_rx(),
 		}
 	}
