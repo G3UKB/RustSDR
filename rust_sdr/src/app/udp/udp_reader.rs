@@ -217,7 +217,7 @@ impl UDPRData {
                     p_idx = 0;
                     for b in common_defs::START_FRAME_1..=end_frame_1 {
                             self.prot_frame[p_idx] = self.udp_frame[b as usize].assume_init();
-                            p_idx+= 1;
+                            p_idx += 1;
                     }
                     // Frame 2
                     for b in common_defs::START_FRAME_2..=end_frame_2 {
@@ -311,7 +311,9 @@ impl UDPRData {
         // Truncate vec if necessary for RX samples for current RX
         let mut success = false;
         let mut vec_iq = self.iq.to_vec();
-        vec_iq.resize(num_smpls as usize, 0);
+        if num_rx > 1 {
+            vec_iq.resize((num_smpls*8) as usize, 0);
+        }
         let r = self.rb_iq.write().write(&vec_iq);
         match r {
             Err(e) => {
