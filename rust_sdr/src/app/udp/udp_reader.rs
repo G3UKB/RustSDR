@@ -171,16 +171,118 @@ impl UDPRData {
                 }
 
                 // Extract the data from the UDP frame into the protocol frame
+                // Select the correct RX data at this point
+                // One RX   - I2(1)I1(1)10(1)Q2(1)Q1(1)Q0(1)MM etc
+                // Two RX   - I2(1)I1(1)I0(1)Q2(1)Q1(1)Q0(1)I2(2)I1(2)I0(2)Q2(2)Q1(2)Q0(2)MM etc
+                // Three RX - I2(1)I1(1)I0(1)Q2(1)Q1(1)Q0(1)I2(2)I1(2)I0(2)Q2(2)Q1(2)Q0(2)I2(3)I1(3)I0(3)Q2(3)Q1(3)Q0(3)MM etc
+                //
+                // So for one RX we take all the IQ data always. 
+                // This is 63 samples of I/Q and 63 samples of Mic as 504/8 = 63.
+                //
+                // For 2 RX we take either just the RX1 or RX2 data depending on the selected receiver.
+                // This is 36 samples of RX1, RX2 and Mic as 504/14 = 36
+                //
+                // For 3 RX we take RX1, RX2 or RX3 data depending on the selected receiver.
+                // This is 25 samples of RX1, RX2, RX3 and Mic but 504/25 is 20 rm 4 so there are 4 nulls at the end.
+                //
+                
+                let num_rx = globals::get_num_rx();
+                let sel_rx = globals::get_sel_rx();
+
+                /*
                 // Frame 1
                 j = 0;
                 for b in common_defs::START_FRAME_1..=end_frame_1 {
-                    self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
-                    j += 1;
+                        self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
+                        j += 1;
                 }
                 // Frame 2
                 for b in common_defs::START_FRAME_2..=end_frame_2 {
                     self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
                     j += 1;
+                }
+                */
+
+                // Tiny state machine, IQ, Mic. Skip
+                const IQ:i32 = 0;
+                const M:i32 = 1;
+                const S:i32 = 2;
+                let mut p_idx = 0;
+                if num_rx == 1 {
+                    // Take all data as RX 1
+                    // Frame 1
+                    p_idx = 0;
+                    for b in common_defs::START_FRAME_1..=end_frame_1 {
+                            self.prot_frame[p_idx] = self.udp_frame[b as usize].assume_init();
+                            p_idx+= 1;
+                    }
+                    // Frame 2
+                    for b in common_defs::START_FRAME_2..=end_frame_2 {
+                        self.prot_frame[p_idx] = self.udp_frame[b as usize].assume_init();
+                        p_idx += 1;
+                    }
+                } else if num_rx == 2 {
+                    // Skip either RX 1 or RX 2 data
+                    p_idx = 0;
+                    for frame in 1..=2 {
+                        let smpls = common_defs::NUM_SMPLS_2_RADIO/2;
+                        let mut state = IQ;
+                        if sel_rx == 2 {state = S};
+                        let mut index = common_defs::START_FRAME_1;
+                        if frame == 2 {index = common_defs::START_FRAME_2};
+                        for _smpl in 0..smpls {
+                            if state == IQ {
+                                // Take IQ bytes
+                                for b in index..index+common_defs::BYTES_PER_SAMPLE{
+                                    self.prot_frame[p_idx] = self.udp_frame[b as usize].assume_init();
+                                    p_idx += 1;
+                                }
+                                if sel_rx == 1 {state = S} else {state = M};
+                            } else if state == S {
+                                // Skip IQ bytes
+                                index = index + common_defs::BYTES_PER_SAMPLE;
+                                if sel_rx == 1 {state = M} else {state = IQ};
+                            } else if state == M {
+                                // Take Mic bytes
+                                for b in index..index+common_defs::MIC_BYTES_PER_SAMPLE{
+                                    self.prot_frame[p_idx] = self.udp_frame[b as usize].assume_init();
+                                    p_idx += 1;
+                                }
+                                if sel_rx == 1 {state = IQ} else {state = S};
+                            }
+                        }
+                    }
+                } else if num_rx == 3 {
+                    // Skip RX 1, Rx 2 or RX 3 data
+                    p_idx = 0;
+                    for frame in 1..=2 {
+                        let smpls = common_defs::NUM_SMPLS_3_RADIO/2;
+                        let mut state = IQ;
+                        if sel_rx == 2 || sel_rx == 3 {state = S};
+                        let mut index = common_defs::START_FRAME_1;
+                        if frame == 2 {index = common_defs::START_FRAME_2};
+                        for _smpl in 0..smpls {
+                            if state == IQ {
+                                // Take IQ bytes
+                                for b in index..index+common_defs::BYTES_PER_SAMPLE{
+                                    self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
+                                    p_idx += 1;
+                                }
+                                if sel_rx == 1 || sel_rx == 2 {state = S} else {state = M};
+                            } else if state == S {
+                                // Skip IQ bytes
+                                index = index + common_defs::BYTES_PER_SAMPLE;
+                                if sel_rx == 1 || sel_rx == 2 {state = S} else {state = M};
+                            } else if state == M {
+                                // Take Mic bytes
+                                for b in index..index+common_defs::MIC_BYTES_PER_SAMPLE{
+                                    self.prot_frame[p_idx] = self.udp_frame[b as usize].assume_init();
+                                    p_idx += 1;
+                                }
+                                if sel_rx == 1 {state = IQ} else {state = S};
+                            }
+                        }
+                    }
                 }
 
             } else if self.udp_frame[3].assume_init() == common_defs::EP4 {
@@ -199,6 +301,7 @@ impl UDPRData {
         //================================================================================
         // At this point we have separated the IQ and Mic data into separate buffers
         // Copy the UDP frame into the rb_iq ring buffer
+        // Truncate vec if necessary for RX samples for current RX
         let mut success = false;
         let vec_iq = self.iq.to_vec();
         let r = self.rb_iq.write().write(&vec_iq);

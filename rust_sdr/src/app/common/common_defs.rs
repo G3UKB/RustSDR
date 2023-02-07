@@ -76,6 +76,7 @@ pub const SEL_RX : u32 = 1;
 //#[derive(PartialEq, Debug, Copy, Clone, Serialize, Deserialize)]
 //pub enum NumRadios { RX1, RX2, RX3 }
 pub const BYTES_PER_SAMPLE : u32 = 6;   // 2*24 bits
+pub const MIC_BYTES_PER_SAMPLE : u32 = 2;   // 16 bits
 pub const FRAMES_IN_RING : u32 = 8;     // Number of frames to accommodate in the IQ ring buffer
 
 // DSP
