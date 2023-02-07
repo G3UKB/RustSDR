@@ -206,8 +206,11 @@ impl UDPRData {
                 // Tiny state machine, IQ, Mic. Skip
                 const IQ:i32 = 0;
                 const M:i32 = 1;
-                const S:i32 = 2;
+                const S1:i32 = 2;
+                const S2:i32 = 2;
                 let mut p_idx = 0;
+                let mut smpls = common_defs::NUM_SMPLS_1_RADIO/2;
+
                 if num_rx == 1 {
                     // Take all data as RX 1
                     // Frame 1
@@ -225,9 +228,9 @@ impl UDPRData {
                     // Skip either RX 1 or RX 2 data
                     p_idx = 0;
                     for frame in 1..=2 {
-                        let smpls = common_defs::NUM_SMPLS_2_RADIO/2;
+                        smpls = common_defs::NUM_SMPLS_2_RADIO/2;
                         let mut state = IQ;
-                        if sel_rx == 2 {state = S};
+                        if sel_rx == 2 {state = S1};
                         let mut index = common_defs::START_FRAME_1;
                         if frame == 2 {index = common_defs::START_FRAME_2};
                         for _smpl in 0..smpls {
@@ -237,8 +240,8 @@ impl UDPRData {
                                     self.prot_frame[p_idx] = self.udp_frame[b as usize].assume_init();
                                     p_idx += 1;
                                 }
-                                if sel_rx == 1 {state = S} else {state = M};
-                            } else if state == S {
+                                if sel_rx == 1 {state = S1} else {state = M};
+                            } else if state == S1 {
                                 // Skip IQ bytes
                                 index = index + common_defs::BYTES_PER_SAMPLE;
                                 if sel_rx == 1 {state = M} else {state = IQ};
@@ -248,7 +251,7 @@ impl UDPRData {
                                     self.prot_frame[p_idx] = self.udp_frame[b as usize].assume_init();
                                     p_idx += 1;
                                 }
-                                if sel_rx == 1 {state = IQ} else {state = S};
+                                if sel_rx == 1 {state = IQ} else {state = S1};
                             }
                         }
                     }
@@ -256,9 +259,9 @@ impl UDPRData {
                     // Skip RX 1, Rx 2 or RX 3 data
                     p_idx = 0;
                     for frame in 1..=2 {
-                        let smpls = common_defs::NUM_SMPLS_3_RADIO/2;
+                        smpls = common_defs::NUM_SMPLS_3_RADIO/2;
                         let mut state = IQ;
-                        if sel_rx == 2 || sel_rx == 3 {state = S};
+                        if sel_rx == 2 || sel_rx == 3 {state = S1};
                         let mut index = common_defs::START_FRAME_1;
                         if frame == 2 {index = common_defs::START_FRAME_2};
                         for _smpl in 0..smpls {
@@ -268,18 +271,22 @@ impl UDPRData {
                                     self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
                                     p_idx += 1;
                                 }
-                                if sel_rx == 1 || sel_rx == 2 {state = S} else {state = M};
-                            } else if state == S {
+                                if sel_rx == 1 {state = S1} else if sel_rx == 2 {state = S2} else {state = M};
+                            } else if state == S1 {
                                 // Skip IQ bytes
                                 index = index + common_defs::BYTES_PER_SAMPLE;
-                                if sel_rx == 1 || sel_rx == 2 {state = S} else {state = M};
+                                if sel_rx == 1 {state = S2} else if sel_rx == 2 {state = IQ} else {state = S2};
+                            } else if state == S2 {
+                                // Skip IQ bytes
+                                index = index + common_defs::BYTES_PER_SAMPLE;
+                                if sel_rx == 1 {state = M} else if sel_rx == 2 {state = M} else {state = IQ};
                             } else if state == M {
                                 // Take Mic bytes
                                 for b in index..index+common_defs::MIC_BYTES_PER_SAMPLE{
                                     self.prot_frame[p_idx] = self.udp_frame[b as usize].assume_init();
                                     p_idx += 1;
                                 }
-                                if sel_rx == 1 {state = IQ} else {state = S};
+                                if sel_rx == 1 {state = IQ} else if sel_rx == 2 {state = S1} else {state = S1};
                             }
                         }
                     }
@@ -295,7 +302,7 @@ impl UDPRData {
         // We now have contiguous IQ data and Mic data from both protocol frames in prot_frame
         // Now decode the frame
         protocol::decoder::frame_decode(
-                num_smpls, num_rx, globals::get_smpl_rate(), data_sz, 
+            num_smpls, num_rx, globals::get_smpl_rate(), data_sz, 
                 self.prot_frame, &mut self.iq, &mut self.mic);
 
         //================================================================================
@@ -303,7 +310,8 @@ impl UDPRData {
         // Copy the UDP frame into the rb_iq ring buffer
         // Truncate vec if necessary for RX samples for current RX
         let mut success = false;
-        let vec_iq = self.iq.to_vec();
+        let mut vec_iq = self.iq.to_vec();
+        vec_iq.resize(num_smpls as usize, 0);
         let r = self.rb_iq.write().write(&vec_iq);
         match r {
             Err(e) => {
