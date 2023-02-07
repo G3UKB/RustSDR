@@ -151,16 +151,19 @@ impl UIControl {
                     self.selected_radio = 1;
                     self.prefs.borrow_mut().radio.sel_rx = 1;
                     globals::set_sel_rx(1);
+                    self.i_cc.lock().unwrap().cc_num_rx(cc_out_defs::CCONumRx::NumRx1);
                 }
                 if ui.add(egui::RadioButton::new(self.selected_radio == 2, "RX2")).clicked() {
                     self.selected_radio = 2;
                     self.prefs.borrow_mut().radio.sel_rx = 2;
                     globals::set_sel_rx(2);
+                    self.i_cc.lock().unwrap().cc_num_rx(cc_out_defs::CCONumRx::NumRx2);
                 }
                 if ui.add(egui::RadioButton::new(self.selected_radio == 3, "RX3")).clicked() {
                     self.selected_radio = 3;
                     self.prefs.borrow_mut().radio.sel_rx = 3;
                     globals::set_sel_rx(3);
+                    self.i_cc.lock().unwrap().cc_num_rx(cc_out_defs::CCONumRx::NumRx3);
                 }
             });
 
