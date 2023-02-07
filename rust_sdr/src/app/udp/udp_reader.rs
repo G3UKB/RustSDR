@@ -312,7 +312,7 @@ impl UDPRData {
         let mut success = false;
         let mut vec_iq = self.iq.to_vec();
         if num_rx > 1 {
-            vec_iq.resize((num_smpls*8) as usize, 0);
+            vec_iq.resize((num_smpls*common_defs::BYTES_PER_SAMPLE) as usize, 0);
         }
         let r = self.rb_iq.write().write(&vec_iq);
         match r {
