@@ -72,7 +72,7 @@ pub fn frame_decode(
 	let _peak_input_inst: i16 = 0;
 
 	// The total number of IQ bytes to be concatenated
-	let total_iq_bytes: u32 = n_smpls * n_rx * common_defs::BYTES_PER_SAMPLE;	// 6 bytes per sample (2 x 24 bit)
+	let total_iq_bytes: u32 = n_smpls * common_defs::BYTES_PER_SAMPLE;	// 6 bytes per sample (2 x 24 bit)
 	let mut total_iq_bytes_ct: u32 = total_iq_bytes;		// iteration counter
 
 	// Determine if we are using HPSDR or local mic input

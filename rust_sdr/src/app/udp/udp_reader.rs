@@ -127,6 +127,7 @@ impl UDPRData {
         
         // Assume 1 radio for now
         let num_rx = globals::get_num_rx();
+        let sel_rx = globals::get_sel_rx();
         let mut j: usize = 0;
         let mut ep6_seq : [u8; 4] = [0,0,0,0];
         let mut end_frame_1 = common_defs::END_FRAME_1;
@@ -185,9 +186,6 @@ impl UDPRData {
                 // For 3 RX we take RX1, RX2 or RX3 data depending on the selected receiver.
                 // This is 25 samples of RX1, RX2, RX3 and Mic but 504/25 is 20 rm 4 so there are 4 nulls at the end.
                 //
-                
-                let num_rx = globals::get_num_rx();
-                let sel_rx = globals::get_sel_rx();
 
                 /*
                 // Frame 1
@@ -233,7 +231,7 @@ impl UDPRData {
                         if sel_rx == 2 {state = S1};
                         let mut index = common_defs::START_FRAME_1;
                         if frame == 2 {index = common_defs::START_FRAME_2};
-                        for _smpl in 0..smpls {
+                        for _smpl in 0..smpls*3 {
                             if state == IQ {
                                 // Take IQ bytes
                                 for b in index..index+common_defs::BYTES_PER_SAMPLE{
@@ -241,9 +239,10 @@ impl UDPRData {
                                     p_idx += 1;
                                 }
                                 if sel_rx == 1 {state = S1} else {state = M};
+                                index += common_defs::BYTES_PER_SAMPLE;
                             } else if state == S1 {
                                 // Skip IQ bytes
-                                index = index + common_defs::BYTES_PER_SAMPLE;
+                                index += common_defs::BYTES_PER_SAMPLE;
                                 if sel_rx == 1 {state = M} else {state = IQ};
                             } else if state == M {
                                 // Take Mic bytes
@@ -252,6 +251,7 @@ impl UDPRData {
                                     p_idx += 1;
                                 }
                                 if sel_rx == 1 {state = IQ} else {state = S1};
+                                index += common_defs::MIC_BYTES_PER_SAMPLE;
                             }
                         }
                     }
@@ -264,7 +264,7 @@ impl UDPRData {
                         if sel_rx == 2 || sel_rx == 3 {state = S1};
                         let mut index = common_defs::START_FRAME_1;
                         if frame == 2 {index = common_defs::START_FRAME_2};
-                        for _smpl in 0..smpls {
+                        for _smpl in 0..smpls*4 {
                             if state == IQ {
                                 // Take IQ bytes
                                 for b in index..index+common_defs::BYTES_PER_SAMPLE{
@@ -272,6 +272,7 @@ impl UDPRData {
                                     p_idx += 1;
                                 }
                                 if sel_rx == 1 {state = S1} else if sel_rx == 2 {state = S2} else {state = M};
+                                index += common_defs::BYTES_PER_SAMPLE;
                             } else if state == S1 {
                                 // Skip IQ bytes
                                 index = index + common_defs::BYTES_PER_SAMPLE;
@@ -287,6 +288,7 @@ impl UDPRData {
                                     p_idx += 1;
                                 }
                                 if sel_rx == 1 {state = IQ} else if sel_rx == 2 {state = S1} else {state = S1};
+                                index += common_defs::MIC_BYTES_PER_SAMPLE;
                             }
                         }
                     }
@@ -312,7 +314,7 @@ impl UDPRData {
         let mut success = false;
         let mut vec_iq = self.iq.to_vec();
         if num_rx > 1 {
-            vec_iq.resize((num_smpls*common_defs::BYTES_PER_SAMPLE) as usize, 0);
+            vec_iq.resize(((num_smpls*common_defs::BYTES_PER_SAMPLE) + (num_smpls*common_defs::MIC_BYTES_PER_SAMPLE)) as usize, 0);
         }
         let r = self.rb_iq.write().write(&vec_iq);
         match r {
