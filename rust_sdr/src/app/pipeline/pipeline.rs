@@ -151,7 +151,6 @@ impl PipelineData {
         // Convert and scale input to output data.
         converters::i8be_to_f64le(&self.iq_data, &mut self.dec_iq_data);
         let error: i32;
-
         // At 48K : 1024 in 1024 out
         // At 96K : 1024 in 512 out
         // At 102K : 1024 in 256 out

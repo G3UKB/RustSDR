@@ -225,8 +225,6 @@ impl UDPRData {
                 } else if num_rx == 2 {
                     // Skip either RX 1 or RX 2 data
                     p_idx = 0;
-                    let mut count = 0;
-                    let mut count1 = 0;
                     for frame in 1..=2 {
                         smpls = common_defs::NUM_SMPLS_2_RADIO/2;
                         let mut state = IQ;
@@ -242,7 +240,6 @@ impl UDPRData {
                                 }
                                 if sel_rx == 1 {state = S1} else {state = M};
                                 index += common_defs::BYTES_PER_SAMPLE;
-                                count += 1;
                             } else if state == S1 {
                                 // Skip IQ bytes
                                 index += common_defs::BYTES_PER_SAMPLE;
@@ -255,7 +252,6 @@ impl UDPRData {
                                 }
                                 if sel_rx == 1 {state = IQ} else {state = S1};
                                 index += common_defs::MIC_BYTES_PER_SAMPLE;
-                                count1 += 1;
                             }
                         }
                     }

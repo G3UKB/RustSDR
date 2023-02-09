@@ -213,19 +213,15 @@ impl UIFilter {
     fn set_filter(&mut self) {
         // Which RX are we
         self.rx = globals::get_sel_rx() as i32;
-        // Retrieve and set filter
-        self.filter = self.prefs.borrow().radio.rx1.filter;
+        // Set filter
         match self.rx {
             1 => {
-                self.filter = self.prefs.borrow().radio.rx1.filter;
                 self.prefs.borrow_mut().radio.rx1.filter = self.filter;
             },
             2 => {
-                self.filter = self.prefs.borrow().radio.rx1.filter;
                 self.prefs.borrow_mut().radio.rx2.filter = self.filter;
             },
             3 => {
-                self.filter = self.prefs.borrow().radio.rx1.filter;
                 self.prefs.borrow_mut().radio.rx3.filter = self.filter;
             },
             _ => (),

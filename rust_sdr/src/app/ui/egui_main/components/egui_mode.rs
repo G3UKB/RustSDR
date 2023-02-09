@@ -250,19 +250,15 @@ impl UIMode {
     fn set_mode(&mut self) {
         // Which RX are we
         self.rx = globals::get_sel_rx() as i32;
-        // Retrieve and set mode
-        self.mode = self.prefs.borrow().radio.rx1.mode;
+        // Set mode
         match self.rx {
             1 => {
-                self.mode = self.prefs.borrow().radio.rx1.mode;
                 self.prefs.borrow_mut().radio.rx1.mode = self.mode;
             },
             2 => {
-                self.mode = self.prefs.borrow().radio.rx1.mode;
                 self.prefs.borrow_mut().radio.rx2.mode = self.mode;
             },
             3 => {
-                self.mode = self.prefs.borrow().radio.rx1.mode;
                 self.prefs.borrow_mut().radio.rx3.mode = self.mode;
             },
             _ => (),
