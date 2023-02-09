@@ -132,19 +132,28 @@ impl UIControl {
             );
             match self.num_radios {
                 NumRadiosEnum::One => {
+                    let rx = globals::get_num_rx();
+                    self.may_stop(rx, 1);
                     self.prefs.borrow_mut().radio.num_rx = 1;
                     globals::set_num_rx(1);
                     self.i_cc.lock().unwrap().cc_num_rx(cc_out_defs::CCONumRx::NumRx1);
+                    self.may_start(rx, 1);
                 },
                 NumRadiosEnum::Two => {
+                    let rx = globals::get_num_rx();
+                    self.may_stop(rx, 2);
                     self.prefs.borrow_mut().radio.num_rx = 2;
                     globals::set_num_rx(2);
                     self.i_cc.lock().unwrap().cc_num_rx(cc_out_defs::CCONumRx::NumRx2);
+                    self.may_start(rx, 2);
                 },
                 NumRadiosEnum::Three => {
+                    let rx = globals::get_num_rx();
+                    self.may_stop(rx, 3);
                     self.prefs.borrow_mut().radio.num_rx = 3;
                     globals::set_num_rx(3);
                     self.i_cc.lock().unwrap().cc_num_rx(cc_out_defs::CCONumRx::NumRx3);
+                    self.may_start(rx, 3);
                 }
             }
 
@@ -197,4 +206,27 @@ impl UIControl {
 
         });
     }
+
+    // Stop if we have changed number of radios
+    fn may_stop(&mut self, rx: u32, new_rx: u32) {
+        if rx != new_rx {
+            if self.running {
+                self.hw.borrow_mut().do_stop();
+                self.running = false;
+                globals::set_run_state(false);
+            }
+        }
+    }
+
+    // Start if we have changed number of radios
+    fn may_start(&mut self, rx: u32, new_rx: u32) {
+        if rx != new_rx {
+            if globals::get_discover_state() {
+                self.hw.borrow_mut().do_start(false);
+                self.running = true;
+                globals::set_run_state(true);
+            }
+        } 
+    }
+
 }

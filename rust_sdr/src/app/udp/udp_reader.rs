@@ -205,7 +205,7 @@ impl UDPRData {
                 const IQ:i32 = 0;
                 const M:i32 = 1;
                 const S1:i32 = 2;
-                const S2:i32 = 2;
+                const S2:i32 = 3;
                 let mut p_idx = 0;
                 let mut smpls = common_defs::NUM_SMPLS_1_RADIO/2;
 
@@ -314,8 +314,9 @@ impl UDPRData {
         let mut success = false;
         let mut vec_iq = self.iq.to_vec();
         if num_rx > 1 {
-            vec_iq.resize(((num_smpls*common_defs::BYTES_PER_SAMPLE) + (num_smpls*common_defs::MIC_BYTES_PER_SAMPLE)) as usize, 0);
+            vec_iq.resize((num_smpls*common_defs::BYTES_PER_SAMPLE) as usize, 0);
         }
+        
         let r = self.rb_iq.write().write(&vec_iq);
         match r {
             Err(e) => {
