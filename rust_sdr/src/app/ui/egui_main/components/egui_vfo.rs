@@ -181,8 +181,6 @@ impl UIVfo {
         });
         self.set_freq();
         self.freq_updated();
-        //self.i_cc.lock().unwrap().cc_set_rx_tx_freq(self.frequency);
-        //self.prefs.borrow_mut().radio.frequency = self.frequency;
     }
 
     // If within the rectangle of a digit then highlight the digit, else normal.
