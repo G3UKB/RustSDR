@@ -27,6 +27,8 @@ bob@bobcowdery.plus.com
 
 use std::sync::{Arc, Mutex};
 use std::{cell::RefCell, rc::Rc};
+use std::thread;
+use std::time::Duration;
 
 use crate::app::protocol;
 use crate ::app::common::prefs;
@@ -43,6 +45,7 @@ use eframe::egui;
 #[derive(Debug)]
 #[derive(PartialEq)]
 enum NumRadiosEnum {One, Two, Three}
+enum RestartState {None, Stop, Start}
 
 //===========================================================================================
 // State for Control
@@ -55,6 +58,7 @@ pub struct UIControl {
     smpl_rate: u32,
     running: bool,
     gain: f32,
+    restart_state: RestartState,
 }
 
 //===========================================================================================
@@ -74,6 +78,7 @@ impl UIControl {
             smpl_rate: smpl_rate,
             running: false,
             gain: af_gain,
+            restart_state: RestartState::None,
         }
     }
 
@@ -81,6 +86,14 @@ impl UIControl {
     // Populate control window
     pub fn control(&mut self, ui: &mut egui::Ui) {
         
+        // Do we have a scheduled restart
+        // Note this is done outside of event procs else the rest of the system gets no chance to reset correctly
+        match self.restart_state {
+            RestartState::None => (),
+            RestartState::Stop => self.do_stop(),
+            RestartState::Start => self.do_start(),
+        }
+
         ui.with_layout(egui::Layout::top_down_justified(egui::Align::Center), |ui| {
 
             // Set start button color
@@ -132,28 +145,22 @@ impl UIControl {
             );
             match self.num_radios {
                 NumRadiosEnum::One => {
-                    let rx = globals::get_num_rx();
-                    self.may_stop(rx, 1);
+                    self.query_restart(globals::get_num_rx(), 1);
                     self.prefs.borrow_mut().radio.num_rx = 1;
                     globals::set_num_rx(1);
                     self.i_cc.lock().unwrap().cc_num_rx(cc_out_defs::CCONumRx::NumRx1);
-                    self.may_start(rx, 1);
                 },
                 NumRadiosEnum::Two => {
-                    let rx = globals::get_num_rx();
-                    self.may_stop(rx, 2);
+                    self.query_restart(globals::get_num_rx(), 2);
                     self.prefs.borrow_mut().radio.num_rx = 2;
                     globals::set_num_rx(2);
                     self.i_cc.lock().unwrap().cc_num_rx(cc_out_defs::CCONumRx::NumRx2);
-                    self.may_start(rx, 2);
                 },
                 NumRadiosEnum::Three => {
-                    let rx = globals::get_num_rx();
-                    self.may_stop(rx, 3);
+                    self.query_restart(globals::get_num_rx(), 3);
                     self.prefs.borrow_mut().radio.num_rx = 3;
                     globals::set_num_rx(3);
                     self.i_cc.lock().unwrap().cc_num_rx(cc_out_defs::CCONumRx::NumRx3);
-                    self.may_start(rx, 3);
                 }
             }
 
@@ -207,26 +214,30 @@ impl UIControl {
         });
     }
 
-    // Stop if we have changed number of radios
-    fn may_stop(&mut self, rx: u32, new_rx: u32) {
+    // Restart if the number of radios has changed
+    fn query_restart(&mut self, rx: u32, new_rx: u32) {
         if rx != new_rx {
             if self.running {
-                self.hw.borrow_mut().do_stop();
-                self.running = false;
-                globals::set_run_state(false);
+                self.restart_state = RestartState::Stop;
             }
         }
     }
 
-    // Start if we have changed number of radios
-    fn may_start(&mut self, rx: u32, new_rx: u32) {
-        if rx != new_rx {
-            if globals::get_discover_state() {
-                self.hw.borrow_mut().do_start(false);
-                self.running = true;
-                globals::set_run_state(true);
-            }
-        } 
+    // Stop if we have changed number of radios
+    fn do_stop(&mut self) {
+        if self.running {
+            self.hw.borrow_mut().do_stop();
+            self.running = false;
+            globals::set_run_state(false);
+            self.restart_state = RestartState::Start;
+        }
     }
 
+    // Start if we have changed number of radios
+    fn do_start(&mut self) {
+        self.hw.borrow_mut().do_start(false);
+        self.running = true;
+        globals::set_run_state(true);
+        self.restart_state = RestartState::None;
+    } 
 }
