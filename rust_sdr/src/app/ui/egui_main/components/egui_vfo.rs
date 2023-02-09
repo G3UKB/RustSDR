@@ -212,7 +212,6 @@ impl UIVfo {
     // Update the frequency
     pub fn update_freq(&mut self, freq: u32) {
         self.frequency = freq;
-        //self.prefs.borrow_mut().radio.frequency = self.frequency;
         self.freq_updated();
     }
 
@@ -230,7 +229,7 @@ impl UIVfo {
                 self.i_cc.lock().unwrap().cc_set_rx2_freq(self.frequency);
             },
             3 => {
-                self.prefs.borrow_mut().radio.rx3.frequency = self.frequency;;
+                self.prefs.borrow_mut().radio.rx3.frequency = self.frequency;
                 self.i_cc.lock().unwrap().cc_set_rx3_freq(self.frequency);
             },
             _ => (),
