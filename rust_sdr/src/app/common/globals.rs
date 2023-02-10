@@ -93,7 +93,7 @@ pub fn set_num_rx(num_rx: u32) {
 //========================================
 pub fn get_sel_rx() -> u32 {
     match INT_SETTINGS.lock().unwrap().get("SEL_RX") {
-        Some(num_rx) => return num_rx.clone(),
+        Some(sel_rx) => return sel_rx.clone(),
         None => return common_defs::SEL_RX,
     }
 }

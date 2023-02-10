@@ -347,6 +347,7 @@ impl UDPRData {
         }
         
         let r = self.rb_iq.write().write(&vec_iq);
+        
         match r {
             Err(e) => {
                 println!("Write error on rb_iq, skipping block {:?}", e);
