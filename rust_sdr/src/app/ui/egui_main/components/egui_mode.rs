@@ -121,7 +121,8 @@ impl UIMode {
     // Populate modes window
     pub fn modes(&mut self, ui: &mut egui::Ui) {
         
-        //ui.horizontal_wrapped(|ui| {
+        self.restore_mode();
+        
         ui.with_layout(egui::Layout::top_down_justified(egui::Align::Center), |ui| {
             
             let b = ui.button(RichText::new(&self.m_array[ModeId::Lsb as usize].0)
@@ -238,6 +239,29 @@ impl UIMode {
         
     }
    
+    // Restore mode
+    pub fn restore_mode(&mut self) {
+        // Which RX are we
+        let rx = globals::get_sel_rx();
+        // Retrieve and set freq
+        let mut mode = self.prefs.borrow().radio.rx1.mode;
+        match rx {
+            1 => {
+                mode = self.prefs.borrow().radio.rx1.mode;
+            },
+            2 => {
+                mode = self.prefs.borrow().radio.rx2.mode;
+            },
+            3 => {
+                mode = self.prefs.borrow().radio.rx3.mode;
+            },
+            _ => (),
+        }
+        globals::set_mode(self.rx, self.mode as u32);
+        dsp::dsp_interface::wdsp_set_rx_mode(self.rx as i32 -1, self.mode as i32);
+        self.mode = mode;
+    }
+
     // Highlight the selected button
     fn set_mode_buttons(&mut self, id: i32) {
         for i in 0..12 {

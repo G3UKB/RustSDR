@@ -113,7 +113,9 @@ impl UIFilter {
     //===========================================================================================
     // Populate filters window
     pub fn filters(&mut self, ui: &mut egui::Ui) {
-        //ui.horizontal_wrapped(|ui| {
+
+        self.restore_filter();
+        
         ui.with_layout(egui::Layout::top_down_justified(egui::Align::Center), |ui| {
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F6_0KHz as usize].0)
             .text_style(TextStyle::Monospace)
@@ -200,6 +202,30 @@ impl UIFilter {
         self.set_filter_buttons(self.filter as i32);
         self.set_filter();
     }
+
+    // Restore filter
+    pub fn restore_filter(&mut self) {
+        // Which RX are we
+        let rx = globals::get_sel_rx();
+        // Retrieve and set freq
+        let mut filter = self.prefs.borrow().radio.rx1.filter;
+        match rx {
+            1 => {
+                filter = self.prefs.borrow().radio.rx1.filter;
+            },
+            2 => {
+                filter = self.prefs.borrow().radio.rx2.filter;
+            },
+            3 => {
+                filter = self.prefs.borrow().radio.rx3.filter;
+            },
+            _ => (),
+        }
+        globals::set_filter(self.rx, self.filter as u32);
+        dsp::dsp_interface::wdsp_set_rx_filter(self.rx as i32 -1, self.filter as i32);
+        self.filter = filter;
+    }
+
 
     // Highlight the selected button
     fn set_filter_buttons(&mut self, id: i32) {

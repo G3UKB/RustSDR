@@ -115,7 +115,8 @@ impl UIVfo {
     //===========================================================================================
     // Populate VFO window
     pub fn vfo(&mut self, ui: &mut egui::Ui) {
-        //ui.horizontal(|ui| {
+
+        self.restore_freq();
         ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
             ui.style_mut().spacing.item_spacing = egui::vec2(14.0,5.0);
             
@@ -207,6 +208,30 @@ impl UIVfo {
         }
     }
 
+    // Restore frequency
+    pub fn restore_freq(&mut self) {
+        // Which RX are we
+        let rx = globals::get_sel_rx();
+        // Retrieve and set freq
+        let mut freq = self.prefs.borrow().radio.rx1.frequency;
+        match rx {
+            1 => {
+                freq = self.prefs.borrow().radio.rx1.frequency;
+                self.i_cc.lock().unwrap().cc_set_rx_tx_freq(freq);
+            },
+            2 => {
+                freq = self.prefs.borrow().radio.rx2.frequency;
+                self.i_cc.lock().unwrap().cc_set_rx2_freq(freq);
+            },
+            3 => {
+                freq = self.prefs.borrow().radio.rx3.frequency;
+                self.i_cc.lock().unwrap().cc_set_rx3_freq(freq);
+            },
+            _ => (),
+        }
+        self.frequency = freq;
+    }
+
     // Update the frequency
     pub fn update_freq(&mut self, freq: u32) {
         self.frequency = freq;
@@ -232,7 +257,7 @@ impl UIVfo {
             },
             _ => (),
         }
-
+        
     }
 
     // Get the display frequency
