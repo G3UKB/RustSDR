@@ -127,7 +127,6 @@ impl Appdata {
             common::common_defs::SMPLS_48K as i32, 0.0, 0.0, 0.0, 0.0);
         // and start the channel
         dsp::dsp_interface::wdsp_set_ch_state(2, 1, 0);
-
         // TBD same for TX channel
 
         // Open a display channel

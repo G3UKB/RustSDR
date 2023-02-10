@@ -198,6 +198,10 @@ impl CCData {
 			}
 		}
 
+		//if self.cc_idx == 0 { 
+		//	for n in 0..5 {println!("{:#02x}", self.cc_el[n])};
+		//}
+
 		// Bump the index
 		self.cc_idx = self.cc_idx + 1;
 		if self.cc_idx > RR_CC {

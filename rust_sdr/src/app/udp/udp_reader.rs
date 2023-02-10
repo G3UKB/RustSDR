@@ -210,6 +210,7 @@ impl UDPRData {
                 let mut smpls = common_defs::NUM_SMPLS_1_RADIO/2;
 
                 if num_rx == 1 {
+                    /* 
                     // Take all data as RX 1
                     // Frame 1
                     p_idx = 0;
@@ -221,6 +222,34 @@ impl UDPRData {
                     for b in common_defs::START_FRAME_2..=end_frame_2 {
                         self.prot_frame[p_idx] = self.udp_frame[b as usize].assume_init();
                         p_idx += 1;
+                    }
+                    */
+                    // Take all data
+                    p_idx = 0;
+                    for frame in 1..=2 {
+                        smpls = common_defs::NUM_SMPLS_1_RADIO/2;
+                        let mut state = IQ;
+                        let mut index = common_defs::START_FRAME_1;
+                        if frame == 2 {index = common_defs::START_FRAME_2};
+                        for _smpl in 0..smpls*2 {
+                            if state == IQ {
+                                // Take IQ bytes
+                                for b in index..index+common_defs::BYTES_PER_SAMPLE{
+                                    self.prot_frame[p_idx] = self.udp_frame[b as usize].assume_init();
+                                    p_idx += 1;
+                                }
+                                state = M;
+                                index += common_defs::BYTES_PER_SAMPLE;
+                            } else if state == M {
+                                // Take Mic bytes
+                                for b in index..index+common_defs::MIC_BYTES_PER_SAMPLE{
+                                    self.prot_frame[p_idx] = self.udp_frame[b as usize].assume_init();
+                                    p_idx += 1;
+                                }
+                                state = IQ;
+                                index += common_defs::MIC_BYTES_PER_SAMPLE;
+                            }
+                        }
                     }
                 } else if num_rx == 2 {
                     // Skip either RX 1 or RX 2 data
