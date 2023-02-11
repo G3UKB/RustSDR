@@ -104,7 +104,7 @@ impl UIMode {
             3 => mode = prefs.borrow().radio.rx3.mode,
             _ => (),
         }
-        dsp::dsp_interface::wdsp_set_rx_mode(rx as i32 -1, mode as i32);
+        dsp::dsp_interface::set_mode_filter(0, rx as i32);
 
         Self {
             rx: rx as i32,
@@ -258,7 +258,6 @@ impl UIMode {
             _ => (),
         }
         globals::set_mode(self.rx, self.mode as u32);
-        dsp::dsp_interface::wdsp_set_rx_mode(self.rx as i32 -1, self.mode as i32);
         self.mode = mode;
     }
 
@@ -288,7 +287,7 @@ impl UIMode {
             _ => (),
         }
         globals::set_mode(self.rx, self.mode as u32);
-        dsp::dsp_interface::wdsp_set_rx_mode(self.rx as i32 -1, self.mode as i32);
+        dsp::dsp_interface::set_mode_filter(0, self.rx);
     }
 
 }

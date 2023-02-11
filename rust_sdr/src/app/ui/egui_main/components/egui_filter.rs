@@ -97,7 +97,7 @@ impl UIFilter {
             3 => filter = prefs.borrow().radio.rx3.filter,
             _ => (),
         }
-        dsp::dsp_interface::wdsp_set_rx_filter(rx as i32 -1, filter as i32);
+        dsp::dsp_interface::set_mode_filter(0, rx as i32);
 
         Self {
             rx: rx as i32,
@@ -222,7 +222,7 @@ impl UIFilter {
             _ => (),
         }
         globals::set_filter(self.rx, self.filter as u32);
-        dsp::dsp_interface::wdsp_set_rx_filter(self.rx as i32 -1, self.filter as i32);
+        dsp::dsp_interface::set_mode_filter(0, rx as i32);
         self.filter = filter;
     }
 
@@ -253,7 +253,7 @@ impl UIFilter {
             _ => (),
         }
         globals::set_filter(self.rx, self.filter as u32);
-        dsp::dsp_interface::wdsp_set_rx_filter(self.rx as i32 -1, self.filter as i32);
+        dsp::dsp_interface::set_mode_filter(0, self.rx);
     }
 
 }

@@ -24,12 +24,11 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use crate::app::common::globals;
-
 use std::ffi:: {CString};
 use std::os::raw::c_char;
 use std::ops::Neg;
 
+use crate::app::common::globals;
 use crate::app::common::common_defs;
 
 // External interfaces exposed through the WDSP library
@@ -173,25 +172,12 @@ pub fn wdsp_exchange(ch_id: i32, in_buf: &mut [f64; (common_defs::DSP_BLK_SZ * 2
 	return error;	
 }
 
-// Modes and filters
-pub fn wdsp_set_rx_mode(ch_id: i32, mode: i32) {
-	globals::set_mode(ch_id+1, mode as u32);
-	set_mode_filter(ch_id);
-}
-
-pub fn wdsp_set_rx_filter(ch_id: i32, filter: i32) {
-	// Filters are 0-7 in order
-	// 6K 4K 2.7K 2.4K 2.K1, 1.0K 500Hz 250Hz 100Hz
-	globals::set_filter(ch_id+1, filter as u32);
-	set_mode_filter(ch_id);
-}
-
-fn set_mode_filter(ch_id: i32) {
+pub fn set_mode_filter(ch_id: i32, rx_id: i32) {
 	let mut low: i32 = 0;
 	let mut high: i32 = 0;
 	
-	let filter = globals::get_filter(ch_id+1) as i32;
-	let mode = globals::get_mode(ch_id+1) as i32;
+	let filter = globals::get_filter(rx_id) as i32;
+	let mode = globals::get_mode(rx_id) as i32;
 	let new_low;
 	let new_high;
 	match filter {
@@ -321,7 +307,7 @@ pub fn wdsp_update_disp(
 	sub_spans: i32, in_sz: i32, display_width: i32, 
 	average_mode: i32, over_frames: i32, 
 	sample_rate: i32, frame_rate: i32) {
-
+	
 	// Calculate the display parameters
 	let mut flp: [i32; 1] = [0];
 	let overlap: i32 = (f64::max(0.0, f64::ceil(fft_size as f64 - sample_rate as f64 / frame_rate as f64))) as i32;

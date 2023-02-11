@@ -83,7 +83,7 @@ impl eframe::App for UIMain {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
 
         // Get the latest data update
-        dsp::dsp_interface::wdsp_get_display_data(globals::get_sel_rx() as i32 -1, &mut self.out_real);
+        dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real);
 
         // Control window
         let x = self.prefs.borrow().windows.ctrl_x;

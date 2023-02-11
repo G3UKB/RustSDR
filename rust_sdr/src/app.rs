@@ -115,37 +115,10 @@ impl Appdata {
             common::common_defs::SMPLS_48K as i32, 0.0, 0.0, 0.0, 0.0);
         // and start the channel
         dsp::dsp_interface::wdsp_set_ch_state(0, 1, 0);
-        dsp::dsp_interface::wdsp_open_ch(
-            common::common_defs::CH_RX as i32, 1, common::common_defs::DSP_BLK_SZ as i32, 
-            common::common_defs::DSP_BLK_SZ as i32, globals::get_smpl_rate() as i32, 
-            common::common_defs::SMPLS_48K as i32, 0.0, 0.0, 0.0, 0.0);
-        // and start the channel
-        dsp::dsp_interface::wdsp_set_ch_state(1, 1, 0);
-        dsp::dsp_interface::wdsp_open_ch(
-            common::common_defs::CH_RX as i32, 2, common::common_defs::DSP_BLK_SZ as i32, 
-            common::common_defs::DSP_BLK_SZ as i32, globals::get_smpl_rate() as i32, 
-            common::common_defs::SMPLS_48K as i32, 0.0, 0.0, 0.0, 0.0);
-        // and start the channel
-        dsp::dsp_interface::wdsp_set_ch_state(2, 1, 0);
-        // TBD same for TX channel
-
+    
         // Open a display channel
         if dsp::dsp_interface::wdsp_open_disp(
             0, common_defs::FFT_SZ, common_defs::WindowTypes::Rectangular as i32, 
-            common_defs::SUB_SPANS, common_defs::IN_SZ, common_defs::DISPLAY_WIDTH, 
-            common_defs::AvMode::PanTimeAvLin as i32, common_defs::OVER_FRAMES, 
-            globals::get_smpl_rate() as i32, common_defs::FRAME_RATE) {
-                println!("Opened display channel");
-        }
-        if dsp::dsp_interface::wdsp_open_disp(
-            1, common_defs::FFT_SZ, common_defs::WindowTypes::Rectangular as i32, 
-            common_defs::SUB_SPANS, common_defs::IN_SZ, common_defs::DISPLAY_WIDTH, 
-            common_defs::AvMode::PanTimeAvLin as i32, common_defs::OVER_FRAMES, 
-            globals::get_smpl_rate() as i32, common_defs::FRAME_RATE) {
-                println!("Opened display channel");
-        }
-        if dsp::dsp_interface::wdsp_open_disp(
-            2, common_defs::FFT_SZ, common_defs::WindowTypes::Rectangular as i32, 
             common_defs::SUB_SPANS, common_defs::IN_SZ, common_defs::DISPLAY_WIDTH, 
             common_defs::AvMode::PanTimeAvLin as i32, common_defs::OVER_FRAMES, 
             globals::get_smpl_rate() as i32, common_defs::FRAME_RATE) {
