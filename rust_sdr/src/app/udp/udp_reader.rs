@@ -282,6 +282,7 @@ impl UDPRData {
                                 if sel_rx == 1 {state = IQ} else {state = S1};
                                 index += common_defs::MIC_BYTES_PER_SAMPLE;
                             }
+                            //println!("{}, {}", p_idx, index);
                         }
                     }
                 } else if num_rx == 3 {
