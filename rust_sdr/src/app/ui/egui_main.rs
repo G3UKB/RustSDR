@@ -29,6 +29,8 @@ pub mod components;
 
 use std::sync::{Arc, Mutex};
 use std::{cell::RefCell, rc::Rc};
+use std::thread;
+use std::time::Duration;
 
 use crate::app::common::globals;
 use crate::app::common::common_defs;
@@ -184,6 +186,8 @@ impl eframe::App for UIMain {
         self.prefs.borrow_mut().frame.y = pos.unwrap().y;
         self.prefs.borrow_mut().frame.w = size.x;
         self.prefs.borrow_mut().frame.h = size.y;
+
+        thread::sleep(Duration::from_millis(25));
     }
 }
 

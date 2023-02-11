@@ -132,8 +132,8 @@ impl UDPRData {
         let mut ep6_seq : [u8; 4] = [0,0,0,0];
         let mut end_frame_1 = common_defs::END_FRAME_1;
         let mut end_frame_2 = common_defs::END_FRAME_2;
-        let mut data_sz = common_defs::PROT_SZ * 2;
         let mut num_smpls = common_defs::NUM_SMPLS_1_RADIO;
+        let mut data_sz = num_smpls * (common_defs::BYTES_PER_SAMPLE + common_defs::MIC_BYTES_PER_SAMPLE);
 
         // Unsafe because of potentially uninitialised array
         unsafe { 
@@ -161,14 +161,14 @@ impl UDPRData {
 
                 // For 1,2 radios the entire dataframe is used
                 // For 3 radios there are 4 padding bytes in each frame
-                // TBD: For now fix num_rx at one as we don't have the data yet 
                 if num_rx == 2 {
                     num_smpls = common_defs::NUM_SMPLS_2_RADIO;
+                    data_sz = num_smpls * (common_defs::BYTES_PER_SAMPLE + common_defs::MIC_BYTES_PER_SAMPLE);
                 } else if num_rx == 3 {
                     num_smpls = common_defs::NUM_SMPLS_3_RADIO;
                     end_frame_1 -= 4;
                     end_frame_2 -= 4;
-                    data_sz -= 8;
+                    data_sz = num_smpls * (common_defs::BYTES_PER_SAMPLE + common_defs::MIC_BYTES_PER_SAMPLE) -8;
                 }
 
                 // Extract the data from the UDP frame into the protocol frame
