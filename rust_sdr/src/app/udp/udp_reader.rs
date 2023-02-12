@@ -168,7 +168,7 @@ impl UDPRData {
                     num_smpls = common_defs::NUM_SMPLS_3_RADIO;
                     end_frame_1 -= 4;
                     end_frame_2 -= 4;
-                    data_sz = num_smpls * (common_defs::BYTES_PER_SAMPLE + common_defs::MIC_BYTES_PER_SAMPLE) -8;
+                    data_sz = num_smpls * (common_defs::BYTES_PER_SAMPLE + common_defs::MIC_BYTES_PER_SAMPLE);
                 }
 
                 // Extract the data from the UDP frame into the protocol frame
@@ -284,7 +284,7 @@ impl UDPRData {
                             if state == IQ {
                                 // Take IQ bytes
                                 for b in index..index+common_defs::BYTES_PER_SAMPLE{
-                                    self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
+                                    self.prot_frame[p_idx] = self.udp_frame[b as usize].assume_init();
                                     p_idx += 1;
                                 }
                                 if sel_rx == 1 {state = S1} else if sel_rx == 2 {state = S2} else {state = M};

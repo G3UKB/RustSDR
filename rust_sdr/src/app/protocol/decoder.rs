@@ -96,7 +96,8 @@ pub fn frame_decode(
 	let mut total_mic_bytes_ct: u32 = total_mic_bytes;
 
 	// The number of IQ bytes for each receiver(s) sample
-	let iq_bytes = n_rx * common_defs::BYTES_PER_SAMPLE;
+	//let iq_bytes = n_rx * common_defs::BYTES_PER_SAMPLE;
+	let iq_bytes = common_defs::BYTES_PER_SAMPLE;
 	// IQ byte counter
 	let mut iq_ct = iq_bytes;
 	// The number of Mic bytes following receiver sample
