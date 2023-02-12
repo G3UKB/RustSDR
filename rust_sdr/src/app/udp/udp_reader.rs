@@ -187,20 +187,6 @@ impl UDPRData {
                 // This is 25 samples of RX1, RX2, RX3 and Mic but 504/25 is 20 rm 4 so there are 4 nulls at the end.
                 //
 
-                /*
-                // Frame 1
-                j = 0;
-                for b in common_defs::START_FRAME_1..=end_frame_1 {
-                        self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
-                        j += 1;
-                }
-                // Frame 2
-                for b in common_defs::START_FRAME_2..=end_frame_2 {
-                    self.prot_frame[j] = self.udp_frame[b as usize].assume_init();
-                    j += 1;
-                }
-                */
-
                 // Tiny state machine, IQ, Mic. Skip
                 const IQ:i32 = 0;
                 const M:i32 = 1;
@@ -259,7 +245,7 @@ impl UDPRData {
                         let mut state = IQ;
                         if sel_rx == 2 {state = S1};
                         let mut index = common_defs::START_FRAME_1;
-                        if frame == 2 {index = common_defs::START_FRAME_2};
+                        if frame == 2 {index = common_defs::START_FRAME_2;};
                         for _smpl in 0..smpls*3 {
                             if state == IQ {
                                 // Take IQ bytes
@@ -273,6 +259,7 @@ impl UDPRData {
                                 // Skip IQ bytes
                                 index += common_defs::BYTES_PER_SAMPLE;
                                 if sel_rx == 1 {state = M} else {state = IQ};
+
                             } else if state == M {
                                 // Take Mic bytes
                                 for b in index..index+common_defs::MIC_BYTES_PER_SAMPLE{
@@ -282,7 +269,6 @@ impl UDPRData {
                                 if sel_rx == 1 {state = IQ} else {state = S1};
                                 index += common_defs::MIC_BYTES_PER_SAMPLE;
                             }
-                            //println!("{}, {}", p_idx, index);
                         }
                     }
                 } else if num_rx == 3 {
