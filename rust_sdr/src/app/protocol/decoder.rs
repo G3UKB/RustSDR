@@ -51,12 +51,19 @@ pub fn frame_decode(
 	// For 3 RX we take RX1, RX2 or RX3 data depending on the selected receiver.
 	// This is 25 samples of RX1, RX2, RX3 and Mic but 504/25 is 20 rm 4 so there are 4 nulls at the end.
 	//
+	// For 48KHz sample rate we take all Mic samples
+	// For 96KHz sample rate we take every second sample
+	// For 192KHz sample rate we take every fourth sample
 
 	// Tiny state machine, IQ, Mic. Skip
 	const IQ:i32 = 0;
 	const M:i32 = 1;
-	const S1:i32 = 2;
-	const S2:i32 = 3;
+	const SIQ1:i32 = 2;
+	const SIQ2:i32 = 3;
+	const SM1:i32 = 4;
+	const SM2:i32 = 5;
+	const SM3:i32 = 6;
+
 	// Index into IQ output data
 	let mut idx_iq = 0;
 	// Index into Mic output data
@@ -99,7 +106,9 @@ pub fn frame_decode(
 		for frame in 1..=2 {
 			smpls = common_defs::NUM_SMPLS_2_RADIO/2;
 			let mut state = IQ;
-			if sel_rx == 2 {state = S1};
+			if sel_rx == 2 {state = SIQ1};
+			let mut sub_state = M;
+			if rate == common_defs::SMPLS_48K {sub_state = M;} else {sub_state = SM1;}
 			let mut index = common_defs::START_FRAME_1;
 			if frame == 2 {index = common_defs::START_FRAME_2;};
 			for _smpl in 0..smpls*3 {
@@ -109,21 +118,41 @@ pub fn frame_decode(
 						iq[idx_iq] = unsafe{udp_frame[b as usize].assume_init()};
 						idx_iq += 1;
 					}
-					if sel_rx == 1 {state = S1} else {state = M};
+					if sel_rx == 1 {state = SIQ1} else {state = M};
+					if rate == common_defs::SMPLS_48K {sub_state = M;} else {sub_state = SM1;}
 					index += common_defs::BYTES_PER_SAMPLE;
-				} else if state == S1 {
+				} else if state == SIQ1 {
 					// Skip IQ bytes
 					index += common_defs::BYTES_PER_SAMPLE;
 					if sel_rx == 1 {state = M} else {state = IQ};
-
+					if rate == common_defs::SMPLS_48K {sub_state = M;} else {sub_state = SM1;}
 				} else if state == M {
-					// Take Mic bytes
-					for b in index..index+common_defs::MIC_BYTES_PER_SAMPLE{
-						mic[idx_mic] = unsafe{udp_frame[b as usize].assume_init()};
-						idx_mic += 1;
+					// Skip 1,2 or 3 samples if > 48KHz
+					if sub_state == SM1 {
+						index += common_defs::MIC_BYTES_PER_SAMPLE;
+						if rate == common_defs::SMPLS_192K {
+							sub_state = SM2;
+						} else {
+							sub_state = M;
+						} 
+					} else if sub_state == SM2 {
+						index += common_defs::MIC_BYTES_PER_SAMPLE;
+						if rate == common_defs::SMPLS_192K {
+							sub_state = SM3;
+						} else {
+							sub_state = M;
+						} 
+					} else if sub_state == SM3 {
+						index += common_defs::MIC_BYTES_PER_SAMPLE;
+						sub_state = M;
+					} else {
+						for b in index..index+common_defs::MIC_BYTES_PER_SAMPLE{
+							mic[idx_mic] = unsafe{udp_frame[b as usize].assume_init()};
+							idx_mic += 1;
+						}
+						index += common_defs::MIC_BYTES_PER_SAMPLE;
 					}
-					if sel_rx == 1 {state = IQ} else {state = S1};
-					index += common_defs::MIC_BYTES_PER_SAMPLE;
+					if sel_rx == 1 {state = IQ} else {state = SIQ1};
 				}
 			}
 		}
@@ -134,7 +163,9 @@ pub fn frame_decode(
 		for frame in 1..=2 {
 			smpls = common_defs::NUM_SMPLS_3_RADIO/2;
 			let mut state = IQ;
-			if sel_rx == 2 || sel_rx == 3 {state = S1};
+			if sel_rx == 2 || sel_rx == 3 {state = SIQ1};
+			let mut sub_state = M;
+			if rate == common_defs::SMPLS_48K {sub_state = M;} else {sub_state = SM1;}
 			let mut index = common_defs::START_FRAME_1;
 			if frame == 2 {index = common_defs::START_FRAME_2};
 			for _smpl in 0..smpls*4 {
@@ -144,24 +175,46 @@ pub fn frame_decode(
 						iq[idx_iq] = unsafe{udp_frame[b as usize].assume_init()};
 						idx_iq += 1;
 					}
-					if sel_rx == 1 {state = S1} else if sel_rx == 2 {state = S2} else {state = M};
+					if sel_rx == 1 {state = SIQ1} else if sel_rx == 2 {state = SIQ2} else {state = M};
+					if rate == common_defs::SMPLS_48K {sub_state = M;} else {sub_state = SM1;}
 					index += common_defs::BYTES_PER_SAMPLE;
-				} else if state == S1 {
+				} else if state == SIQ1 {
 					// Skip IQ bytes
 					index = index + common_defs::BYTES_PER_SAMPLE;
-					if sel_rx == 1 {state = S2} else if sel_rx == 2 {state = IQ} else {state = S2};
-				} else if state == S2 {
+					if sel_rx == 1 {state = SIQ2} else if sel_rx == 2 {state = IQ} else {state = SIQ2};
+					if rate == common_defs::SMPLS_48K {sub_state = M;} else {sub_state = SM1;}
+				} else if state == SIQ2 {
 					// Skip IQ bytes
 					index = index + common_defs::BYTES_PER_SAMPLE;
 					if sel_rx == 1 {state = M} else if sel_rx == 2 {state = M} else {state = IQ};
+					if rate == common_defs::SMPLS_48K {sub_state = M;} else {sub_state = SM1;}
 				} else if state == M {
-					// Take Mic bytes
-					for b in index..index+common_defs::MIC_BYTES_PER_SAMPLE{
-						mic[idx_mic] = unsafe{udp_frame[b as usize].assume_init()};
-						idx_mic += 1;
+					// Skip 1,2 or 3 samples if > 48KHz
+					if sub_state == SM1 {
+						index += common_defs::MIC_BYTES_PER_SAMPLE;
+						if rate == common_defs::SMPLS_192K {
+							sub_state = SM2;
+						} else {
+							sub_state = M;
+						} 
+					} else if sub_state == SM2 {
+						index += common_defs::MIC_BYTES_PER_SAMPLE;
+						if rate == common_defs::SMPLS_192K {
+							sub_state = SM3;
+						} else {
+							sub_state = M;
+						} 
+					} else if sub_state == SM3 {
+						index += common_defs::MIC_BYTES_PER_SAMPLE;
+						sub_state = M;
+					} else {
+						for b in index..index+common_defs::MIC_BYTES_PER_SAMPLE{
+							mic[idx_mic] = unsafe{udp_frame[b as usize].assume_init()};
+							idx_mic += 1;
+						}
+						index += common_defs::MIC_BYTES_PER_SAMPLE;
 					}
-					if sel_rx == 1 {state = IQ} else if sel_rx == 2 {state = S1} else {state = S1};
-					index += common_defs::MIC_BYTES_PER_SAMPLE;
+					if sel_rx == 1 {state = IQ} else {state = SIQ1};
 				}
 			}
 		}
