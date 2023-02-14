@@ -87,6 +87,18 @@ impl eframe::App for UIMain {
         // Get the latest data update
         dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real);
 
+        let num_rx = globals::get_num_rx();
+        egui::CentralPanel::default().show(ctx, |ui| {
+            let mut rx = String::from("");
+            match num_rx {
+                1 => rx = String::from("RX-1"),
+                2 => rx = String::from("RX-2"),
+                3 => rx = String::from("RX-3"),
+                _ => (),
+            }
+            ui.heading(String::from("Rust SDR Application [") + &rx + "]");
+        });
+
         // Control window
         let x = self.prefs.borrow().windows.ctrl_x;
         let y = self.prefs.borrow().windows.ctrl_y;
