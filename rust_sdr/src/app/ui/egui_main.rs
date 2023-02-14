@@ -87,10 +87,10 @@ impl eframe::App for UIMain {
         // Get the latest data update
         dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real);
 
-        let num_rx = globals::get_num_rx();
+        let sel_rx = globals::get_sel_rx();
         egui::CentralPanel::default().show(ctx, |ui| {
             let mut rx = String::from("");
-            match num_rx {
+            match sel_rx {
                 1 => rx = String::from("RX-1"),
                 2 => rx = String::from("RX-2"),
                 3 => rx = String::from("RX-3"),
