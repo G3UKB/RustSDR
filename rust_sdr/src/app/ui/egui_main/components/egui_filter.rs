@@ -61,7 +61,6 @@ pub struct UIFilter {
     rx : i32,
     _i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
     filter: FilterId,
-    _filter_width: i32,
     fi_array: [(String, egui::Color32); 9],
     spec : Rc<RefCell<components::egui_spec::UISpec>>,
     prefs: Rc<RefCell<prefs::Prefs>>,
@@ -98,13 +97,25 @@ impl UIFilter {
             _ => (),
         }
         dsp::dsp_interface::set_mode_filter(0, rx as i32);
+        let mut width;
+        match filter {
+            FilterId::F6_0KHz => width = 6000,
+            FilterId::F4_0KHz => width = 4000,
+            FilterId::F2_7KHz => width = 2700,
+            FilterId::F2_4KHz => width = 2400,
+            FilterId::F2_1KHz => width = 2100,
+            FilterId::F1_0KHz => width = 1000,
+            FilterId::F500Hz => width = 500,
+            FilterId::F250Hz => width = 250,
+            FilterId::F100Hz => width = 100,
+        }
+        spec.borrow_mut().set_filt_width(width);
 
         Self {
             rx: rx as i32,
             _i_cc: i_cc,
             fi_array: fi_array,
             filter: filter,
-            _filter_width: 2400,
             prefs: prefs,
             spec: spec,
         }
@@ -224,6 +235,20 @@ impl UIFilter {
         globals::set_filter(self.rx, self.filter as u32);
         dsp::dsp_interface::set_mode_filter(0, rx as i32);
         self.filter = filter;
+
+        let mut width;
+        match filter {
+            FilterId::F6_0KHz => width = 6000,
+            FilterId::F4_0KHz => width = 4000,
+            FilterId::F2_7KHz => width = 2700,
+            FilterId::F2_4KHz => width = 2400,
+            FilterId::F2_1KHz => width = 2100,
+            FilterId::F1_0KHz => width = 1000,
+            FilterId::F500Hz => width = 500,
+            FilterId::F250Hz => width = 250,
+            FilterId::F100Hz => width = 100,
+        }
+        self.spec.borrow_mut().set_filt_width(width);
     }
 
 

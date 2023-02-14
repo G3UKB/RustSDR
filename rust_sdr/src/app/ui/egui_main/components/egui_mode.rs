@@ -65,7 +65,6 @@ pub struct UIMode {
     rx : i32,
     _i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
     mode: ModeId,
-    _mode_pos: common_defs::EnumModePos,
     m_array: [(String, egui::Color32); 12],
     spec : Rc<RefCell<components::egui_spec::UISpec>>,
     prefs: Rc<RefCell<prefs::Prefs>>,
@@ -105,13 +104,21 @@ impl UIMode {
             _ => (),
         }
         dsp::dsp_interface::set_mode_filter(0, rx as i32);
+        let pos: common_defs::EnumModePos;
+        if mode == ModeId::Lsb || mode == ModeId::CwL || mode == ModeId::DigL {
+            pos = common_defs::EnumModePos::Lower; 
+        } else if mode == ModeId::Usb || mode == ModeId::CwU || mode == ModeId::DigU {
+            pos = common_defs::EnumModePos::Upper; 
+        } else {
+            pos = common_defs::EnumModePos::Both;
+        }
+        spec.borrow_mut().set_mode_pos(pos);
 
         Self {
             rx: rx as i32,
             _i_cc: i_cc,
             m_array: m_array,
             mode: mode,
-            _mode_pos: common_defs::EnumModePos::Lower,
             spec: spec,
             prefs: prefs,
         }
@@ -243,7 +250,7 @@ impl UIMode {
     pub fn restore_mode(&mut self) {
         // Which RX are we
         let rx = globals::get_sel_rx();
-        // Retrieve and set freq
+        // Retrieve and set mode
         let mut mode = self.prefs.borrow().radio.rx1.mode;
         match rx {
             1 => {
@@ -259,6 +266,16 @@ impl UIMode {
         }
         globals::set_mode(self.rx, self.mode as u32);
         self.mode = mode;
+
+        let pos: common_defs::EnumModePos;
+        if mode == ModeId::Lsb || mode == ModeId::CwL || mode == ModeId::DigL {
+            pos = common_defs::EnumModePos::Lower; 
+        } else if mode == ModeId::Usb || mode == ModeId::CwU || mode == ModeId::DigU {
+            pos = common_defs::EnumModePos::Upper; 
+        } else {
+            pos = common_defs::EnumModePos::Both;
+        }
+        self.spec.borrow_mut().set_mode_pos(pos);
     }
 
     // Highlight the selected button
