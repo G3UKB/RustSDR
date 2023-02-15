@@ -46,6 +46,7 @@ use eframe::egui;
 pub struct UIMain {
     _i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
     control : components::egui_control::UIControl,
+    central : components::egui_central::UICentral,
     modes : components::egui_mode::UIMode,
     filters : components::egui_filter::UIFilter,
     vfo : Rc<RefCell<components::egui_vfo::UIVfo>>,
@@ -61,6 +62,7 @@ impl UIMain {
     pub fn new(cc: &eframe::CreationContext<'_>, i_cc : Arc<Mutex<protocol::cc_out::CCData>>, prefs: Rc<RefCell<prefs::Prefs>>, hw: Rc<RefCell<hw_control::HWData>>) -> Self{
 
         let control = components::egui_control::UIControl::new(i_cc.clone(), prefs.clone(), hw.clone());
+        let central = components::egui_central::UICentral::new(i_cc.clone(), prefs.clone(), hw.clone());
         let vfo = Rc::new(RefCell::new(components::egui_vfo::UIVfo::new(cc, i_cc.clone(), prefs.clone())));
         let spec = Rc::new(RefCell::new(components::egui_spec::UISpec::new(cc, i_cc.clone(), vfo.clone())));
         let modes = components::egui_mode::UIMode::new(cc, i_cc.clone(), spec.clone(), prefs.clone());
@@ -69,6 +71,7 @@ impl UIMain {
         Self {
             _i_cc : i_cc,
             control: control,
+            central: central,
             modes : modes,
             filters : filters,
             vfo : vfo,
@@ -87,16 +90,10 @@ impl eframe::App for UIMain {
         // Get the latest data update
         dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real);
 
+        // Central pane has all common controlsa and status
         let sel_rx = globals::get_sel_rx();
         egui::CentralPanel::default().show(ctx, |ui| {
-            let mut rx = String::from("");
-            match sel_rx {
-                1 => rx = String::from("RX-1"),
-                2 => rx = String::from("RX-2"),
-                3 => rx = String::from("RX-3"),
-                _ => (),
-            }
-            ui.heading(String::from("Rust SDR Application [") + &rx + "]");
+            self.central.central_panel(ui);
         });
 
         // Control window
