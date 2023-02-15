@@ -90,15 +90,19 @@ impl eframe::App for UIMain {
         // Get the latest data update
         dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real);
 
-        // Central pane has all common controlsa and status
+        // Central pane has all common controls and status
         let sel_rx = globals::get_sel_rx();
         egui::CentralPanel::default().show(ctx, |ui| {
             self.central.central_panel(ui);
         });
 
+        let mut x;
+        let mut y;
+        let mut width;
+        let mut height;
+
         // Control window
-        let mut x = self.prefs.borrow().windows.ctrl_x;
-        let mut y = self.prefs.borrow().windows.ctrl_y;
+        /*
         if y < 45.0 {y = 45.0;}
         let mut width = self.prefs.borrow().windows.ctrl_w - 12.0;
         let mut height = self.prefs.borrow().windows.ctrl_h;
@@ -114,6 +118,7 @@ impl eframe::App for UIMain {
         self.prefs.borrow_mut().windows.ctrl_y = r.top();
         self.prefs.borrow_mut().windows.ctrl_w = r.width();
         self.prefs.borrow_mut().windows.ctrl_h = r.height();
+        */
 
         // Modes window
         x = self.prefs.borrow().windows.mode_x;
