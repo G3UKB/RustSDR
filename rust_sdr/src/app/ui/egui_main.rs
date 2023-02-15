@@ -100,13 +100,14 @@ impl eframe::App for UIMain {
         });
 
         // Control window
-        let x = self.prefs.borrow().windows.ctrl_x;
-        let y = self.prefs.borrow().windows.ctrl_y;
-        let width = self.prefs.borrow().windows.ctrl_w - 12.0;
-        let height = self.prefs.borrow().windows.ctrl_h;
+        let mut x = self.prefs.borrow().windows.ctrl_x;
+        let mut y = self.prefs.borrow().windows.ctrl_y;
+        if y < 45.0 {y = 45.0;}
+        let mut width = self.prefs.borrow().windows.ctrl_w - 12.0;
+        let mut height = self.prefs.borrow().windows.ctrl_h;
         let w = egui::Window::new("Control")
         .default_size(egui::vec2(width, height))
-        .default_pos(egui::pos2(x,y))
+        .current_pos(egui::pos2(x,y))
         .show(ctx, |ui| {
             self.control.control(ui);
         });
@@ -118,14 +119,15 @@ impl eframe::App for UIMain {
         self.prefs.borrow_mut().windows.ctrl_h = r.height();
 
         // Modes window
-        let x = self.prefs.borrow().windows.mode_x;
-        let y = self.prefs.borrow().windows.mode_y;
-        let width = self.prefs.borrow().windows.mode_w - 12.0;
-        let height = self.prefs.borrow().windows.mode_h;
+        x = self.prefs.borrow().windows.mode_x;
+        y = self.prefs.borrow().windows.mode_y;
+        if y < 45.0 {y = 45.0;}
+        width = self.prefs.borrow().windows.mode_w - 12.0;
+        height = self.prefs.borrow().windows.mode_h;
         //println!("Before: {},{},{},{},",x,y,width,height);
         let w = egui::Window::new("Modes")
         .default_size(egui::vec2(width, height))
-        .default_pos(egui::pos2(x,y))
+        .current_pos(egui::pos2(x,y))
         .show(ctx, |ui| {
             self.modes.modes(ui);
         });
@@ -137,13 +139,14 @@ impl eframe::App for UIMain {
         self.prefs.borrow_mut().windows.mode_h = r.height();
         
         // Filters window
-        let x1 = self.prefs.borrow().windows.filt_x;
-        let y1 = self.prefs.borrow().windows.filt_y;
-        let width1 = self.prefs.borrow().windows.filt_w - 12.0;
-        let height1 = self.prefs.borrow().windows.filt_h;
+        x = self.prefs.borrow().windows.filt_x;
+        y = self.prefs.borrow().windows.filt_y;
+        if y < 45.0 {y = 45.0;}
+        width = self.prefs.borrow().windows.filt_w - 12.0;
+        height = self.prefs.borrow().windows.filt_h;
         let w1 = egui::Window::new("Filters")
-        .default_size(egui::vec2(width1, height1))
-        .default_pos(egui::pos2(x1,y1))
+        .default_size(egui::vec2(width, height))
+        .current_pos(egui::pos2(x,y))
         .show(ctx, |ui| {
             self.filters.filters(ui);
         });
@@ -154,14 +157,15 @@ impl eframe::App for UIMain {
         self.prefs.borrow_mut().windows.filt_h = r1.height();
 
         //VFO Window
-        let x2 = self.prefs.borrow().windows.vfo_x;
-        let y2 = self.prefs.borrow().windows.vfo_y;
-        let width2 = self.prefs.borrow().windows.vfo_w;
-        let height2 = self.prefs.borrow().windows.vfo_h - 35.0;
+        x = self.prefs.borrow().windows.vfo_x;
+        y = self.prefs.borrow().windows.vfo_y;
+        if y < 45.0 {y = 45.0;}
+        width = self.prefs.borrow().windows.vfo_w;
+        height = self.prefs.borrow().windows.vfo_h - 35.0;
         //println!("Before: {},{},{},{},",x2,y2,width2,height2);
         let w2 = egui::Window::new("VFO")
-        .default_size(egui::vec2(width2, height2))
-        .default_pos(egui::pos2(x2,y2))
+        .default_size(egui::vec2(width, height))
+        .current_pos(egui::pos2(x,y))
         .show(ctx, |ui| {
             self.vfo.borrow_mut().vfo(ui);
         });
@@ -173,14 +177,15 @@ impl eframe::App for UIMain {
         self.prefs.borrow_mut().windows.vfo_h = r2.height();
 
         // Spec/Waterfall window
-        let x3 = self.prefs.borrow().windows.main_x;
-        let y3 = self.prefs.borrow().windows.main_y;
-        let width3 = self.prefs.borrow().windows.main_w - 12.0;
-        let height3 = self.prefs.borrow().windows.main_h - 4.0;
+        x = self.prefs.borrow().windows.main_x;
+        y = self.prefs.borrow().windows.main_y;
+        if y < 45.0 {y = 45.0;}
+        width = self.prefs.borrow().windows.main_w - 12.0;
+        height = self.prefs.borrow().windows.main_h - 4.0;
         //println!("Before: {},{},{},{},",x3,y3,width3,height3);
         let w3 = egui::Window::new("Spectrum/Waterfall")
-        .default_size(egui::vec2(width3, height3))
-        .default_pos(egui::pos2(x3,y3))
+        .default_size(egui::vec2(width, height))
+        .current_pos(egui::pos2(x,y))
         .show(ctx, |ui| {
             self.spec.borrow_mut().spectrum(ui, &mut self.out_real);
         });
