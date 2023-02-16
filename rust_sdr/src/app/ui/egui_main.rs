@@ -100,33 +100,15 @@ impl eframe::App for UIMain {
         let mut y;
         let mut width;
         let mut height;
-
-        // Control window
-        /*
-        if y < 45.0 {y = 45.0;}
-        let mut width = self.prefs.borrow().windows.ctrl_w - 12.0;
-        let mut height = self.prefs.borrow().windows.ctrl_h;
-        let w = egui::Window::new("Control")
-        .default_size(egui::vec2(width, height))
-        .current_pos(egui::pos2(x,y))
-        .show(ctx, |ui| {
-            self.control.control(ui);
-        });
-        let r = w.unwrap().response.rect;
-        //println!("After: {},{},{},{},",r.left(),r.top(),r.width(),r.height());
-        self.prefs.borrow_mut().windows.ctrl_x = r.left();
-        self.prefs.borrow_mut().windows.ctrl_y = r.top();
-        self.prefs.borrow_mut().windows.ctrl_w = r.width();
-        self.prefs.borrow_mut().windows.ctrl_h = r.height();
-        */
+        const Y_LIMIT: f32 = 100.0;
 
         // Modes window
         x = self.prefs.borrow().windows.mode_x;
         y = self.prefs.borrow().windows.mode_y;
-        if y < 45.0 {y = 45.0;}
+        if y < Y_LIMIT {y = Y_LIMIT;}
         width = self.prefs.borrow().windows.mode_w - 12.0;
         height = self.prefs.borrow().windows.mode_h;
-        //println!("Before: {},{},{},{},",x,y,width,height);
+        
         let w = egui::Window::new("Modes")
         .default_size(egui::vec2(width, height))
         .current_pos(egui::pos2(x,y))
@@ -134,7 +116,7 @@ impl eframe::App for UIMain {
             self.modes.modes(ui);
         });
         let r = w.unwrap().response.rect;
-        //println!("After: {},{},{},{},",r.left(),r.top(),r.width(),r.height());
+        
         self.prefs.borrow_mut().windows.mode_x = r.left();
         self.prefs.borrow_mut().windows.mode_y = r.top();
         self.prefs.borrow_mut().windows.mode_w = r.width();
@@ -143,7 +125,7 @@ impl eframe::App for UIMain {
         // Filters window
         x = self.prefs.borrow().windows.filt_x;
         y = self.prefs.borrow().windows.filt_y;
-        if y < 45.0 {y = 45.0;}
+        if y < Y_LIMIT {y = Y_LIMIT;}
         width = self.prefs.borrow().windows.filt_w - 12.0;
         height = self.prefs.borrow().windows.filt_h;
         let w1 = egui::Window::new("Filters")
@@ -161,10 +143,10 @@ impl eframe::App for UIMain {
         //VFO Window
         x = self.prefs.borrow().windows.vfo_x;
         y = self.prefs.borrow().windows.vfo_y;
-        if y < 45.0 {y = 45.0;}
+        if y < Y_LIMIT {y = Y_LIMIT;}
         width = self.prefs.borrow().windows.vfo_w;
         height = self.prefs.borrow().windows.vfo_h - 35.0;
-        //println!("Before: {},{},{},{},",x2,y2,width2,height2);
+        
         let w2 = egui::Window::new("VFO")
         .default_size(egui::vec2(width, height))
         .current_pos(egui::pos2(x,y))
@@ -172,7 +154,7 @@ impl eframe::App for UIMain {
             self.vfo.borrow_mut().vfo(ui);
         });
         let r2 = w2.unwrap().response.rect;
-        //println!("After: {},{},{},{},",r2.left(),r2.top(),r2.width(),r2.height());
+        
         self.prefs.borrow_mut().windows.vfo_x = r2.left();
         self.prefs.borrow_mut().windows.vfo_y = r2.top();
         self.prefs.borrow_mut().windows.vfo_w = r2.width();
@@ -181,10 +163,10 @@ impl eframe::App for UIMain {
         // Spec/Waterfall window
         x = self.prefs.borrow().windows.main_x;
         y = self.prefs.borrow().windows.main_y;
-        if y < 45.0 {y = 45.0;}
+        if y < Y_LIMIT {y = Y_LIMIT;}
         width = self.prefs.borrow().windows.main_w - 12.0;
         height = self.prefs.borrow().windows.main_h - 4.0;
-        //println!("Before: {},{},{},{},",x3,y3,width3,height3);
+        
         let w3 = egui::Window::new("Spectrum/Waterfall")
         .default_size(egui::vec2(width, height))
         .current_pos(egui::pos2(x,y))
@@ -192,7 +174,7 @@ impl eframe::App for UIMain {
             self.spec.borrow_mut().spectrum(ui, &mut self.out_real);
         });
         let r3 = w3.unwrap().response.rect;
-        //println!("After: {},{},{},{},",r3.left(),r3.top(),r3.width(),r3.height());
+        
         self.prefs.borrow_mut().windows.main_x = r3.left();
         self.prefs.borrow_mut().windows.main_y = r3.top();
         self.prefs.borrow_mut().windows.main_w = r3.width();

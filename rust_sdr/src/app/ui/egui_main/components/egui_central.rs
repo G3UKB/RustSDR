@@ -94,145 +94,155 @@ impl UICentral {
             RestartState::Start => self.do_start(),
         }
 
+        // Combination layouts at top of native window
         ui.with_layout(egui::Layout::top_down_justified(egui::Align::Center), |ui|  {
-        let mut rx = String::from("");
+            let mut rx = String::from("");
             match self.selected_radio {
                 1 => rx = String::from("RX-1"),
                 2 => rx = String::from("RX-2"),
                 3 => rx = String::from("RX-3"),
                 _ => (),
             }
+            // Top line us heading with separator
             ui.heading(String::from("Rust SDR Application [") + &rx + "]");
+            ui.separator();
+    
+            // Remainder is in a grid
+            // We can't select rows and cols, its left to right, top to bottom
+            egui::Grid::new("grid-1").show(ui, |ui| {
 
-            ui.with_layout(egui::Layout::left_to_right(egui::Align::LEFT), |ui| {
-            ui.label(String::from("Control"));
-            ui.label(String::from("AF Gain"));
-            ui.label(String::from("Num Radios"));
-            ui.label(String::from("Sel Radio"));
-            ui.label(String::from("Smpl Rate"));
-        });
-
-        ui.with_layout(egui::Layout::left_to_right(egui::Align::LEFT), |ui| {
-
-            // Set start button color
-            let mut bcolor = egui::Color32::RED;
-            if self.running && globals::get_discover_state() {
-                bcolor = egui::Color32::GREEN;
-            }
-
-            // Start button
-            let b = ui.button(RichText::new("Start")
-            .text_style(TextStyle::Monospace)
-            .size(16.0)
-            .background_color(egui::Color32::TRANSPARENT)
-            .color(bcolor));
-            if b.clicked() {
-                if globals::get_discover_state() {
-                    self.hw.borrow_mut().do_start(false);
-                    self.running = true;
-                    globals::set_run_state(true);
+                // Next row is labels for the controls
+                ui.label(String::from("Control"));
+                ui.label(String::from(""));
+                ui.label(String::from("AF Gain"));
+                ui.label(String::from("Num Radios"));
+                ui.label(String::from("Select Radio"));
+                ui.label(String::from("Sample Rate"));
+                ui.end_row();
+            
+                // Remainter is controls on one line
+                // Set start button color
+                let mut bcolor = egui::Color32::RED;
+                if self.running && globals::get_discover_state() {
+                    bcolor = egui::Color32::GREEN;
                 }
-            }
 
-            // Stop button
-            let b = ui.button(RichText::new("Stop")
-            .text_style(TextStyle::Monospace)
-            .size(16.0)
-            .background_color(egui::Color32::TRANSPARENT));
-            if b.clicked() {
-                if self.running {
-                    self.hw.borrow_mut().do_stop();
-                    self.running = false;
-                    globals::set_run_state(false);
+                // Start button
+                let b = ui.button(RichText::new("Start")
+                .text_style(TextStyle::Monospace)
+                .size(16.0)
+                .background_color(egui::Color32::TRANSPARENT)
+                .color(bcolor));
+                if b.clicked() {
+                    if globals::get_discover_state() {
+                        self.hw.borrow_mut().do_start(false);
+                        self.running = true;
+                        globals::set_run_state(true);
+                    }
                 }
-            }
 
-            // Audio gain
-            ui.add(egui::Slider::new(&mut self.gain, 0.0..=100.0).suffix("%"));
-            self.prefs.borrow_mut().radio.af_gain = self.gain;
-            globals::set_af_gain(self.gain);
+                // Stop button
+                let b = ui.button(RichText::new("Stop")
+                .text_style(TextStyle::Monospace)
+                .size(16.0)
+                .background_color(egui::Color32::TRANSPARENT));
+                if b.clicked() {
+                    if self.running {
+                        self.hw.borrow_mut().do_stop();
+                        self.running = false;
+                        globals::set_run_state(false);
+                    }
+                }
 
-            // Num RX
-            egui::ComboBox::from_label( "Num Radios")
-                .selected_text(format!("{:?}", self.num_radios))
-                .show_ui(ui, |ui| {
-                    ui.selectable_value(&mut self.num_radios, NumRadiosEnum::One, "One");
-                    ui.selectable_value(&mut self.num_radios, NumRadiosEnum::Two, "Two");
-                    ui.selectable_value(&mut self.num_radios, NumRadiosEnum::Three, "Three");
-                }
-            );
-            match self.num_radios {
-                NumRadiosEnum::One => {
-                    self.query_restart(globals::get_num_rx(), 1);
-                    self.prefs.borrow_mut().radio.num_rx = 1;
-                    globals::set_num_rx(1);
-                    self.i_cc.lock().unwrap().cc_num_rx(cc_out_defs::CCONumRx::NumRx1);
-                },
-                NumRadiosEnum::Two => {
-                    self.query_restart(globals::get_num_rx(), 2);
-                    self.prefs.borrow_mut().radio.num_rx = 2;
-                    globals::set_num_rx(2);
-                    self.i_cc.lock().unwrap().cc_num_rx(cc_out_defs::CCONumRx::NumRx2);
-                },
-                NumRadiosEnum::Three => {
-                    self.query_restart(globals::get_num_rx(), 3);
-                    self.prefs.borrow_mut().radio.num_rx = 3;
-                    globals::set_num_rx(3);
-                    self.i_cc.lock().unwrap().cc_num_rx(cc_out_defs::CCONumRx::NumRx3);
-                }
-            }
+                // Audio gain
+                ui.add(egui::Slider::new(&mut self.gain, 0.0..=100.0).suffix("%"));
+                self.prefs.borrow_mut().radio.af_gain = self.gain;
+                globals::set_af_gain(self.gain);
 
-            // Selected RX
-            ui.horizontal_wrapped(|ui| {
-                if ui.add(egui::RadioButton::new(self.selected_radio == 1, "RX1")).clicked() {
-                    self.selected_radio = 1;
-                    self.prefs.borrow_mut().radio.sel_rx = 1;
-                    globals::set_sel_rx(1);
+                // Num RX
+                egui::ComboBox::from_label( "")
+                    .selected_text(format!("{:?}", self.num_radios))
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(&mut self.num_radios, NumRadiosEnum::One, "One");
+                        ui.selectable_value(&mut self.num_radios, NumRadiosEnum::Two, "Two");
+                        ui.selectable_value(&mut self.num_radios, NumRadiosEnum::Three, "Three");
+                    }
+                );
+                match self.num_radios {
+                    NumRadiosEnum::One => {
+                        self.query_restart(globals::get_num_rx(), 1);
+                        self.prefs.borrow_mut().radio.num_rx = 1;
+                        globals::set_num_rx(1);
+                        self.i_cc.lock().unwrap().cc_num_rx(cc_out_defs::CCONumRx::NumRx1);
+                    },
+                    NumRadiosEnum::Two => {
+                        self.query_restart(globals::get_num_rx(), 2);
+                        self.prefs.borrow_mut().radio.num_rx = 2;
+                        globals::set_num_rx(2);
+                        self.i_cc.lock().unwrap().cc_num_rx(cc_out_defs::CCONumRx::NumRx2);
+                    },
+                    NumRadiosEnum::Three => {
+                        self.query_restart(globals::get_num_rx(), 3);
+                        self.prefs.borrow_mut().radio.num_rx = 3;
+                        globals::set_num_rx(3);
+                        self.i_cc.lock().unwrap().cc_num_rx(cc_out_defs::CCONumRx::NumRx3);
+                    }
                 }
-                if ui.add(egui::RadioButton::new(self.selected_radio == 2, "RX2")).clicked() {
-                    self.selected_radio = 2;
-                    self.prefs.borrow_mut().radio.sel_rx = 2;
-                    globals::set_sel_rx(2);
-                }
-                if ui.add(egui::RadioButton::new(self.selected_radio == 3, "RX3")).clicked() {
-                    self.selected_radio = 3;
-                    self.prefs.borrow_mut().radio.sel_rx = 3;
-                    globals::set_sel_rx(3);
-                }
+
+                // Selected RX
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui|  {
+                    if ui.add(egui::RadioButton::new(self.selected_radio == 1, "RX1")).clicked() {
+                        self.selected_radio = 1;
+                        self.prefs.borrow_mut().radio.sel_rx = 1;
+                        globals::set_sel_rx(1);
+                    }
+                    if ui.add(egui::RadioButton::new(self.selected_radio == 2, "RX2")).clicked() {
+                        self.selected_radio = 2;
+                        self.prefs.borrow_mut().radio.sel_rx = 2;
+                        globals::set_sel_rx(2);
+                    }
+                    if ui.add(egui::RadioButton::new(self.selected_radio == 3, "RX3")).clicked() {
+                        self.selected_radio = 3;
+                        self.prefs.borrow_mut().radio.sel_rx = 3;
+                        globals::set_sel_rx(3);
+                    }
+                });
+
+                // Sample rate
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui|  {
+                    if ui.add(egui::RadioButton::new(self.smpl_rate == common_defs::SMPLS_48K, "48K")).clicked() {
+                        self.smpl_rate = common_defs::SMPLS_48K;
+                        self.prefs.borrow_mut().radio.smpl_rate = common_defs::SMPLS_48K;
+                        globals::set_smpl_rate(common_defs::SMPLS_48K);
+                        self.i_cc.lock().unwrap().cc_speed(cc_out_defs::CCOSpeed::S48kHz);
+                        dsp_interface::wdsp_set_input_rate(0, common_defs::SMPLS_48K as i32);
+                        dsp_interface::wdsp_set_dsp_rate(0, common_defs::SMPLS_48K as i32);
+                    }
+                    if ui.add(egui::RadioButton::new(self.smpl_rate == common_defs::SMPLS_96K, "96K")).clicked() {
+                        self.smpl_rate = common_defs::SMPLS_96K;
+                        self.prefs.borrow_mut().radio.smpl_rate = common_defs::SMPLS_96K;
+                        globals::set_smpl_rate(common_defs::SMPLS_96K);
+                        self.i_cc.lock().unwrap().cc_speed(cc_out_defs::CCOSpeed::S96kHz);
+                        dsp_interface::wdsp_set_input_rate(0, common_defs::SMPLS_96K as i32);
+                        dsp_interface::wdsp_set_dsp_rate(0, common_defs::SMPLS_96K as i32);
+                    }
+                    if ui.add(egui::RadioButton::new(self.smpl_rate == common_defs::SMPLS_192K, "192K")).clicked() {
+                        self.smpl_rate = common_defs::SMPLS_192K;
+                        self.prefs.borrow_mut().radio.smpl_rate = common_defs::SMPLS_192K;
+                        globals::set_smpl_rate(common_defs::SMPLS_192K);
+                        self.i_cc.lock().unwrap().cc_speed(cc_out_defs::CCOSpeed::S192kHz);
+                        dsp_interface::wdsp_set_input_rate(0, common_defs::SMPLS_192K as i32);
+                        dsp_interface::wdsp_set_dsp_rate(0, common_defs::SMPLS_192K as i32);
+                    }
+                });
+                ui.end_row();
             });
-
-            // Sample rate
-            ui.horizontal_wrapped(|ui| {
-                if ui.add(egui::RadioButton::new(self.smpl_rate == common_defs::SMPLS_48K, "48K")).clicked() {
-                    self.smpl_rate = common_defs::SMPLS_48K;
-                    self.prefs.borrow_mut().radio.smpl_rate = common_defs::SMPLS_48K;
-                    globals::set_smpl_rate(common_defs::SMPLS_48K);
-                    self.i_cc.lock().unwrap().cc_speed(cc_out_defs::CCOSpeed::S48kHz);
-                    dsp_interface::wdsp_set_input_rate(0, common_defs::SMPLS_48K as i32);
-                    dsp_interface::wdsp_set_dsp_rate(0, common_defs::SMPLS_48K as i32);
-                }
-                if ui.add(egui::RadioButton::new(self.smpl_rate == common_defs::SMPLS_96K, "96K")).clicked() {
-                    self.smpl_rate = common_defs::SMPLS_96K;
-                    self.prefs.borrow_mut().radio.smpl_rate = common_defs::SMPLS_96K;
-                    globals::set_smpl_rate(common_defs::SMPLS_96K);
-                    self.i_cc.lock().unwrap().cc_speed(cc_out_defs::CCOSpeed::S96kHz);
-                    dsp_interface::wdsp_set_input_rate(0, common_defs::SMPLS_96K as i32);
-                    dsp_interface::wdsp_set_dsp_rate(0, common_defs::SMPLS_96K as i32);
-                }
-                if ui.add(egui::RadioButton::new(self.smpl_rate == common_defs::SMPLS_192K, "192K")).clicked() {
-                    self.smpl_rate = common_defs::SMPLS_192K;
-                    self.prefs.borrow_mut().radio.smpl_rate = common_defs::SMPLS_192K;
-                    globals::set_smpl_rate(common_defs::SMPLS_192K);
-                    self.i_cc.lock().unwrap().cc_speed(cc_out_defs::CCOSpeed::S192kHz);
-                    dsp_interface::wdsp_set_input_rate(0, common_defs::SMPLS_192K as i32);
-                    dsp_interface::wdsp_set_dsp_rate(0, common_defs::SMPLS_192K as i32);
-                }
-            });
-
+            // Separator line under main controls
+            ui.separator();
         });
-    });
     }
 
+    // Tiny state machine to perform Stop/Start when number of radios is changed
     // Restart if the number of radios has changed
     fn query_restart(&mut self, rx: u32, new_rx: u32) {
         if rx != new_rx {
