@@ -65,9 +65,9 @@ pub fn frame_decode(
 	const SM3:i32 = 6;
 
 	// Index into IQ output data
-	let mut idx_iq = 0;
+	let mut idx_iq;
 	// Index into Mic output data
-	let mut idx_mic = 0;
+	let mut idx_mic;
 	// Number of samples of IQ and Mic for one receiver in one UDP frame
 	let mut smpls = common_defs::NUM_SMPLS_1_RADIO/2;
 
@@ -107,7 +107,7 @@ pub fn frame_decode(
 			smpls = common_defs::NUM_SMPLS_2_RADIO/2;
 			let mut state = IQ;
 			if sel_rx == 2 {state = SIQ1};
-			let mut sub_state = M;
+			let mut sub_state;
 			if rate == common_defs::SMPLS_48K {sub_state = M;} else {sub_state = SM1;}
 			let mut index = common_defs::START_FRAME_1;
 			if frame == 2 {index = common_defs::START_FRAME_2;};
@@ -164,7 +164,7 @@ pub fn frame_decode(
 			smpls = common_defs::NUM_SMPLS_3_RADIO/2;
 			let mut state = IQ;
 			if sel_rx == 2 || sel_rx == 3 {state = SIQ1};
-			let mut sub_state = M;
+			let mut sub_state;
 			if rate == common_defs::SMPLS_48K {sub_state = M;} else {sub_state = SM1;}
 			let mut index = common_defs::START_FRAME_1;
 			if frame == 2 {index = common_defs::START_FRAME_2};

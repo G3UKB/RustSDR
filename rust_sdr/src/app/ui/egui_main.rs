@@ -32,7 +32,6 @@ use std::{cell::RefCell, rc::Rc};
 use std::thread;
 use std::time::Duration;
 
-use crate::app::common::globals;
 use crate::app::common::common_defs;
 use crate::app::common::prefs;
 use crate::app::protocol;
@@ -88,7 +87,6 @@ impl eframe::App for UIMain {
         dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real);
 
         // Central pane has all common controls and status
-        let sel_rx = globals::get_sel_rx();
         egui::CentralPanel::default().show(ctx, |ui| {
             self.central.central_panel(ui);
         });

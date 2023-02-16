@@ -27,8 +27,6 @@ bob@bobcowdery.plus.com
 
 use std::sync::{Arc, Mutex};
 use std::{cell::RefCell, rc::Rc};
-use std::thread;
-use std::time::Duration;
 
 use crate::app::protocol;
 use crate ::app::common::prefs;
@@ -66,7 +64,6 @@ pub struct UICentral {
 impl UICentral {
     pub fn new(i_cc : Arc<Mutex<protocol::cc_out::CCData>>, prefs: Rc<RefCell<prefs::Prefs>>, hw: Rc<RefCell<hw_control::HWData>>) -> Self{
         
-        let num_rx = prefs.borrow().radio.num_rx;
         let af_gain = prefs.borrow().radio.af_gain;
         let smpl_rate = prefs.borrow().radio.smpl_rate;
         Self {

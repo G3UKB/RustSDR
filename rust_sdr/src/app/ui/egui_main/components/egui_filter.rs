@@ -97,7 +97,7 @@ impl UIFilter {
             _ => (),
         }
         dsp::dsp_interface::set_mode_filter(0, rx as i32);
-        let mut width;
+        let width;
         match filter {
             FilterId::F6_0KHz => width = 6000,
             FilterId::F4_0KHz => width = 4000,
@@ -236,7 +236,7 @@ impl UIFilter {
         dsp::dsp_interface::set_mode_filter(0, rx as i32);
         self.filter = filter;
 
-        let mut width;
+        let width;
         match filter {
             FilterId::F6_0KHz => width = 6000,
             FilterId::F4_0KHz => width = 4000,

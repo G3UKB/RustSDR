@@ -47,7 +47,6 @@ pub struct UDPRData{
     rb_iq : Arc<ringb::SyncByteRingBuf>,
     iq_cond : Arc<(Mutex<bool>, Condvar)>,
     udp_frame : [MaybeUninit<u8>; common_defs::FRAME_SZ as usize],
-    prot_frame : [u8; common_defs::PROT_SZ as usize *2],
     pub i_seq: protocol::seq_in::SeqData,
     listen: bool,
     iq: [u8; common_defs::IQ_ARR_SZ_R1 as usize],
@@ -73,7 +72,6 @@ impl UDPRData {
             // Received UDP data buffer
             udp_frame: [MaybeUninit::uninit(); common_defs::FRAME_SZ as usize],
             // UDP data contains a header + 2 protocol frames
-            prot_frame: [0; common_defs::PROT_SZ as usize *2],
             i_seq: i_seq,
             listen: false,
             iq: [0; common_defs::IQ_ARR_SZ_R1 as usize],

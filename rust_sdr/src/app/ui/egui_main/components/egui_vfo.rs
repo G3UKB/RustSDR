@@ -58,7 +58,6 @@ const VFO_HIGHLIGHT_COLOR: egui::Color32 = egui::Color32::DARK_GREEN;
 //===========================================================================================
 // State for VFO
 pub struct UIVfo {
-    rx : i32,
     i_cc : Arc<Mutex<protocol::cc_out::CCData>>,
     f_array: [(String, f32, egui::Color32); 9],
     frequency: u32,
@@ -104,7 +103,6 @@ impl UIVfo {
         }
 
         Self {
-            rx: rx as i32,
             i_cc: i_cc,
             f_array: f_array,
             frequency: freq,
