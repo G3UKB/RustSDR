@@ -87,17 +87,36 @@ impl eframe::App for UIMain {
         dsp::dsp_interface::wdsp_get_display_data(0, &mut self.out_real);
 
         // Central pane has all common controls and status
-        egui::CentralPanel::default().show(ctx, |ui| {
+        egui::TopBottomPanel::top(String::from("TOP")).show(ctx, |ui| {
             self.central.central_panel(ui);
         });
 
-        let mut x;
-        let mut y;
-        let mut width;
-        let mut height;
-        const Y_LIMIT: f32 = 100.0;
+        egui::SidePanel::left(String::from("LEFT")).show(ctx, |ui| {
+            self.modes.modes(ui);
+            self.filters.filters(ui);
+        });
+
+        egui::TopBottomPanel::bottom(String::from("BOTTOM")).show(ctx, |ui| {
+            self.vfo.borrow_mut().vfo(ui);
+        });
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+            self.spec.borrow_mut().spectrum(ui, &mut self.out_real);
+        });
+
+        // Central pane has all common controls and status
+        //egui::CentralPanel::default().show(ctx, |ui| {
+        //    self.central.central_panel(ui);
+        //});
+
+        //let mut x;
+        //let mut y;
+        //let mut width;
+        //let mut height;
+        //const Y_LIMIT: f32 = 100.0;
 
         // Modes window
+        /*
         x = self.prefs.borrow().windows.mode_x;
         y = self.prefs.borrow().windows.mode_y;
         if y < Y_LIMIT {y = Y_LIMIT;}
@@ -134,6 +153,7 @@ impl eframe::App for UIMain {
         self.prefs.borrow_mut().windows.filt_y = r1.top();
         self.prefs.borrow_mut().windows.filt_w = r1.width();
         self.prefs.borrow_mut().windows.filt_h = r1.height();
+        
 
         //VFO Window
         x = self.prefs.borrow().windows.vfo_x;
@@ -154,6 +174,7 @@ impl eframe::App for UIMain {
         self.prefs.borrow_mut().windows.vfo_y = r2.top();
         self.prefs.borrow_mut().windows.vfo_w = r2.width();
         self.prefs.borrow_mut().windows.vfo_h = r2.height();
+        
 
         // Spec/Waterfall window
         x = self.prefs.borrow().windows.main_x;
@@ -174,6 +195,7 @@ impl eframe::App for UIMain {
         self.prefs.borrow_mut().windows.main_y = r3.top();
         self.prefs.borrow_mut().windows.main_w = r3.width();
         self.prefs.borrow_mut().windows.main_h = r3.height();
+        */
 
         // Set any new frame metrics
         let pos = frame.info().window_info.position;

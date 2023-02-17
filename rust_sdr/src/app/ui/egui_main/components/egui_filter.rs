@@ -128,6 +128,8 @@ impl UIFilter {
         self.restore_filter();
         
         ui.with_layout(egui::Layout::top_down_justified(egui::Align::Center), |ui| {
+            ui.label(String::from("Filters"));
+
             let b = ui.button(RichText::new(&self.fi_array[FilterId::F6_0KHz as usize].0)
             .text_style(TextStyle::Monospace)
             .size(16.0)

@@ -132,6 +132,8 @@ impl UIMode {
         
         ui.with_layout(egui::Layout::top_down_justified(egui::Align::Center), |ui| {
             
+            ui.label(String::from("Modes"));
+
             let b = ui.button(RichText::new(&self.m_array[ModeId::Lsb as usize].0)
             .text_style(TextStyle::Monospace)
             .size(16.0)
