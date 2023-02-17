@@ -91,7 +91,7 @@ impl eframe::App for UIMain {
             self.central.central_panel(ui);
         });
 
-        egui::SidePanel::left(String::from("LEFT")).show(ctx, |ui| {
+        egui::SidePanel::left(String::from("LEFT")).max_width(100.0).show(ctx, |ui| {
             self.modes.modes(ui);
             self.filters.filters(ui);
         });
