@@ -89,6 +89,7 @@ impl eframe::App for UIMain {
         // Central pane has all common controls and status
         egui::TopBottomPanel::top(String::from("TOP")).show(ctx, |ui| {
             self.central.central_panel(ui);
+            self.vfo.borrow_mut().vfo(ui);
         });
 
         egui::SidePanel::left(String::from("LEFT")).max_width(100.0).show(ctx, |ui| {
@@ -96,9 +97,9 @@ impl eframe::App for UIMain {
             self.filters.filters(ui);
         });
 
-        egui::TopBottomPanel::bottom(String::from("BOTTOM")).show(ctx, |ui| {
-            self.vfo.borrow_mut().vfo(ui);
-        });
+        //egui::TopBottomPanel::bottom(String::from("BOTTOM")).show(ctx, |ui| {
+        //    self.vfo.borrow_mut().vfo(ui);
+        //});
 
         egui::CentralPanel::default().show(ctx, |ui| {
             self.spec.borrow_mut().spectrum(ui, &mut self.out_real);

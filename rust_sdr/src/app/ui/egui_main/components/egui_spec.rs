@@ -140,7 +140,7 @@ impl UISpec {
             ui.ctx().request_repaint();
 
             // Go with the maximum available width and keep the aspect ratio constant
-            let desired_size = ui.available_width() * egui::vec2(1.0, 0.35);
+            let desired_size = ui.available_width() * egui::vec2(1.0, 0.5);
             let (_id, rect) = ui.allocate_space(desired_size);
 
             // Get the painter
