@@ -116,6 +116,7 @@ impl UIVfo {
 
         self.restore_freq();
         ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+            ui.add_space(200.0);
             ui.style_mut().spacing.item_spacing = egui::vec2(14.0,5.0);
             
             let f_100_m = ui.label(RichText::new(&self.f_array[VfoId::F100M as usize].0).text_style(TextStyle::Heading)
