@@ -28,11 +28,17 @@ bob@bobcowdery.plus.com
 use std::sync::{Arc, Mutex};
 use std::{cell::RefCell, rc::Rc};
 
+use epaint::Color32;
+
 use crate::app::protocol;
 use crate::app::common::globals;
 use crate::app::common::common_defs;
 use crate::app::ui::egui_main::components;
 use crate::app::dsp;
+
+const TEXT_COLOR: Color32 = Color32::from_rgba_premultiplied(150,0,0,70);
+const GRID_COLOR: Color32 = Color32::from_rgba_premultiplied(0,50,0,10);
+const DYN_COLOR: Color32 = Color32::from_rgba_premultiplied(150,150,0,70);
 
 //===========================================================================================
 // State for meter
@@ -58,11 +64,32 @@ impl UIMeter {
 
             // Go with the maximum available width and keep the aspect ratio constant
             //let desired_size = ui.available_width() * egui::vec2(1.0, 0.5);
-            //let desired_size = egui::vec2(100.0, 50.0);
-            //let (_id, rect) = ui.allocate_space(desired_size);
+            let desired_size = egui::vec2(200.0, 50.0);
+            let (_id, rect) = ui.allocate_space(desired_size);
 
             // Get the painter
             let painter = ui.painter();
+
+            // Draw legends
+            let s = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "+20", "+40"];
+
+            for i in 0..s.len() {
+                painter.text(
+                    egui::pos2(rect.left() + 5.0 + (i as f32*17.0), rect.bottom() - 10.0),
+                    egui::Align2::LEFT_CENTER,
+                    &String::from(s[i]),
+                    egui::FontId::new(10.0,egui::FontFamily::Proportional),
+                    TEXT_COLOR,
+                );
+            }
+
+            painter.line_segment(
+                [
+                    egui::pos2(rect.left() + 5.0, rect.bottom() - 20.0),
+                    egui::pos2(rect.right() - 5.0, rect.bottom() - 20.0),
+                ],
+            egui::Stroke::new(0.5, GRID_COLOR),
+            );
         });
     }
 }
