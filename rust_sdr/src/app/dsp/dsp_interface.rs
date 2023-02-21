@@ -46,6 +46,7 @@ extern "C" {
 	fn SetInputSamplerate (ch_id: i32, in_rate: i32);
 	fn SetDSPSamplerate (ch_id: i32, dsp_rate: i32);
 	fn fexchange0(ch_id: i32, in_buf: *mut f64, out_buf: *mut f64, error: *mut i32);
+	fn GetRXAMeter(ch_id: i32, mt: i32) -> f64;
 
 	fn XCreateAnalyzer ( 
 		disp_id: i32,
@@ -212,6 +213,11 @@ pub fn set_mode_filter(ch_id: i32, rx_id: i32) {
 		SetRXABandpassFreqs(ch_id, new_low as f64, new_high as f64);
 	}
 	
+}
+
+// Get metering data
+pub fn wdsp_get_rx_meter(ch_id: i32, mt: i32) -> f64 {
+	return unsafe{GetRXAMeter(ch_id, mt)};
 }
 
 // Open WDSP display

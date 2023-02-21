@@ -38,7 +38,7 @@ use crate::app::dsp;
 
 const TEXT_COLOR: Color32 = Color32::from_rgba_premultiplied(150,0,0,70);
 const GRID_COLOR: Color32 = Color32::from_rgba_premultiplied(0,50,0,10);
-const DYN_COLOR: Color32 = Color32::from_rgba_premultiplied(150,150,0,70);
+const SIG_COLOR: Color32 = Color32::from_rgba_premultiplied(150,150,0,70);
 
 //===========================================================================================
 // State for meter
@@ -83,6 +83,7 @@ impl UIMeter {
                 );
             }
 
+            // Grid line
             painter.line_segment(
                 [
                     egui::pos2(rect.left() + 5.0, rect.bottom() - 20.0),
@@ -90,6 +91,32 @@ impl UIMeter {
                 ],
             egui::Stroke::new(0.5, GRID_COLOR),
             );
+
+            // Signal strength
+            let sig = dsp::dsp_interface::wdsp_get_rx_meter(0, common_defs::MeterType::SAverage as i32);
+            painter.line_segment(
+                [
+                    egui::pos2(rect.left() + 5.0, rect.bottom() - 35.0),
+                    egui::pos2(rect.left() + self.sig_to_y(sig, (rect.width() - 10.0) as i32), rect.bottom() - 35.0),
+                ],
+            egui::Stroke::new(4.0, SIG_COLOR),
+            );
         });
     }
+
+    // Convert signal strength in dbM to a y offset for the meter
+    fn sig_to_y(&mut self, sig: f64, width: i32) -> f32{
+        // This maps S1-S9 and +20 +40 to dbM levels
+        let mut offset = 0.0;
+        let sig = sig as i32;
+        let s_level = [-121, -115,-109,-103, -97,-91,-85,-79,-73,-53,-33];
+        for dbm_idx in 0..s_level.len()-1{
+            if sig >= s_level[dbm_idx] && sig < s_level[dbm_idx] {
+                offset = ((dbm_idx as i32/s_level.len() as i32) * width as i32) as f32;
+                break;
+            }
+        }
+        return offset
+    }
+
 }

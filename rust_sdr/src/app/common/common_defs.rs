@@ -122,6 +122,17 @@ pub enum AvMode {
 	PanLnfLog
 }
 
+// Metering
+pub enum MeterType {
+	SPeak,
+	SAverage,
+	InputPeak,
+	InputAverage,
+	AGCGain,
+	AGCPEak,
+	AGCAVerage,
+}
+
 // Temp
 #[derive(PartialEq)]
 pub enum EnumModePos {
