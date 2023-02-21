@@ -55,7 +55,6 @@ impl UIMeter {
         }
     }
 
-
     pub fn meter(&mut self, ui: &mut egui::Ui) {
         
         egui::Frame::canvas(ui.style()).show(ui, |ui| {
@@ -111,8 +110,8 @@ impl UIMeter {
         let sig = sig as i32;
         let s_level = [-121, -115,-109,-103, -97,-91,-85,-79,-73,-53,-33];
         for dbm_idx in 0..s_level.len()-1{
-            if sig >= s_level[dbm_idx] && sig < s_level[dbm_idx] {
-                offset = ((dbm_idx as i32/s_level.len() as i32) * width as i32) as f32;
+            if sig >= s_level[dbm_idx] && sig < s_level[dbm_idx+1] {
+                offset = ((dbm_idx as f32/s_level.len() as f32) * width as f32);
                 break;
             }
         }
