@@ -91,8 +91,10 @@ impl eframe::App for UIMain {
 
         // Central pane has all common controls and status
         egui::TopBottomPanel::top(String::from("TOP")).show(ctx, |ui| {
-            self.central.central_panel(ui);
-            self.vfo.borrow_mut().vfo(ui);
+            //egui::Grid::new("grid-1").show(ui, |ui| {
+                self.central.central_panel(ui);
+                //self.vfo.borrow_mut().vfo(ui);
+            //});
             //self.meter.borrow_mut().meter(ui);
         });
 
@@ -101,9 +103,12 @@ impl eframe::App for UIMain {
             self.filters.filters(ui);
         });
 
-        //egui::TopBottomPanel::bottom(String::from("BOTTOM")).show(ctx, |ui| {
-        //    self.vfo.borrow_mut().vfo(ui);
-        //});
+        egui::TopBottomPanel::bottom(String::from("BOTTOM")).show(ctx, |ui| {
+            egui::Grid::new("grid-1").show(ui, |ui| {
+                self.vfo.borrow_mut().vfo(ui);
+                self.meter.borrow_mut().meter(ui);
+            });
+        });
 
         egui::CentralPanel::default().show(ctx, |ui| {
             self.spec.borrow_mut().spectrum(ui, &mut self.out_real);
