@@ -49,6 +49,7 @@ pub struct UIMain {
     filters : components::egui_filter::UIFilter,
     vfo : Rc<RefCell<components::egui_vfo::UIVfo>>,
     spec : Rc<RefCell<components::egui_spec::UISpec>>,
+    meter : Rc<RefCell<components::egui_meter::UIMeter>>,
     out_real: [f32; (common_defs::DSP_BLK_SZ ) as usize],
     prefs: Rc<RefCell<prefs::Prefs>>,
     _hw: Rc<RefCell<hw_control::HWData>>
@@ -62,6 +63,7 @@ impl UIMain {
         let central = components::egui_central::UICentral::new(i_cc.clone(), prefs.clone(), hw.clone());
         let vfo = Rc::new(RefCell::new(components::egui_vfo::UIVfo::new(cc, i_cc.clone(), prefs.clone())));
         let spec = Rc::new(RefCell::new(components::egui_spec::UISpec::new(cc, i_cc.clone(), vfo.clone())));
+        let meter = Rc::new(RefCell::new(components::egui_meter::UIMeter::new(cc)));
         let modes = components::egui_mode::UIMode::new(cc, i_cc.clone(), spec.clone(), prefs.clone());
         let filters = components::egui_filter::UIFilter::new(cc, i_cc.clone(), spec.clone(), prefs.clone());
         
@@ -72,6 +74,7 @@ impl UIMain {
             filters : filters,
             vfo : vfo,
             spec : spec,
+            meter : meter,
             out_real: [0.0; (common_defs::DSP_BLK_SZ ) as usize],
             prefs: prefs,
             _hw: hw,
@@ -90,6 +93,7 @@ impl eframe::App for UIMain {
         egui::TopBottomPanel::top(String::from("TOP")).show(ctx, |ui| {
             self.central.central_panel(ui);
             self.vfo.borrow_mut().vfo(ui);
+            //self.meter.borrow_mut().meter(ui);
         });
 
         egui::SidePanel::left(String::from("LEFT")).max_width(100.0).show(ctx, |ui| {

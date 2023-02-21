@@ -30,5 +30,6 @@ pub mod egui_mode;
 pub mod egui_filter;
 pub mod egui_vfo;
 pub mod egui_spec;
+pub mod egui_meter;
 
 
