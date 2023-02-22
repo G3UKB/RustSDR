@@ -25,25 +25,32 @@ The authors can be reached by email at:
 bob@bobcowdery.plus.com
 */
 
-use std::sync::{Arc, Mutex};
-use std::{cell::RefCell, rc::Rc};
-
 use epaint::Color32;
 
-use crate::app::protocol;
-use crate::app::common::globals;
 use crate::app::common::common_defs;
-use crate::app::ui::egui_main::components;
 use crate::app::dsp;
 
+// Drawing colors
 const TEXT_COLOR: Color32 = Color32::from_rgba_premultiplied(150,0,0,70);
 const GRID_COLOR: Color32 = Color32::from_rgba_premultiplied(0,50,0,10);
 const SIG_COLOR: Color32 = Color32::from_rgba_premultiplied(150,150,0,70);
+
+const LEFT_MARGIN: f32 = 5.0;
+const RIGHT_MARGIN: f32 = 5.0;
+const TEXT_BOTTOM_MARGIN: f32 = 10.0;
+const GRID_BOTTOM_MARGIN: f32 = 20.0;
+const SIG_BOTTOM_MARGIN: f32 = 35.0;
+const INTER_GAP: f32 = 17.0;
+const FONT_SZ: f32 = 10.0;
+const GRID_STROKE: f32 = 0.5;
+const SIG_STROKE: f32 = 4.0;
 
 //===========================================================================================
 // State for meter
 pub struct UIMeter {
     // Parameters
+    legends: [String; 11],
+    level: [i32; 11],
 }
 
 //===========================================================================================
@@ -52,6 +59,8 @@ impl UIMeter {
     pub fn new(_cc: &eframe::CreationContext<'_>) -> Self{
 
         Self {
+            legends: [String::from("1"), String::from("2"), String::from("3"), String::from("4"), String::from("5"), String::from("6"), String::from("7"), String::from("8"), String::from("9"), String::from("+20"), String::from("+40")],
+            level: [-121, -115,-109,-103, -97,-91,-85,-79,-73,-53,-33],
         }
     }
 
@@ -61,8 +70,7 @@ impl UIMeter {
             // Ensure repaint
             ui.ctx().request_repaint();
 
-            // Go with the maximum available width and keep the aspect ratio constant
-            //let desired_size = ui.available_width() * egui::vec2(1.0, 0.5);
+            // Size appropriately for meter. We don't want it to stretch.
             let desired_size = egui::vec2(200.0, 50.0);
             let (_id, rect) = ui.allocate_space(desired_size);
 
@@ -70,14 +78,12 @@ impl UIMeter {
             let painter = ui.painter();
 
             // Draw legends
-            let s = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "+20", "+40"];
-
-            for i in 0..s.len() {
+            for i in 0..self.legends.len() {
                 painter.text(
-                    egui::pos2(rect.left() + 5.0 + (i as f32*17.0), rect.bottom() - 10.0),
+                    egui::pos2(rect.left() + LEFT_MARGIN + (i as f32 * INTER_GAP), rect.bottom() - TEXT_BOTTOM_MARGIN),
                     egui::Align2::LEFT_CENTER,
-                    &String::from(s[i]),
-                    egui::FontId::new(10.0,egui::FontFamily::Proportional),
+                    &String::from(&self.legends[i]),
+                    egui::FontId::new(FONT_SZ,egui::FontFamily::Proportional),
                     TEXT_COLOR,
                 );
             }
@@ -85,33 +91,31 @@ impl UIMeter {
             // Grid line
             painter.line_segment(
                 [
-                    egui::pos2(rect.left() + 5.0, rect.bottom() - 20.0),
-                    egui::pos2(rect.right() - 5.0, rect.bottom() - 20.0),
+                    egui::pos2(rect.left() + LEFT_MARGIN, rect.bottom() - GRID_BOTTOM_MARGIN),
+                    egui::pos2(rect.right() - RIGHT_MARGIN, rect.bottom() - GRID_BOTTOM_MARGIN),
                 ],
-            egui::Stroke::new(0.5, GRID_COLOR),
+            egui::Stroke::new(GRID_STROKE, GRID_COLOR),
             );
 
             // Signal strength
             let sig = dsp::dsp_interface::wdsp_get_rx_meter(0, common_defs::MeterType::SAverage as i32);
             painter.line_segment(
                 [
-                    egui::pos2(rect.left() + 5.0, rect.bottom() - 35.0),
-                    egui::pos2(rect.left() + self.sig_to_y(sig, (rect.width() - 10.0) as i32), rect.bottom() - 35.0),
+                    egui::pos2(rect.left() + LEFT_MARGIN, rect.bottom() - SIG_BOTTOM_MARGIN),
+                    egui::pos2(rect.left() + self.sig_to_y(sig, (rect.width() - LEFT_MARGIN - RIGHT_MARGIN) as i32), rect.bottom() - SIG_BOTTOM_MARGIN),
                 ],
-            egui::Stroke::new(4.0, SIG_COLOR),
+            egui::Stroke::new(SIG_STROKE, SIG_COLOR),
             );
         });
     }
 
     // Convert signal strength in dbM to a y offset for the meter
     fn sig_to_y(&mut self, sig: f64, width: i32) -> f32{
-        // This maps S1-S9 and +20 +40 to dbM levels
         let mut offset = 0.0;
         let sig = sig as i32;
-        let s_level = [-121, -115,-109,-103, -97,-91,-85,-79,-73,-53,-33];
-        for dbm_idx in 0..s_level.len()-1{
-            if sig >= s_level[dbm_idx] && sig < s_level[dbm_idx+1] {
-                offset = ((dbm_idx as f32/s_level.len() as f32) * width as f32);
+        for dbm_idx in 0..self.level.len()-1{
+            if sig >= self.level[dbm_idx] && sig < self.level[dbm_idx+1] {
+                offset = (dbm_idx as f32/self.level.len() as f32) * width as f32;
                 break;
             }
         }
