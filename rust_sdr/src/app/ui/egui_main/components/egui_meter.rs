@@ -27,6 +27,7 @@ bob@bobcowdery.plus.com
 
 use epaint::Color32;
 
+use crate::app::common::globals;
 use crate::app::common::common_defs;
 use crate::app::dsp;
 
@@ -98,14 +99,16 @@ impl UIMeter {
             );
 
             // Signal strength
-            let sig = dsp::dsp_interface::wdsp_get_rx_meter(0, common_defs::MeterType::SAverage as i32);
-            painter.line_segment(
-                [
-                    egui::pos2(rect.left() + LEFT_MARGIN, rect.bottom() - SIG_BOTTOM_MARGIN),
-                    egui::pos2(rect.left() + self.sig_to_y(sig, (rect.width() - LEFT_MARGIN - RIGHT_MARGIN) as i32), rect.bottom() - SIG_BOTTOM_MARGIN),
-                ],
-            egui::Stroke::new(SIG_STROKE, SIG_COLOR),
-            );
+            if globals::get_run_state() {
+                let sig = dsp::dsp_interface::wdsp_get_rx_meter(0, common_defs::MeterType::SAverage as i32);
+                painter.line_segment(
+                    [
+                        egui::pos2(rect.left() + LEFT_MARGIN, rect.bottom() - SIG_BOTTOM_MARGIN),
+                        egui::pos2(rect.left() + self.sig_to_y(sig, (rect.width() - LEFT_MARGIN - RIGHT_MARGIN) as i32), rect.bottom() - SIG_BOTTOM_MARGIN),
+                    ],
+                egui::Stroke::new(SIG_STROKE, SIG_COLOR),
+                );
+            }
         });
     }
 
@@ -115,7 +118,14 @@ impl UIMeter {
         let sig = sig as i32;
         for dbm_idx in 0..self.level.len()-1{
             if sig >= self.level[dbm_idx] && sig < self.level[dbm_idx+1] {
-                offset = (dbm_idx as f32/self.level.len() as f32) * width as f32;
+                // We have a base value at dbx_idx and need the fractional value
+                let span = self.level[dbm_idx].abs() - self.level[dbm_idx+1].abs();
+                let diff = self.level[dbm_idx].abs() - sig.abs();
+                let sig_frac = diff as f32/span as f32;
+                let y_frac = width as f32/self.level.len() as f32;
+                let frac = sig_frac * y_frac;
+                // Offset is base + frac so we get a smooth display 
+                offset = ((dbm_idx as f32/self.level.len() as f32) * width as f32) + frac;
                 break;
             }
         }

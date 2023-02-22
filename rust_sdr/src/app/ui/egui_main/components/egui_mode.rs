@@ -161,24 +161,6 @@ impl UIMode {
                 self.mode = ModeId::Dsb;
             }
 
-            let b = ui.button(RichText::new(&self.m_array[ModeId::CwL as usize].0)
-            .text_style(TextStyle::Monospace)
-            .size(16.0)
-            .background_color(self.m_array[ModeId::CwL as usize].1));
-            if b.clicked() {
-                self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Lower);
-                self.mode = ModeId::CwL;
-            }
-
-            let b = ui.button(RichText::new(&self.m_array[ModeId::CwU as usize].0)
-            .text_style(TextStyle::Monospace)
-            .size(16.0)
-            .background_color(self.m_array[ModeId::CwU as usize].1));
-            if b.clicked() {
-                self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Upper);
-                self.mode = ModeId::CwU;
-            }
-
             let b = ui.button(RichText::new(&self.m_array[ModeId::Fm as usize].0)
             .text_style(TextStyle::Monospace)
             .size(16.0)
@@ -195,24 +177,6 @@ impl UIMode {
             if b.clicked() {
                 self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
                 self.mode = ModeId::Am;
-            }
-
-            let b = ui.button(RichText::new(&self.m_array[ModeId::DigL as usize].0)
-            .text_style(TextStyle::Monospace)
-            .size(16.0)
-            .background_color(self.m_array[ModeId::DigL as usize].1));
-            if b.clicked() {
-                self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Lower);
-                self.mode = ModeId::DigL;
-            }
-
-            let b = ui.button(RichText::new(&self.m_array[ModeId::DigU as usize].0)
-            .text_style(TextStyle::Monospace)
-            .size(16.0)
-            .background_color(self.m_array[ModeId::DigU as usize].1));
-            if b.clicked() {
-                self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Upper);
-                self.mode = ModeId::DigU;
             }
 
             let b = ui.button(RichText::new(&self.m_array[ModeId::Spec as usize].0)
@@ -233,14 +197,6 @@ impl UIMode {
                 self.mode = ModeId::Sam;
             }
 
-            let b = ui.button(RichText::new(&self.m_array[ModeId::Drm as usize].0)
-            .text_style(TextStyle::Monospace)
-            .size(16.0)
-            .background_color(self.m_array[ModeId::Drm as usize].1));
-            if b.clicked() {
-                self.spec.borrow_mut().set_mode_pos( common_defs::EnumModePos::Both);
-                self.mode = ModeId::Drm;
-            }
         });
 
         self.set_mode_buttons(self.mode as i32);
